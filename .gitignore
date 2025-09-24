@@ -205,3 +205,54 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ==== SECURITY - NEVER COMMIT THESE ====
+# SSL Certificates and Keys - CRITICAL: NEVER COMMIT
+ssl/
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+*.cer
+*.csr
+
+# Environment files with secrets
+.env.local
+.env.production
+.env.staging
+config.local.json
+secrets.json
+
+# Database files and data
+*.db
+*.sqlite
+*.sqlite3
+data/mongodb/
+mongodb_data/
+
+# Docker sensitive files
+docker-compose.override.yml
+docker-compose.prod.yml
+
+# Credentials and passwords
+*password*
+*secret*
+*token*
+*credentials*
+*auth*
+
+# IDE and OS files
+.vscode/settings.json
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Backup and temporary files
+*.bak
+*.backup
+*.old
+tmp/
+temp/
+.tmp/
