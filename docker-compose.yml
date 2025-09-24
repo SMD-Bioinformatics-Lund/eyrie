@@ -15,11 +15,12 @@ services:
     networks:
       - eyrie_network
 
-  eyrie:
+  eyrie-backend:
     build:
-      context: ./frontend
+      context: ./backend
       dockerfile: Dockerfile
-    container_name: eyrie_app
+      network: host
+    container_name: eyrie_backend
     restart: unless-stopped
     environment:
       MONGO_URI: mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie
@@ -28,6 +29,25 @@ services:
       - "5000:5000"
     depends_on:
       - mongodb
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - eyrie_network
+
+  eyrie-frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      network: host
+    container_name: eyrie_frontend
+    restart: unless-stopped
+    environment:
+      BACKEND_URL: http://eyrie-backend:5000
+      ENVIRONMENT: production
+    ports:
+      - "3000:5000"
+    depends_on:
+      - eyrie-backend
     volumes:
       - ./data:/app/data:ro
     networks:
