@@ -1,0 +1,45 @@
+services:
+  mongodb:
+    image: mongo:5.0
+    container_name: eyrie_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: eyrie
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - eyrie_network
+
+  eyrie:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eyrie_app
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie
+      ENVIRONMENT: production
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongodb
+    volumes:
+      - ./data:/app/data:ro
+    networks:
+      - eyrie_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  eyrie_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.0.20.0/24
