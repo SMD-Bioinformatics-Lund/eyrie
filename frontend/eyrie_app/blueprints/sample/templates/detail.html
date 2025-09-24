@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sample Detail - Eyrie Sample Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/shared/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark border-0">
+        <div class="container-fluid">
+            <a href="/samples" class="navbar-brand mb-0 h1">
+                <i class="bi bi-arrow-left me-2"></i>Back to Samples
+            </a>
+            <span class="navbar-text" id="sampleTitle">
+                Loading sample...
+            </span>
+            <div class="d-flex align-items-center">
+                <a href="/admin" class="btn btn-outline-light me-3">
+                    <i class="bi bi-gear me-2"></i>Admin
+                </a>
+                <div class="dropdown">
+                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle me-2"></i><span id="currentUsername">Loading...</span>
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><button class="dropdown-item" onclick="logout()">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout
+                        </button></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid sample-detail-container mt-4">
+        <div class="row h-100">
+            <!-- Left Column - General Info, QC and Comments -->
+            <div class="col-lg-3 mb-4">
+                <!-- General Information Card -->
+                <div class="card mb-4">
+                    <div class="card-header bg-light text-dark">
+                        <h6 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>General Information
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm table-borderless mb-0">
+                            <tbody id="generalInfoTable">
+                                <tr><td><strong>Sample Name:</strong></td><td id="infoSampleName">--</td></tr>
+                                <tr><td><strong>Sample ID:</strong></td><td id="infoSampleId">--</td></tr>
+                                <tr><td><strong>Sequencing Run ID:</strong></td><td id="infoSequencingRun">--</td></tr>
+                                <tr><td><strong>LIMS ID:</strong></td><td id="infoLimsId">--</td></tr>
+                                <tr><td><strong>Classification:</strong></td><td id="infoClassification">--</td></tr>
+                                <tr><td><strong>Created Date:</strong></td><td id="infoCreatedDate">--</td></tr>
+                                <tr><td><strong>Updated Date:</strong></td><td id="infoUpdatedDate">--</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- QC Card -->
+                <div class="card qc-card mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="bi bi-check-circle me-2"></i>Quality Control
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Current Status:</label>
+                            <div id="currentQCStatus">
+                                <span class="badge bg-secondary">Loading...</span>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="updateQC('passed')">
+                                <i class="bi bi-check-lg me-2"></i>Pass
+                            </button>
+                            <button class="btn btn-danger" onclick="showFailModal()">
+                                <i class="bi bi-x-lg me-2"></i>Fail
+                            </button>
+                            <button class="btn btn-outline-secondary" onclick="updateQC('unprocessed')">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- General Comments Card -->
+                <div class="card comment-card">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-chat-text me-2"></i>Comments
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <textarea class="form-control" id="generalComments" rows="4" placeholder="Add general comments..."></textarea>
+                        </div>
+                        <button class="btn btn-primary btn-sm" onclick="saveComments()">
+                            <i class="bi bi-floppy me-2"></i>Save Comments
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center Column - Krona Plot -->
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-pie-chart me-2"></i>Krona Classification Plot
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="krona-container h-100" style="min-height: 600px;">
+                            <iframe id="kronaFrame" 
+                                    style="width: 100%; height: 100%; border: none;"
+                                    src="about:blank">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Stats and Links -->
+            <div class="col-lg-3 mb-4">
+                <!-- Summary Statistics Card -->
+                <div class="card stats-card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Summary Statistics
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-primary mb-0">--</div>
+                                    <small class="text-muted">Total Reads</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-success mb-0">--</div>
+                                    <small class="text-muted">Quality Passed</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-info mb-0">--</div>
+                                    <small class="text-muted">Avg Length</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-center">
+                                    <div class="h4 text-warning mb-0">--</div>
+                                    <small class="text-muted">Avg Quality</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Read Quality Plot Card -->
+                <div class="card plot-card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Read Quality vs Length
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div style="height: 300px;">
+                            <iframe id="qualityFrame" 
+                                    style="width: 100%; height: 100%; border: none;"
+                                    src="about:blank">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pipeline Files Card -->
+                <div class="card pipeline-links">
+                    <div class="card-header bg-dark text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-file-earmark-text me-2"></i>Pipeline Files
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush" id="pipelineFilesList">
+                            <div class="list-group-item text-center py-3">
+                                <i class="bi bi-hourglass-split"></i> Loading...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QC Fail Modal -->
+    <div class="modal fade" id="qcFailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Mark QC as Failed
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="failureComments" class="form-label">Failure Reason (Required):</label>
+                        <textarea class="form-control" id="failureComments" rows="3" placeholder="Describe why this sample failed QC..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="confirmFailQC()">
+                        <i class="bi bi-x-lg me-2"></i>Mark as Failed
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dynamic base URL detection for subdirectory support
+        window.BASE_URL = (() => {
+            const path = window.location.pathname;
+            const pathParts = path.split('/').filter(part => part);
+            
+            // Find where our app starts (look for known routes)
+            const appRoutes = ['samples', 'sample', 'admin', 'login'];
+            let baseIndex = -1;
+            
+            for (let i = 0; i < pathParts.length; i++) {
+                if (appRoutes.includes(pathParts[i])) {
+                    baseIndex = i;
+                    break;
+                }
+            }
+            
+            if (baseIndex > 0) {
+                // We're in a subdirectory
+                return '/' + pathParts.slice(0, baseIndex).join('/') + '/';
+            } else {
+                // We're at the root
+                return '/';
+            }
+        })();
+        
+        // Helper function to resolve relative URLs
+        window.resolveUrl = (path) => {
+            if (path.startsWith('/')) {
+                return window.BASE_URL + path.substring(1);
+            }
+            return path;
+        };
+        
+        // API base URL - simplified for debugging
+        window.API_BASE = '/api';
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/blueprints/sample/static/js/sample.js"></script>
+</body>
+</html>

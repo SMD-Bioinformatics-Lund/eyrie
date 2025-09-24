@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eyrie Sample Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/shared/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <script>
+        // Dynamic base URL detection for subdirectory support
+        window.BASE_URL = (() => {
+            const path = window.location.pathname;
+            const pathParts = path.split('/').filter(part => part);
+            
+            // Find where our app starts (look for known routes)
+            const appRoutes = ['samples', 'sample', 'admin', 'login'];
+            let baseIndex = -1;
+            
+            for (let i = 0; i < pathParts.length; i++) {
+                if (appRoutes.includes(pathParts[i])) {
+                    baseIndex = i;
+                    break;
+                }
+            }
+            
+            if (baseIndex > 0) {
+                // We're in a subdirectory
+                return '/' + pathParts.slice(0, baseIndex).join('/') + '/';
+            } else {
+                // We're at the root
+                return '/';
+            }
+        })();
+        
+        // Helper function to resolve relative URLs
+        window.resolveUrl = (path) => {
+            if (path.startsWith('/')) {
+                return window.BASE_URL + path.substring(1);
+            }
+            return path;
+        };
+        
+        // API base URL
+        window.API_BASE = window.resolveUrl('api');
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

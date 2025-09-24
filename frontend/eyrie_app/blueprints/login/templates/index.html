@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Eyrie Sample Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/shared/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0">
+                            <i class="bi bi-dna me-2"></i>Eyrie Sample Manager
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input type="text" class="form-control" id="username" required autofocus>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input type="password" class="form-control" id="password" required>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                                </button>
+                            </div>
+                        </form>
+                        <div id="loginMessage" class="mt-3"></div>
+                    </div>
+                    <div class="card-footer text-center text-muted">
+                        <small>Default admin credentials: admin / admin</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dynamic base URL detection
+        window.BASE_URL = (() => {
+            const path = window.location.pathname;
+            const pathParts = path.split('/').filter(part => part);
+            const appRoutes = ['samples', 'sample', 'admin', 'login'];
+            let baseIndex = -1;
+            
+            for (let i = 0; i < pathParts.length; i++) {
+                if (appRoutes.includes(pathParts[i])) {
+                    baseIndex = i;
+                    break;
+                }
+            }
+            
+            if (baseIndex > 0) {
+                return '/' + pathParts.slice(0, baseIndex).join('/') + '/';
+            } else {
+                return '/';
+            }
+        })();
+        
+        window.resolveUrl = (path) => {
+            if (path.startsWith('/')) {
+                return window.BASE_URL + path.substring(1);
+            }
+            return path;
+        };
+        
+        window.API_BASE = '/api';
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const messageDiv = document.getElementById('loginMessage');
+            
+            // Clear previous messages and show loading
+            messageDiv.innerHTML = '<div class="alert alert-info">Logging in...</div>';
+            
+            try {
+                console.log('Attempting login with:', { username, password: '***' });
+                console.log('API URL:', `${window.API_BASE}/auth/login`);
+                
+                const response = await fetch(`${window.API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    }),
+                    credentials: 'include'
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                let result;
+                try {
+                    result = await response.json();
+                    console.log('Response data:', result);
+                } catch (jsonError) {
+                    console.error('Failed to parse JSON response:', jsonError);
+                    messageDiv.innerHTML = `<div class="alert alert-danger">Server error: Invalid response format. Status: ${response.status}</div>`;
+                    return;
+                }
+                
+                if (response.ok) {
+                    messageDiv.innerHTML = '<div class="alert alert-success">Login successful! Redirecting...</div>';
+                    setTimeout(() => {
+                        window.location.href = '/samples';
+                    }, 1000);
+                } else {
+                    const errorMessage = result.error || `Login failed with status ${response.status}`;
+                    console.error('Login failed:', errorMessage);
+                    messageDiv.innerHTML = `<div class="alert alert-danger">${errorMessage}</div>`;
+                }
+            } catch (error) {
+                console.error('Network error during login:', error);
+                messageDiv.innerHTML = `<div class="alert alert-danger">Network error: ${error.message}. Check if the server is running and accessible.</div>`;
+            }
+        });
+        
+        // Check if already logged in
+        fetch(`${window.API_BASE}/auth/current-user`, {
+            credentials: 'include'
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/samples';
+            }
+        })
+        .catch(() => {
+            // User not logged in, stay on login page
+        });
+    </script>
+</body>
+</html>
