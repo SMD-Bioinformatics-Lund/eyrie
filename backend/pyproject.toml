@@ -54,7 +54,7 @@ Issues = "https://github.com/clinicalgenomicslund/eyrie/issues"
 Documentation = "https://docs.claude.com/en/docs/claude-code"
 
 [project.scripts]
-eyrie-api = "eyrie_api.app:main"
+eyrie-api = "eyrie_api.main:app"
 
 [tool.setuptools.packages.find]
 where = ["."]
