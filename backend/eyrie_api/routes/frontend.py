@@ -14,7 +14,7 @@ async def serve_data_file(file_path: str):
 @router.get("/health")
 async def health_check():
     try:
-        from database.connection import db
+        from eyrie_api.database.connection import db
         db.samples.count_documents({})
         return {'status': 'healthy'}
     except Exception as e:

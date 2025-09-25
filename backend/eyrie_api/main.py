@@ -2,12 +2,12 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 
-from config.settings import (
+from eyrie_api.config.settings import (
     APP_TITLE, APP_HOST, APP_PORT,
     CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS
 )
-from database.connection import init_default_user
-from routes import auth, admin, samples, frontend
+from eyrie_api.database.connection import init_default_user
+from eyrie_api.routes import admin, samples, frontend
 
 app = FastAPI(title=APP_TITLE)
 
@@ -24,14 +24,13 @@ app.add_middleware(
 init_default_user()
 
 # Include routers
-app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(samples.router)
 app.include_router(frontend.router)
 
 # Mount static file directories
-app.mount("/shared/static", StaticFiles(directory="frontend/shared/static"), name="shared_static")
-app.mount("/blueprints", StaticFiles(directory="frontend/blueprints"), name="blueprints")
+# app.mount("/shared/static", StaticFiles(directory="frontend/shared/static"), name="shared_static")
+# app.mount("/blueprints", StaticFiles(directory="frontend/blueprints"), name="blueprints")
 
 if __name__ == "__main__":
     import uvicorn

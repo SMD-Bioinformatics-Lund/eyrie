@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
-from models.samples import QCUpdate, CommentUpdate
-from database.sample_operations import get_all_samples, find_sample, update_sample_qc, update_sample_comment
-from utils.json_encoder import JSONEncoder
+from eyrie_api.models.samples import QCUpdate, CommentUpdate
+from eyrie_api.database.sample_operations import get_all_samples, find_sample, update_sample_qc, update_sample_comment
+from eyrie_api.utils.json_encoder import JSONEncoder
 import json
 
 router = APIRouter(prefix="/api/samples", tags=["samples"])
