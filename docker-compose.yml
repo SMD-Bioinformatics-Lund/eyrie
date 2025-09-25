@@ -12,9 +12,6 @@ services:
     volumes:
       - mongodb_data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    networks:
-      - eyrie_network
-
   eyrie-backend:
     build:
       context: ./backend
@@ -26,13 +23,11 @@ services:
       MONGO_URI: mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie
       ENVIRONMENT: production
     ports:
-      - "5000:5000"
+      - "8000:5000"
     depends_on:
       - mongodb
     volumes:
       - ./data:/app/data:ro
-    networks:
-      - eyrie_network
 
   eyrie-frontend:
     build:
@@ -50,16 +45,6 @@ services:
       - eyrie-backend
     volumes:
       - ./data:/app/data:ro
-    networks:
-      - eyrie_network
 
 volumes:
   mongodb_data:
-
-networks:
-  eyrie_network:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.0.20.0/24
