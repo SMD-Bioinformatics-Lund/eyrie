@@ -1,0 +1,10 @@
+family	order	class	phylum	superkingdom	barcode01_filtered.fastq	barcode02_filtered.fastq
+Bacillaceae	Bacillales	Bacilli	Firmicutes	Bacteria	6.999999999999999	6.999999999999999
+Deinococcaceae	Deinococcales	Deinococci	Deinococcus-Thermus	Bacteria	2.0	2.0
+Enterobacteriaceae	Enterobacterales	Gammaproteobacteria	Proteobacteria	Bacteria	1.0	1.0
+Enterococcaceae	Lactobacillales	Bacilli	Firmicutes	Bacteria	2.0	2.0
+Lactobacillaceae	Lactobacillales	Bacilli	Firmicutes	Bacteria	1.0	1.0
+Rhodobacteraceae	Rhodobacterales	Alphaproteobacteria	Proteobacteria	Bacteria	1.0	1.0
+Staphylococcaceae	Bacillales	Bacilli	Firmicutes	Bacteria	3.0	3.0
+Streptococcaceae	Lactobacillales	Bacilli	Firmicutes	Bacteria	10.0	10.0
+					0.0	0.0

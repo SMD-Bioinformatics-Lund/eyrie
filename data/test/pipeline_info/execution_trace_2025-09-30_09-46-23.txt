@@ -1,0 +1,3 @@
+task_id	hash	native_id	name	status	exit	submit	duration	realtime	%cpu	peak_rss	peak_vmem	rchar	wchar
+1	c8/5430eb	4595203	PIPELINE_INITIALISATION:MERGE_BARCODES	COMPLETED	0	2025-09-30 09:46:30.189	3.9s	0ms	38.0%	1.5 MB	22.1 MB	479.3 KB	417.6 KB
+2	64/72ec52	4595204	PIPELINE_INITIALISATION:GENERATE_INPUT	ABORTED	-	2025-09-30 09:46:34.239	-	-	-	-	-	-	-

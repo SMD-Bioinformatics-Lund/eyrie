@@ -1,0 +1,5 @@
+Sample	Mean read length_fastq	Mean read quality_fastq	Median read length_fastq	Median read quality_fastq	Number of reads_fastq	Read length N50_fastq	STDEV read length_fastq	Total bases_fastq	>Q10_fastq	>Q15_fastq	>Q20_fastq	>Q25_fastq	>Q30_fastq
+barcode01_nanoplot_processed	1561.9	12.9	1599.0	12.8	27.0	1599.0	79.4	42170.0	27.0	1.0	0.0	0.0	0.0
+barcode01_nanoplot_unprocessed	1153.9	10.8	1119.5	10.8	200.0	1461.0	424.8	230784.0	146.0	1.0	0.0	0.0	0.0
+barcode02_nanoplot_processed	1561.9	12.9	1599.0	12.8	27.0	1599.0	79.4	42170.0	27.0	1.0	0.0	0.0	0.0
+barcode02_nanoplot_unprocessed	1153.9	10.8	1119.5	10.8	200.0	1461.0	424.8	230784.0	146.0	1.0	0.0	0.0	0.0

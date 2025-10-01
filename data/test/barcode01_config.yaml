@@ -1,0 +1,64 @@
+# Eyrie POPUP Configuration - Sample barcode01
+# Configuration for processing pipeline outputs and uploading to Eyrie
+
+# Sample information
+sample:
+  sample_id: "barcode01"
+  sample_name: "Sample_BC01"
+  lims_id: "LIMS_BC01_001"
+  barcode: "barcode01"
+  sequencing_run_id: "RUN_2025_09_30"
+  classification_type: "16S"  # or "ITS"
+
+# Base directory containing all analysis outputs
+base_path: "/Users/ryankennedy/Documents/dev/eyrie/data/test"
+
+# Quality control files
+fastqc:
+  enabled: true
+  directory: "fastqc"
+  file: "barcode01_fastqc.html"
+
+# Taxonomic classification plots
+krona:
+  enabled: true
+  directory: "krona"
+  file: "barcode01_krona.html"
+
+# Multi-sample quality report (shared across samples)
+multiqc:
+  enabled: true
+  directory: "multiqc"
+  report_file: "multiqc_report.html"
+
+# Nanopore-specific plots and statistics
+nanoplot:
+  unprocessed:
+    enabled: true
+    directory: "nanoplot_unprocessed"
+    stats_file: "barcode01_nanoplot_unprocessed_NanoStats.txt"
+    html_files:
+      - "barcode01_nanoplot_unprocessed_NanoPlot-report.html"
+      - "barcode01_nanoplot_unprocessed_LengthvsQualityScatterPlot_dot.html"
+      - "barcode01_nanoplot_unprocessed_LengthvsQualityScatterPlot_kde.html"
+      - "barcode01_nanoplot_unprocessed_Non_weightedHistogramReadlength.html"
+      - "barcode01_nanoplot_unprocessed_WeightedHistogramReadlength.html"
+      - "barcode01_nanoplot_unprocessed_Yield_By_Length.html"
+      
+  processed:
+    enabled: true
+    directory: "nanoplot_processed"
+    stats_file: "barcode01_nanoplot_processed_NanoStats.txt"
+    html_files:
+      - "barcode01_nanoplot_processed_NanoPlot-report.html"
+      - "barcode01_nanoplot_processed_LengthvsQualityScatterPlot_dot.html"
+      - "barcode01_nanoplot_processed_LengthvsQualityScatterPlot_kde.html"
+      - "barcode01_nanoplot_processed_Non_weightedHistogramReadlength.html"
+      - "barcode01_nanoplot_processed_WeightedHistogramReadlength.html"
+      - "barcode01_nanoplot_processed_Yield_By_Length.html"
+
+# Analysis results
+results:
+  enabled: true
+  directory: "results"
+  rel_abundance_file: "barcode01_filtered.fastq_rel-abundance.tsv"

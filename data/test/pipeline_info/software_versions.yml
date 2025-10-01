@@ -1,0 +1,28 @@
+ASSIGNMENT_HEATMAP:
+  assignment_heatmap: 0.0.3
+  r-base: 4.3.3
+  r-data.table: 1.17.8
+  r-getopt: 1.20.4
+  r-ggplot2: 3.5.2
+CUSTOM_DUMPSOFTWAREVERSIONS:
+  python: 3.13.1
+  yaml: 6.0.2
+EMU_ABUNDANCE:
+  emu: v3.5.1
+EMU_COMBINE_OUTPUTS:
+  emu: v3.5.1
+FASTQC:
+  fastqc: 0.12.1
+FILTLONG:
+  filtlong: 0.2.1
+KRONA_KTIMPORTTAXONOMY:
+  krona: 2.8.1
+NANOPLOT_PROCESSED_READS:
+  nanoplot: 1.44.1
+NANOPLOT_UNPROCESSED_READS:
+  nanoplot: 1.44.1
+TRANSLATE_TAXIDS:
+  translate_taxids: v0.0.1
+Workflow:
+  Nextflow: 24.04.3
+  genomic-medicine-sweden/TRANA: 0.4.2

@@ -1,0 +1,5 @@
+Sample	Median length	Mean length	Read N50	Median Qual	Mean Qual	# Reads (K)	Total Bases (Mb)
+barcode01_nanoplot_processed	1599.0	1561.9	1599.0	12.8	12.9	0.027	0.04217
+barcode01_nanoplot_unprocessed	1119.5	1153.9	1461.0	10.8	10.8	0.2	0.230784
+barcode02_nanoplot_processed	1599.0	1561.9	1599.0	12.8	12.9	0.027	0.04217
+barcode02_nanoplot_unprocessed	1119.5	1153.9	1461.0	10.8	10.8	0.2	0.230784

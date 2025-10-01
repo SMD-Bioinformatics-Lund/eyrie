@@ -1,0 +1,176 @@
+<!--
+  ~ Copyright 2013-2024, Seqera Labs
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<html>
+<head>
+<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1">
+</head>
+<body>
+<pre class="mermaid" style="text-align: center;">
+flowchart TB
+    subgraph " "
+    v1["fastq_pass"]
+    v49["taxonomy"]
+    v75["Channel.fromPath"]
+    v78["ch_workflow_summary"]
+    v81["ch_methods_description"]
+    v90["replace_names"]
+    v91["sample_names"]
+    end
+    subgraph PIPELINE_INITIALISATION
+    v2([MERGE_BARCODES])
+    v6([GENERATE_INPUT])
+    v5(( ))
+    v9(( ))
+    end
+    subgraph " "
+    v3[" "]
+    v4[" "]
+    v8["versions"]
+    v16[" "]
+    v22[" "]
+    v23[" "]
+    v24[" "]
+    v31[" "]
+    v37[" "]
+    v38[" "]
+    v39[" "]
+    v44[" "]
+    v45[" "]
+    v46[" "]
+    v47[" "]
+    v51[" "]
+    v55[" "]
+    v58[" "]
+    v59[" "]
+    v66[" "]
+    v67[" "]
+    v68[" "]
+    v73[" "]
+    v74[" "]
+    v93[" "]
+    v94[" "]
+    v95[" "]
+    v97["multiqc_report"]
+    v101["master_html"]
+    v103["versions"]
+    end
+    subgraph GMS_TRANA
+    subgraph TRANA
+    v15([FASTQC])
+    v21([NANOPLOT_UNPROCESSED_READS])
+    v29([FILTLONG])
+    v36([NANOPLOT_PROCESSED_READS])
+    v43([EMU_ABUNDANCE])
+    v50([KRONA_KTIMPORTTAXONOMY])
+    v54([TRANSLATE_TAXIDS])
+    v57([ASSIGNMENT_HEATMAP])
+    v65([EMU_COMBINE_OUTPUTS])
+    v72([CUSTOM_DUMPSOFTWAREVERSIONS])
+    v92([MULTIQC])
+    v100([GENERATE_MASTER_HTML])
+    v17(( ))
+    v20(( ))
+    v30(( ))
+    v63(( ))
+    v87(( ))
+    v88(( ))
+    v89(( ))
+    v96(( ))
+    end
+    end
+    v1 --> v2
+    v2 --> v4
+    v2 --> v6
+    v2 --> v3
+    v2 --> v5
+    v6 --> v100
+    v6 --> v5
+    v6 --> v9
+    v5 --> v8
+    v9 --> v15
+    v15 --> v16
+    v15 --> v17
+    v15 --> v20
+    v9 --> v21
+    v21 --> v24
+    v21 --> v23
+    v21 --> v22
+    v21 --> v17
+    v21 --> v20
+    v9 --> v29
+    v29 --> v17
+    v29 --> v20
+    v29 --> v30
+    v30 --> v31
+    v30 --> v36
+    v36 --> v39
+    v36 --> v38
+    v36 --> v37
+    v36 --> v17
+    v36 --> v20
+    v30 --> v43
+    v43 --> v50
+    v43 --> v54
+    v43 --> v47
+    v43 --> v46
+    v43 --> v45
+    v43 --> v44
+    v43 --> v20
+    v43 --> v63
+    v49 --> v50
+    v50 --> v51
+    v50 --> v20
+    v54 --> v57
+    v54 --> v55
+    v54 --> v20
+    v57 --> v59
+    v57 --> v58
+    v57 --> v20
+    v63 --> v65
+    v65 --> v68
+    v65 --> v67
+    v65 --> v66
+    v65 --> v20
+    v20 --> v72
+    v72 --> v74
+    v72 --> v73
+    v72 --> v17
+    v75 --> v87
+    v78 --> v17
+    v81 --> v17
+    v90 --> v92
+    v91 --> v92
+    v17 --> v92
+    v87 --> v92
+    v88 --> v92
+    v89 --> v92
+    v92 --> v95
+    v92 --> v94
+    v92 --> v93
+    v92 --> v96
+    v96 --> v97
+    v9 --> v100
+    v100 --> v101
+    v100 --> v20
+    v20 --> v103
+
+</pre>
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true });
+</script>
+</body>
+</html>
