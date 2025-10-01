@@ -236,11 +236,15 @@ def register_blueprints(app):
     from .blueprints.sample.views import bp as sample_bp
     from .blueprints.admin.views import bp as admin_bp
     from .blueprints.login.views import bp as login_bp
+    from .blueprints.classification.views import bp as classification_bp
+    from .blueprints.nanoplot.views import bp as nanoplot_bp
 
     app.register_blueprint(samples_bp)
     app.register_blueprint(sample_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(login_bp)
+    app.register_blueprint(classification_bp)
+    app.register_blueprint(nanoplot_bp)
 
 def create_app():
     """Create and configure Flask application"""
@@ -505,6 +509,31 @@ def create_app():
                 {
                     '$set': {
                         'comments': comment_data.comments,
+                        'updated_date': datetime.now()
+                    }
+                }
+            )
+
+            if result.matched_count == 0:
+                return jsonify({'error': 'Sample not found'}), 404
+
+            return jsonify({'success': True})
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+    @app.route("/api/samples/<sample_id>/contamination", methods=['PUT'])
+    @api_authentication
+    def update_contamination_flags(sample_id, current_user=None):
+        global db
+        try:
+            data = request.get_json()
+            flagged_species = data.get('flagged_species', [])
+
+            result = db.samples.update_one(
+                {'sample_id': sample_id},
+                {
+                    '$set': {
+                        'flagged_contaminants': flagged_species,
                         'updated_date': datetime.now()
                     }
                 }
