@@ -1,0 +1,3 @@
+Sample	Top overrepresented sequence	Sum of remaining overrepresented sequences
+barcode01	0.5	99.5
+barcode02	0.5	99.5

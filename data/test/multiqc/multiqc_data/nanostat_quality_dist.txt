@@ -1,0 +1,5 @@
+Sample	Reads Q15-20	Reads Q10-15	Reads <Q10
+barcode01_nanoplot_processed	1.0	26.0	0.0
+barcode01_nanoplot_unprocessed	1.0	145.0	54.0
+barcode02_nanoplot_processed	1.0	26.0	0.0
+barcode02_nanoplot_unprocessed	1.0	145.0	54.0

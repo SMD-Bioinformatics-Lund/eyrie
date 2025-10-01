@@ -1,0 +1,7 @@
+Sample	nanostat-nanostat_Median_read_length_fastq	nanostat-nanostat_Read_length_N50_fastq	nanostat-nanostat_Median_read_quality_fastq	nanostat-nanostat_Number_of_reads_fastq	nanostat-nanostat_Total_bases_fastq	fastqc-percent_duplicates	fastqc-percent_gc	fastqc-avg_sequence_length	fastqc-median_sequence_length	fastqc-percent_fails	fastqc-total_sequences
+barcode01						0.0	53.0	1154.67	1124	40.0	0.00019999999999999998
+barcode01_nanoplot_processed	1599.0	1599.0	12.8	0.027	0.04217						
+barcode01_nanoplot_unprocessed	1119.5	1461.0	10.8	0.2	0.230784						
+barcode02						0.0	53.0	1154.67	1124	40.0	0.00019999999999999998
+barcode02_nanoplot_processed	1599.0	1599.0	12.8	0.027	0.04217						
+barcode02_nanoplot_unprocessed	1119.5	1461.0	10.8	0.2	0.230784						

@@ -1,0 +1,3 @@
+sample,fastq_1,fastq_2
+barcode01,/fs1/ryan/16s/work/d7/ab9c79664b6e9ebd451b0fffa5765e/fastq_pass_merged/barcode01.fastq.gz,
+barcode02,/fs1/ryan/16s/work/d7/ab9c79664b6e9ebd451b0fffa5765e/fastq_pass_merged/barcode02.fastq.gz,
