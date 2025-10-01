@@ -7,7 +7,7 @@ from eyrie_api.config.settings import (
     CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS
 )
 from eyrie_api.database.connection import init_default_user
-from eyrie_api.routes import admin, samples, frontend
+from eyrie_api.routes import admin, samples, frontend, auth
 
 app = FastAPI(title=APP_TITLE)
 
@@ -24,6 +24,7 @@ app.add_middleware(
 init_default_user()
 
 # Include routers
+app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(samples.router)
 app.include_router(frontend.router)
