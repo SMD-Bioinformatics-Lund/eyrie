@@ -1,0 +1,95 @@
+# Eyrie POPUP Configuration
+# Example configuration for processing pipeline outputs and uploading to Eyrie
+
+run:
+  id: "RUN_2025_09_30"
+  name: "Example Nanopore Run"
+  date: "2025-09-30"
+  platform: "nanopore"
+  classification_type: "16S"  # or "ITS"
+  description: "Example run with two barcoded samples"
+
+# Base directory containing all analysis outputs
+base_path: "/Users/ryankennedy/Documents/dev/eyrie/data/test"
+
+# Sample information
+samples:
+  - sample_id: "barcode01"
+    sample_name: "Sample_BC01"
+    lims_id: "LIMS_BC01_001"
+    barcode: "barcode01"
+    
+  - sample_id: "barcode02"
+    sample_name: "Sample_BC02"  
+    lims_id: "LIMS_BC02_001"
+    barcode: "barcode02"
+
+# Quality control files
+fastqc:
+  enabled: true
+  directory: "fastqc"
+  pattern: "{sample_id}_fastqc.html"
+
+# Taxonomic classification plots
+krona:
+  enabled: true
+  directory: "krona"
+  pattern: "{sample_id}_krona.html"
+
+# Multi-sample quality report
+multiqc:
+  enabled: true
+  directory: "multiqc"
+  report_file: "multiqc_report.html"
+  standalone: true  # if false, would include plot directories
+
+# Nanopore-specific plots and statistics
+nanoplot:
+  unprocessed:
+    enabled: true
+    directory: "nanoplot_unprocessed"
+    stats_pattern: "{sample_id}_nanoplot_unprocessed_NanoStats.txt"
+    html_files:
+      - "{sample_id}_nanoplot_unprocessed_NanoPlot-report.html"
+      - "{sample_id}_nanoplot_unprocessed_LengthvsQualityScatterPlot_dot.html"
+      - "{sample_id}_nanoplot_unprocessed_LengthvsQualityScatterPlot_kde.html"
+      - "{sample_id}_nanoplot_unprocessed_Non_weightedHistogramReadlength.html"
+      - "{sample_id}_nanoplot_unprocessed_WeightedHistogramReadlength.html"
+      - "{sample_id}_nanoplot_unprocessed_Yield_By_Length.html"
+      
+  processed:
+    enabled: true
+    directory: "nanoplot_processed"
+    stats_pattern: "{sample_id}_nanoplot_processed_NanoStats.txt"
+    html_files:
+      - "{sample_id}_nanoplot_processed_NanoPlot-report.html"
+      - "{sample_id}_nanoplot_processed_LengthvsQualityScatterPlot_dot.html"
+      - "{sample_id}_nanoplot_processed_LengthvsQualityScatterPlot_kde.html"
+      - "{sample_id}_nanoplot_processed_Non_weightedHistogramReadlength.html"
+      - "{sample_id}_nanoplot_processed_WeightedHistogramReadlength.html"
+      - "{sample_id}_nanoplot_processed_Yield_By_Length.html"
+
+# Analysis results
+results:
+  enabled: true
+  directory: "results"
+  rel_abundance_pattern: "{sample_id}_filtered.fastq_rel-abundance.tsv"
+  
+# Contamination detection
+contamination:
+  enabled: true
+  # Species that should be flagged as potential contaminants
+  suspected_contaminants:
+    - "Escherichia coli"
+    - "Staphylococcus aureus"
+    - "Enterococcus faecalis"
+  # Abundance threshold above which to flag as potential contamination
+  abundance_threshold: 0.05  # 5%
+
+# Output settings for Eyrie database
+eyrie:
+  api_base_url: "http://localhost:3000/api"
+  # If authentication is required
+  auth:
+    username: "admin"
+    password: "admin"

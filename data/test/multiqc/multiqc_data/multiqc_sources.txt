@@ -1,0 +1,7 @@
+Module	Section	Sample Name	Source
+NanoStat	all_sections	barcode02_nanoplot_unprocessed	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/8/barcode02_nanoplot_unprocessed_NanoStats.txt
+NanoStat	all_sections	barcode01_nanoplot_processed	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/9/barcode01_nanoplot_processed_NanoStats.txt
+NanoStat	all_sections	barcode01_nanoplot_unprocessed	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/7/barcode01_nanoplot_unprocessed_NanoStats.txt
+NanoStat	all_sections	barcode02_nanoplot_processed	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/10/barcode02_nanoplot_processed_NanoStats.txt
+FastQC	all_sections	barcode02	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/5/barcode02_fastqc.zip
+FastQC	all_sections	barcode01	/fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec/6/barcode01_fastqc.zip
