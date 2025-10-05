@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification - {{ sample_id }} | Eyrie</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/shared/static/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    {% from 'macros/navbar.html' import sample_navbar %}
+    {{ sample_navbar(sample_id, 'classification') }}
+
+    <!-- Main Content -->
+    {% from 'macros/classification.html' import classification_content %}
+    {{ classification_content(sample_id) }}
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Constants
+        const API_BASE = '/api';
+        const SAMPLE_ID = '{{ sample_id }}';
+        
+        // Global variables
+        let currentSample = null;
+        let flaggedContaminants = new Set();
+
+        // Page initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSample();
+            loadCurrentUser();
+        });
+
+        // Update sample title in navbar
+        function updateSampleTitle(sample) {
+            const titleElement = document.getElementById('sampleTitle');
+            if (titleElement) {
+                titleElement.textContent = `${sample.sample_name} (${sample.sample_id})`;
+            }
+        }
+
+        // Load current user for navbar
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/current-user`, {
+                    credentials: 'include'
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    document.getElementById('currentUsername').textContent = user.username;
+                    
+                    // Show/hide admin button based on role
+                    const adminButton = document.querySelector('a[href="/admin"]');
+                    if (user.role !== 'admin') {
+                        adminButton.style.display = 'none';
+                    }
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/login';
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+
+        // Load sample data
+        async function loadSample() {
+            try {
+                const response = await fetch(`${API_BASE}/samples/${SAMPLE_ID}`);
+                const sample = await response.json();
+                
+                if (response.ok) {
+                    currentSample = sample;
+                    updateSampleTitle(sample);
+                    loadClassificationData();
+                } else {
+                    showError('Failed to load sample: ' + sample.error);
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        // Load classification data
+        function loadClassificationData() {
+            if (!currentSample) return;
+            
+            // Load Krona plot
+            if (currentSample.krona_file) {
+                const frame = document.getElementById('classificationKronaFrame');
+                frame.src = `/data/${currentSample.krona_file}`;
+            } else {
+                document.getElementById('classificationKronaFrame').srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
+            }
+            
+            // Load abundance table and summary
+            displaySampleAbundanceTable();
+            updateSampleClassificationSummary();
+        }
+
+        // Display abundance table
+        function displaySampleAbundanceTable() {
+            const tbody = document.getElementById('contaminationTableBody');
+            
+            if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.hits) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="bi bi-exclamation-circle text-warning" style="font-size: 2rem;"></i>
+                                <p class="mt-2">No taxonomic data available</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // Clear existing flagged contaminants for new sample
+            flaggedContaminants.clear();
+            
+            // Add existing flagged contaminants to the set
+            if (currentSample.flagged_contaminants) {
+                currentSample.flagged_contaminants.forEach(species => {
+                    flaggedContaminants.add(species);
+                });
+            }
+
+            // Sort species by abundance (descending)
+            const species = currentSample.taxonomic_data.hits.sort((a, b) => b.abundance - a.abundance);
+            
+            tbody.innerHTML = '';
+            species.forEach((organism, index) => {
+                const row = document.createElement('tr');
+                const isFlagged = flaggedContaminants.has(organism.species);
+                
+                row.innerHTML = `
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div>
+                                <div class="fw-semibold">${organism.species}</div>
+                                <small class="text-muted">${organism.genus || 'N/A'} - ${organism.family || 'N/A'}</small>
+                                ${isFlagged ? '<i class="bi bi-flag-fill text-danger ms-2" title="Flagged as contaminant"></i>' : ''}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <span class="badge ${getAbundanceBadgeClass(organism.abundance)} me-2">
+                                ${organism.abundance.toFixed(2)}%
+                            </span>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                <div class="progress-bar" style="width: ${Math.min(organism.abundance, 100)}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm ${isFlagged ? 'btn-danger' : 'btn-outline-warning'} flag-btn" 
+                                onclick="toggleContaminationFlag('${organism.species}', this)">
+                            <i class="bi bi-flag${isFlagged ? '-fill' : ''}"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Update classification summary
+        function updateSampleClassificationSummary() {
+            if (!currentSample || !currentSample.taxonomic_data) {
+                document.getElementById('totalSpecies').textContent = '0';
+                document.getElementById('dominantSpecies').textContent = '-';
+                document.getElementById('flaggedContaminants').textContent = '0';
+                document.getElementById('diversityIndex').textContent = '0.00';
+                return;
+            }
+
+            const data = currentSample.taxonomic_data;
+            
+            // Total species
+            document.getElementById('totalSpecies').textContent = data.total_species || 0;
+            
+            // Dominant species
+            if (data.hits && data.hits.length > 0) {
+                const dominant = data.hits.reduce((prev, current) => 
+                    (prev.abundance > current.abundance) ? prev : current
+                );
+                document.getElementById('dominantSpecies').textContent = dominant.species;
+            } else {
+                document.getElementById('dominantSpecies').textContent = '-';
+            }
+
+            // Flagged contaminants
+            document.getElementById('flaggedContaminants').textContent = flaggedContaminants.size;
+            
+            // Calculate Shannon diversity index
+            const diversity = calculateShannonDiversity(data.hits || []);
+            document.getElementById('diversityIndex').textContent = diversity.toFixed(2);
+        }
+
+        // Calculate Shannon diversity index
+        function calculateShannonDiversity(species) {
+            if (!species || species.length === 0) return 0;
+            
+            const totalAbundance = species.reduce((sum, sp) => sum + sp.abundance, 0);
+            if (totalAbundance === 0) return 0;
+            
+            let diversity = 0;
+            species.forEach(sp => {
+                if (sp.abundance > 0) {
+                    const proportion = sp.abundance / totalAbundance;
+                    diversity -= proportion * Math.log(proportion);
+                }
+            });
+            
+            return diversity;
+        }
+
+        // Get abundance badge class for styling
+        function getAbundanceBadgeClass(abundance) {
+            if (abundance >= 10) return 'bg-success';
+            if (abundance >= 5) return 'bg-warning';
+            if (abundance >= 1) return 'bg-info';
+            return 'bg-secondary';
+        }
+
+        // Toggle contamination flag
+        function toggleContaminationFlag(species, button) {
+            if (flaggedContaminants.has(species)) {
+                flaggedContaminants.delete(species);
+                button.className = 'btn btn-sm btn-outline-warning flag-btn';
+                button.innerHTML = '<i class="bi bi-flag"></i>';
+            } else {
+                flaggedContaminants.add(species);
+                button.className = 'btn btn-sm btn-danger flag-btn';
+                button.innerHTML = '<i class="bi bi-flag-fill"></i>';
+            }
+            updateSampleClassificationSummary();
+            saveContaminationFlags();
+        }
+
+        // Save contamination flags
+        async function saveContaminationFlags() {
+            try {
+                currentSample.flagged_contaminants = Array.from(flaggedContaminants);
+                
+                const response = await fetch(`${API_BASE}/samples/${SAMPLE_ID}/contamination`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ flagged_species: Array.from(flaggedContaminants) })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to save contamination flags');
+                }
+            } catch (error) {
+                // Error handling could be added here if needed
+            }
+        }
+
+        // Export CSV functionality
+        document.getElementById('exportCsvBtn').addEventListener('click', function() {
+            if (!currentSample || !currentSample.taxonomic_data) {
+                alert('No data available for export');
+                return;
+            }
+
+            const data = currentSample.taxonomic_data.hits || [];
+            const csvContent = "data:text/csv;charset=utf-8," 
+                + "Species,Genus,Family,Abundance,Flagged\n"
+                + data.map(sp => 
+                    `"${sp.species}","${sp.genus || 'N/A'}","${sp.family || 'N/A'}",${sp.abundance},${flaggedContaminants.has(sp.species) ? 'Yes' : 'No'}`
+                ).join('\n');
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', `${SAMPLE_ID}_taxonomic_classification.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Error handling
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+    </script>
+</body>
+</html>
