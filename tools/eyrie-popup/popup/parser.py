@@ -1,14 +1,16 @@
 """Parser module for extracting data from analysis files."""
 
-import os
 import re
 import csv
 from pathlib import Path
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Optional
 
 from .models import (
-    SampleConfig, SampleData, NanoStats, TaxonomicAbundance,
-    ParsedSample, SampleInfo
+    SampleConfig,
+    SampleData,
+    NanoStats,
+    TaxonomicAbundance,
+    ParsedSample
 )
 
 
@@ -18,6 +20,9 @@ class SampleParser:
     def __init__(self, config: SampleConfig):
         self.config = config
         self.base_path = Path(config.base_path)
+        # Create sequencing run path by combining base_path and run_directory
+        run_dir = config.run_directory or config.sample.sequencing_run_id
+        self.seqrun_path = self.base_path / run_dir
 
     def parse_sample(self) -> ParsedSample:
         """Parse the sample analysis data."""
@@ -81,9 +86,9 @@ class SampleParser:
 
     def _find_file(self, directory: str, filename: str) -> Optional[str]:
         """Find a file based on directory and filename."""
-        file_path = self.base_path / directory / filename
+        file_path = self.seqrun_path / directory / filename
         if file_path.exists():
-            return str(file_path.relative_to(self.base_path))
+            return str(file_path.relative_to(self.seqrun_path))
         return None
 
     def _parse_nanoplot_stage(self, stage_config) -> Dict[str, str]:
@@ -91,15 +96,15 @@ class SampleParser:
         html_files = {}
 
         for html_file in stage_config.html_files:
-            file_path = self.base_path / stage_config.directory / html_file
+            file_path = self.seqrun_path / stage_config.directory / html_file
             if file_path.exists():
-                html_files[html_file] = str(file_path.relative_to(self.base_path))
+                html_files[html_file] = str(file_path.relative_to(self.seqrun_path))
 
         return html_files
 
     def _parse_nano_stats(self, directory: str, filename: str) -> Optional[NanoStats]:
         """Parse NanoStats.txt file."""
-        stats_file = self.base_path / directory / filename
+        stats_file = self.seqrun_path / directory / filename
 
         if not stats_file.exists():
             return None
@@ -156,7 +161,7 @@ class SampleParser:
         if not self.config.results:
             return []
 
-        abundance_file = self.base_path / self.config.results.directory / self.config.results.rel_abundance_file
+        abundance_file = self.seqrun_path / self.config.results.directory / self.config.results.rel_abundance_file
 
         if not abundance_file.exists():
             return []
@@ -210,8 +215,8 @@ class SampleParser:
             ]:
                 if stage_config and stage_config.enabled:
                     for html_file in stage_config.html_files:
-                        file_path = self.base_path / stage_config.directory / html_file
+                        file_path = self.seqrun_path / stage_config.directory / html_file
                         if file_path.exists():
-                            pipeline_files.append(str(file_path.relative_to(self.base_path)))
+                            pipeline_files.append(str(file_path.relative_to(self.seqrun_path)))
 
         return pipeline_files

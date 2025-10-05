@@ -13,7 +13,7 @@ A Python tool for processing pipeline outputs and uploading sequencing analysis 
 ## Installation
 
 ```bash
-cd tools/eyrie_popup
+cd tools/eyrie-popup
 pip install -e .
 ```
 
@@ -21,24 +21,24 @@ pip install -e .
 
 ### Generate Configuration
 
-Auto-generate a configuration file by scanning an analysis directory:
+Auto-generate a configuration file for a sample:
 
 ```bash
-eyrie-popup generate-config /path/to/analysis/results --output config.yaml
+popup generate-config /path/to/analysis/results sample_id --output config.yaml
 ```
 
-### Parse and Upload
+### Upload Sample
 
 Parse analysis results and upload to Eyrie:
 
 ```bash
-eyrie-popup parse config.yaml
+popup upload --sample config.yaml --api http://localhost:8000/api --username admin --password admin
 ```
 
 Use `--dry-run` to parse without uploading:
 
 ```bash
-eyrie-popup parse config.yaml --dry-run --verbose
+popup upload --sample config.yaml --dry-run --verbose
 ```
 
 ### Test Connection
@@ -46,7 +46,7 @@ eyrie-popup parse config.yaml --dry-run --verbose
 Test connection to Eyrie API:
 
 ```bash
-eyrie-popup test-connection --api-url http://localhost:3000/api
+popup test-connection --api http://localhost:8000/api --username admin --password admin
 ```
 
 ## Configuration Format
@@ -54,32 +54,55 @@ eyrie-popup test-connection --api-url http://localhost:3000/api
 The YAML configuration file describes the analysis run structure:
 
 ```yaml
-run:
-  id: "RUN_2025_09_30"
-  name: "Example Nanopore Run"
-  date: "2025-09-30"
-  platform: "nanopore"
-  classification_type: "16S"
+# Sample information
+sample:
+  sample_id: "barcode01"
+  sample_name: "Sample_BC01"
+  lims_id: "LIMS_BC01_001"
+  barcode: "barcode01"
+  sequencing_run_id: "RUN_2025_09_30"
+  classification_type: "16S"  # or "ITS"
 
+# Base directory containing all analysis outputs
 base_path: "/path/to/analysis/results"
 
-samples:
-  - sample_id: "barcode01"
-    sample_name: "Sample_BC01"
-    lims_id: "LIMS_BC01_001"
-    barcode: "barcode01"
+# Run directory name for file paths (defaults to sequencing_run_id if not specified)
+run_directory: "test"
 
+# Quality control files
 fastqc:
   enabled: true
   directory: "fastqc"
-  pattern: "{sample_id}_fastqc.html"
+  file: "barcode01_fastqc.html"
 
+# Taxonomic classification plots
 krona:
   enabled: true
   directory: "krona"
-  pattern: "{sample_id}_krona.html"
+  file: "barcode01_krona.html"
 
-# ... additional configuration sections
+# Nanopore-specific plots and statistics
+nanoplot:
+  unprocessed:
+    enabled: true
+    directory: "nanoplot_unprocessed"
+    stats_file: "barcode01_nanoplot_unprocessed_NanoStats.txt"
+    html_files:
+      - "barcode01_nanoplot_unprocessed_NanoPlot-report.html"
+      # ... additional HTML files
+  processed:
+    enabled: true
+    directory: "nanoplot_processed" 
+    stats_file: "barcode01_nanoplot_processed_NanoStats.txt"
+    html_files:
+      - "barcode01_nanoplot_processed_NanoPlot-report.html"
+      # ... additional HTML files
+
+# Analysis results
+results:
+  enabled: true
+  directory: "results"
+  rel_abundance_file: "barcode01_filtered.fastq_rel-abundance.tsv"
 ```
 
 ## Supported File Types
@@ -117,12 +140,3 @@ Install development dependencies:
 pip install -e ".[dev]"
 ```
 
-Run tests:
-
-```bash
-pytest
-```
-
-## License
-
-MIT License - see LICENSE file for details.
