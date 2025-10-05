@@ -9,44 +9,8 @@
     <link href="/shared/static/css/styles.css" rel="stylesheet">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-0">
-        <div class="container-fluid">
-            <a href="/samples" class="navbar-brand mb-0 h1">
-                <i class="bi bi-arrow-left me-2"></i>Back to Samples
-            </a>
-            <span class="navbar-text me-3" id="sampleTitle">
-                Loading sample...
-            </span>
-            
-            <div class="navbar-nav me-auto">
-                <a class="nav-link active" href="#" onclick="showView('overview')" id="overviewLink">
-                    <i class="bi bi-table me-2"></i>Overview
-                </a>
-                <a class="nav-link" href="#" onclick="showView('classification')" id="classificationLink">
-                    <i class="bi bi-pie-chart me-2"></i>Classification
-                </a>
-                <a class="nav-link" href="#" onclick="showView('nanoplot')" id="nanoplotLink">
-                    <i class="bi bi-graph-up me-2"></i>Nanoplot
-                </a>
-            </div>
-            
-            <div class="d-flex align-items-center">
-                <a href="/admin" class="btn btn-outline-light me-3">
-                    <i class="bi bi-gear me-2"></i>Admin
-                </a>
-                <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-2"></i><span id="currentUsername">Loading...</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button class="dropdown-item" onclick="logout()">
-                            <i class="bi bi-box-arrow-right me-2"></i>Logout
-                        </button></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+    {% from 'macros/navbar.html' import sample_navbar %}
+    {{ sample_navbar(sample_id, 'overview') }}
 
     <div class="container-fluid sample-detail-container mt-4">
         <!-- Overview View -->
