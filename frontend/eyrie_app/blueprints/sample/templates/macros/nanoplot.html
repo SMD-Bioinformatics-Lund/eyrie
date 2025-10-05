@@ -1,0 +1,138 @@
+{% macro nanoplot_content(sample_id) %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title mb-4">
+                        <i class="bi bi-graph-up-arrow text-success"></i>
+                        NanoPlot Quality Analysis
+                        <span id="sampleIdBadge" class="badge bg-secondary ms-2">{{ sample_id }}</span>
+                    </h2>
+                    
+                    <!-- NanoPlot Navigation -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="btn-group w-100" role="group">
+                                        <input type="radio" class="btn-check" name="nanoplotType" id="unprocessedRadio" checked>
+                                        <label class="btn btn-outline-primary" for="unprocessedRadio">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                            Unprocessed
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="nanoplotType" id="processedRadio">
+                                        <label class="btn btn-outline-primary" for="processedRadio">
+                                            <i class="bi bi-file-earmark-check"></i>
+                                            Processed
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NanoPlot Views -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">
+                                            <span id="nanoplotTitle">Unprocessed Quality Plots</span>
+                                        </h5>
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showNanoplot('main')">
+                                                Main Report
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showNanoplot('scatter')">
+                                                Length vs Quality
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showNanoplot('histogram')">
+                                                Length Histogram
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="showNanoplot('yield')">
+                                                Yield by Length
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div id="nanoplotContainer" class="w-100" style="min-height: 700px;">
+                                        <iframe id="nanoplotFrame" 
+                                                width="100%" 
+                                                height="700" 
+                                                frameborder="0">
+                                        </iframe>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- NanoStats Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-bar-chart"></i>
+                                        <span id="nanoStatsTitle">Unprocessed Statistics</span>
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row" id="nanoStatsContent">
+                                        <div class="col-6 mb-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value" id="nanoReads">--</div>
+                                                <div class="metric-label">Total Reads</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value" id="nanoMeanLength">--</div>
+                                                <div class="metric-label">Mean Length</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value" id="nanoMeanQuality">--</div>
+                                                <div class="metric-label">Mean Quality</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 mb-3">
+                                            <div class="metric-card">
+                                                <div class="metric-value" id="nanoN50">--</div>
+                                                <div class="metric-label">Read Length N50</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-pie-chart-fill"></i>
+                                        Quality Distribution
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="qualityDistribution">
+                                        <div class="text-center text-muted py-4">
+                                            <i class="bi bi-graph-up" style="font-size: 2rem;"></i>
+                                            <p class="mt-2">Quality distribution chart</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

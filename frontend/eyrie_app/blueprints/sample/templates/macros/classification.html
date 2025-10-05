@@ -1,0 +1,110 @@
+{% macro classification_content(sample_id) %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Krona Plot - Left Side -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-pie-chart me-2"></i>Taxonomic Classification (Krona Plot)
+                    </h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-light btn-sm">
+                            <i class="bi bi-download"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="classificationKronaContainer" class="w-100" style="height: 600px;">
+                        <iframe id="classificationKronaFrame" 
+                                style="width: 100%; height: 600px; border: none;"
+                                src="about:blank">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Species Abundance Table - Right Side -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-list-ol me-2"></i>Species Abundance
+                    </h5>
+                    <button type="button" class="btn btn-outline-dark btn-sm" id="exportCsvBtn">
+                        <i class="bi bi-file-earmark-spreadsheet"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive" style="max-height: 600px;">
+                        <table class="table table-hover mb-0" id="contaminationTable">
+                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th>Species</th>
+                                    <th>Abundance</th>
+                                    <th>Flag</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contaminationTableBody">
+                                <tr>
+                                    <td colspan="3" class="text-center py-4">
+                                        <div class="text-muted">
+                                            <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
+                                            <p class="mt-2">No abundance data available</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Classification Summary - Bottom -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-bar-chart me-2"></i>Classification Summary
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-primary mb-1" id="totalSpecies">0</div>
+                                <small class="text-muted">Total Species</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-success mb-1" id="dominantSpecies">-</div>
+                                <small class="text-muted">Dominant Species</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-warning mb-1" id="flaggedContaminants">0</div>
+                                <small class="text-muted">Flagged Contaminants</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center">
+                                <div class="h4 text-danger mb-1" id="diversityIndex">0.00</div>
+                                <small class="text-muted">Shannon Diversity</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
