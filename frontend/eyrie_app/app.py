@@ -236,15 +236,11 @@ def register_blueprints(app):
     from .blueprints.sample.views import bp as sample_bp
     from .blueprints.admin.views import bp as admin_bp
     from .blueprints.login.views import bp as login_bp
-    from .blueprints.classification.views import bp as classification_bp
-    from .blueprints.nanoplot.views import bp as nanoplot_bp
 
     app.register_blueprint(samples_bp)
     app.register_blueprint(sample_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(login_bp)
-    app.register_blueprint(classification_bp)
-    app.register_blueprint(nanoplot_bp)
 
 def create_app():
     """Create and configure Flask application"""
