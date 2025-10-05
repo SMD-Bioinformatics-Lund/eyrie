@@ -11,7 +11,10 @@ sample:
   classification_type: "16S"  # or "ITS"
 
 # Base directory containing all analysis outputs
-base_path: "/Users/ryankennedy/Documents/dev/eyrie/data/test"
+base_path: "/Users/ryankennedy/Documents/dev/eyrie/data"
+
+# Run directory name for file paths (defaults to sequencing_run_id if not specified)
+run_directory: "test"
 
 # Quality control files
 fastqc:
