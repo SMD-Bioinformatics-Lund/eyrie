@@ -1,6 +1,6 @@
 """Pydantic models for Eyrie POPUP (Pipeline Output Processor and UPloader)."""
 
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from pydantic import BaseModel, Field
 from datetime import datetime
 
@@ -61,6 +61,7 @@ class SampleConfig(BaseModel):
     """Complete sample configuration."""
     sample: SampleInfo
     base_path: str
+    run_directory: Optional[str] = None
     fastqc: Optional[FastQCConfig] = None
     krona: Optional[KronaConfig] = None
     multiqc: Optional[MultiQCConfig] = None

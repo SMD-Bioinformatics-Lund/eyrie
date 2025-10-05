@@ -1,10 +1,10 @@
 """API client for communicating with Eyrie database."""
 
 import requests
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from datetime import datetime
 
-from .models import ParsedSample, SampleData
+from .models import ParsedSample, SampleData, SampleConfig
 
 
 class EyrieAPIClient:
@@ -51,19 +51,19 @@ class EyrieAPIClient:
             print(f"✗ Authentication error: {e}")
             return False
 
-    def upload_sample(self, parsed_sample: ParsedSample) -> bool:
+    def upload_sample(self, parsed_sample: ParsedSample, config: SampleConfig) -> bool:
         """Upload a single sample to Eyrie."""
         if not self._authenticated and (self.username and self.password):
             if not self.authenticate():
                 return False
 
-        return self._upload_sample(parsed_sample.sample_data)
+        return self._upload_sample(parsed_sample.sample_data, config)
 
-    def _upload_sample(self, sample_data: SampleData) -> bool:
+    def _upload_sample(self, sample_data: SampleData, config: SampleConfig) -> bool:
         """Upload a single sample to Eyrie."""
         try:
             # Prepare sample data for Eyrie API
-            eyrie_sample = self._convert_to_eyrie_format(sample_data)
+            eyrie_sample = self._convert_to_eyrie_format(sample_data, config)
 
             # Check if sample already exists
             existing_sample = self._get_sample(sample_data.sample_info.sample_id)
@@ -105,7 +105,7 @@ class EyrieAPIClient:
         except:
             return None
 
-    def _convert_to_eyrie_format(self, sample_data: SampleData) -> Dict[str, Any]:
+    def _convert_to_eyrie_format(self, sample_data: SampleData, config: SampleConfig) -> Dict[str, Any]:
         """Convert sample data to Eyrie database format."""
         # Determine QC status based on contamination
         qc_status = "unprocessed"
@@ -118,7 +118,6 @@ class EyrieAPIClient:
         ]
 
         if contaminants:
-            qc_status = "failed"
             contaminant_names = [taxa.species for taxa in contaminants]
             comments.append(f"Potential contamination detected: {', '.join(contaminant_names)}")
 
@@ -147,7 +146,7 @@ class EyrieAPIClient:
         taxonomic_summary = {
             "total_species": len(sample_data.taxonomic_abundances),
             "contaminants_detected": len(contaminants),
-            "top_species": [
+            "hits": [
                 {
                     "species": taxa.species,
                     "abundance": round(taxa.abundance * 100, 2),  # Convert to percentage
@@ -158,23 +157,26 @@ class EyrieAPIClient:
                     sample_data.taxonomic_abundances, 
                     key=lambda x: x.abundance, 
                     reverse=True
-                )[:10]  # Top 10 species
+                )
             ]
         }
+
+        # Determine run directory - use config run_directory or fallback to sequencing_run_id
+        run_dir = config.run_directory or sample_data.sample_info.sequencing_run_id
 
         return {
             "sample_name": sample_data.sample_info.sample_name,
             "sample_id": sample_data.sample_info.sample_id,
             "sequencing_run_id": sample_data.sample_info.sequencing_run_id,
             "lims_id": sample_data.sample_info.lims_id,
-            "classification": "16S",  # Could be dynamic based on run config
+            "classification": sample_data.sample_info.classification_type,
             "qc": qc_status,
             "comments": "; ".join(comments) if comments else "",
             "created_date": datetime.now().isoformat(),
             "updated_date": datetime.now().isoformat(),
-            "krona_file": f"test/{sample_data.krona_file}" if sample_data.krona_file else None,
-            "quality_plot": f"test/{sample_data.fastqc_file}" if sample_data.fastqc_file else None,
-            "pipeline_files": [f"test/{pf}" for pf in sample_data.pipeline_files],
+            "krona_file": f"{run_dir}/{sample_data.krona_file}" if sample_data.krona_file else None,
+            "quality_plot": f"{run_dir}/{sample_data.fastqc_file}" if sample_data.fastqc_file else None,
+            "pipeline_files": [f"{run_dir}/{pf}" for pf in sample_data.pipeline_files],
             "statistics": statistics,
             "taxonomic_data": taxonomic_summary,
             "nano_stats_processed": sample_data.nano_stats_processed.dict() if sample_data.nano_stats_processed else None,

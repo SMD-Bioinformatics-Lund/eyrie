@@ -88,7 +88,7 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
             return
 
         # Upload the sample
-        if api_client.upload_sample(parsed_sample):
+        if api_client.upload_sample(parsed_sample, config):
             click.echo("✅ Successfully uploaded sample to Eyrie!")
         else:
             click.echo("❌ Failed to upload sample")
@@ -108,11 +108,12 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
 @click.option('--sample-name', help='Sample name (default: Sample_{sample_id})')
 @click.option('--lims-id', help='LIMS identifier (default: LIMS_{sample_id})')
 @click.option('--run-id', help='Sequencing run identifier')
+@click.option('--run-dir', help='Run directory name (default: auto-detect from path or use run-id)')
 @click.option('--classification', type=click.Choice(['16S', 'ITS']), default='16S',
               help='Classification type')
 def generate_config(base_path: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
-                   run_id: Optional[str], classification: str):
+                   run_id: Optional[str], run_dir: Optional[str], classification: str):
     """Generate a YAML configuration file for a single sample."""
 
     click.echo(f"🔍 Generating config for sample: {sample_id}")
@@ -129,6 +130,16 @@ def generate_config(base_path: Path, sample_id: str, output: Optional[Path],
         from datetime import datetime
         run_id = f"RUN_{datetime.now().strftime('%Y_%m_%d')}"
 
+    # Determine run directory
+    if not run_dir:
+        # Try to auto-detect from base path
+        base_path_name = base_path.name
+        if base_path_name and base_path_name != ".":
+            run_dir = base_path_name
+        else:
+            # Fallback to run_id
+            run_dir = run_id
+
     # Create configuration
     config = {
         "sample": {
@@ -140,6 +151,7 @@ def generate_config(base_path: Path, sample_id: str, output: Optional[Path],
             "classification_type": classification
         },
         "base_path": str(base_path),
+        "run_directory": run_dir,
         "fastqc": {
             "enabled": True,
             "directory": "fastqc",
