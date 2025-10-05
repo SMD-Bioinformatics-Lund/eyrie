@@ -5,10 +5,14 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 ## Features
 
 - **Sample Management**: View, search, and manage sequencing samples with detailed metadata
-- **Authentication**: Secure login system with role-based access control
+- **Authentication**: JWT-based authentication with role-based access control (admin, uploader, user)
+- **Contamination Flagging**: Interactive flagging system for taxonomic species with persistent storage
+- **Three-Tab Sample View**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
+- **NanoStats Integration**: Display all 8 processed NanoStats from sequencing quality analysis
 - **QC Management**: Update sample QC status (passed/failed/unprocessed) with comments
-- **Modern UI**: Clean Bootstrap-based interface with responsive design
+- **Modern UI**: Clean Bootstrap-based interface with responsive design and tabbed navigation
 - **Admin Dashboard**: User management and administrative functions
+- **Sample Processing Tool**: eyrie-popup CLI tool for processing and uploading sample data
 - **Docker Deployment**: Full containerized deployment with Docker Compose
 - **Multi-architecture Support**: Built for both AMD64 and ARM64 platforms
 
@@ -57,10 +61,12 @@ You can also use the pre-built images from Docker Hub:
 # Pull the images
 docker pull clinicalgenomicslund/eyrie-frontend:latest
 docker pull clinicalgenomicslund/eyrie-backend:latest
+docker pull clinicalgenomicslund/eyrie-popup:latest
 
 # Or use specific version
 docker pull clinicalgenomicslund/eyrie-frontend:0.1.0
 docker pull clinicalgenomicslund/eyrie-backend:0.1.0
+docker pull clinicalgenomicslund/eyrie-popup:0.1.0
 ```
 
 ## Project Structure
@@ -91,6 +97,12 @@ eyrie/
 │   │   └── app.py              # Flask application
 │   ├── Dockerfile              # Frontend container
 │   └── pyproject.toml          # Python dependencies
+├── tools/                      # Processing tools
+│   └── eyrie-popup/            # Sample processing CLI tool
+│       ├── popup/              # Tool source code
+│       ├── Dockerfile          # Tool container
+│       ├── setup.py            # Tool installation
+│       └── requirements.txt    # Tool dependencies
 ├── data/                       # Sample data files
 ├── docker-compose.yml          # Multi-container deployment
 ├── init-mongo.js               # MongoDB initialization
@@ -107,8 +119,12 @@ eyrie/
 ### Sample Endpoints
 - `GET /api/samples` - List all samples
 - `GET /api/samples/{sample_id}` - Get sample details
-- `PUT /api/samples/{sample_id}/qc` - Update QC status
-- `PUT /api/samples/{sample_id}/comment` - Update comments
+- `POST /api/samples` - Create new sample (admin/uploader only)
+- `PUT /api/samples/{sample_id}` - Create or update sample (admin/uploader only)
+- `PATCH /api/samples/{sample_id}` - Partially update sample (admin/uploader only)
+- `PUT /api/samples/{sample_id}/qc` - Update QC status (admin/uploader only)
+- `PUT /api/samples/{sample_id}/comment` - Update comments (admin/uploader only)
+- `PUT /api/samples/{sample_id}/contamination` - Update contamination flags
 
 ### Admin Endpoints (Admin access required)
 - `GET /api/admin/users` - List all users
@@ -143,6 +159,10 @@ eyrie/
 - `quality_plot`: Quality plot HTML filename
 - `pipeline_files`: Array of pipeline output filenames
 - `statistics`: Read statistics and quality metrics
+- `flagged_contaminants`: Array of flagged contamination species
+- `taxonomic_data`: Taxonomic classification results with species abundance
+- `nano_stats_processed`: Processed NanoStats quality metrics
+- `nano_stats_unprocessed`: Unprocessed NanoStats quality metrics
 
 ## Development
 
@@ -165,6 +185,13 @@ eyrie/
 3. **MongoDB**:
    Use Docker or local MongoDB instance on port 27017
 
+4. **Eyrie-popup Tool**:
+   ```bash
+   cd tools/eyrie-popup
+   pip install -e .
+   eyrie-popup --help
+   ```
+
 ### Environment Variables
 
 - `MONGO_URI`: MongoDB connection string
@@ -174,25 +201,42 @@ eyrie/
 ## Data Files
 
 Place your pipeline output files in the `data/` directory:
-- `data/krona/` - Krona taxonomic plots (HTML)
-- `data/quality/` - Read quality plots (HTML)
-- `data/pipeline/` - Pipeline reports and statistics (HTML)
+- `data/test/krona/` - Krona taxonomic plots (HTML)
+- `data/test/fastqc/` - FastQC quality reports (HTML)
+- `data/test/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
+- `data/test/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
+- `data/test/results/` - Pipeline results and TSV abundance files
+
+## Sample Processing with eyrie-popup
+
+The eyrie-popup tool processes sample data and uploads it to the Eyrie system:
+
+```bash
+# Using conda environment
+conda run -n eyrie-popup eyrie-popup upload --sample sample_config.yaml --api-url http://localhost:3000/api --username admin --pasword admin #Once you have created other admin users - REMOVE admin/admin
+
+# Using Docker
+docker run -v $(pwd):/data clinicalgenomicslund/eyrie-popup:latest upload --config /data/sample_config.yaml --api-url http://host.docker.internal:3000
+
+# Test connection
+eyrie-popup test-connection --api-url http://localhost:3000
+```
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
+4. Test your changes with the provided sample data
 5. Submit a pull request
 
 ## License
 
-[Add your license information here]
+No license as of yet
 
 ## Support
 
-[Add support contact information here]
+Ryan Kennedy (ryan.kennedy@skane.se)
 
 ## Version
 
@@ -203,3 +247,4 @@ Current version: 0.1.0
 Official images are available on Docker Hub:
 - [Frontend](https://hub.docker.com/r/clinicalgenomicslund/eyrie-frontend)
 - [Backend](https://hub.docker.com/r/clinicalgenomicslund/eyrie-backend)
+- [Eyrie-popup Tool](https://hub.docker.com/r/clinicalgenomicslund/eyrie-popup)
