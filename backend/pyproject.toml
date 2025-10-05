@@ -52,7 +52,6 @@ production = [
 Homepage = "https://github.com/clinicalgenomicslund/eyrie"
 Repository = "https://github.com/clinicalgenomicslund/eyrie.git"
 Issues = "https://github.com/clinicalgenomicslund/eyrie/issues"
-Documentation = "https://docs.claude.com/en/docs/claude-code"
 
 [project.scripts]
 eyrie-api = "eyrie_api.main:app"
