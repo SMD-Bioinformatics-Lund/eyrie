@@ -13,27 +13,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const pathParts = window.location.pathname.split('/');
     const sampleId = pathParts[pathParts.length - 1]; // Get last part
     
-    console.log('URL path:', window.location.pathname);
-    console.log('Path parts:', pathParts);
-    console.log('Sample ID:', sampleId);
-    
     if (sampleId) {
         loadSample(sampleId);
+        setupNavigationLinks(sampleId);
     } else {
         showError('No sample ID provided');
     }
 });
 
+function setupNavigationLinks(sampleId) {
+    // Update navigation links with proper URLs
+    document.getElementById('classificationLink').href = `/sample/${sampleId}/classification`;
+    document.getElementById('nanoplotLink').href = `/sample/${sampleId}/nanoplot`;
+}
+
 async function loadSample(sampleId) {
     try {
-        console.log('Loading sample:', sampleId);
-        console.log('API_BASE:', window.API_BASE);
         const apiUrl = `${window.API_BASE}/samples/${sampleId}`;
-        console.log('Full API URL:', apiUrl);
         const response = await fetch(apiUrl);
-        console.log('Response status:', response.status);
         const sample = await response.json();
-        console.log('Sample data:', sample);
         
         if (response.ok) {
             currentSample = sample;
@@ -42,7 +40,6 @@ async function loadSample(sampleId) {
             showError('Failed to load sample: ' + sample.error);
         }
     } catch (error) {
-        console.error('Error loading sample:', error);
         showError('Network error: ' + error.message);
     }
 }
@@ -262,7 +259,6 @@ async function loadCurrentUser() {
             window.location.href = '/login';
         }
     } catch (error) {
-        console.error('Error loading current user:', error);
         window.location.href = '/login';
     }
 }
@@ -281,7 +277,6 @@ async function logout() {
         });
         window.location.href = '/login';
     } catch (error) {
-        console.error('Logout error:', error);
         window.location.href = '/login';
     }
 }
@@ -345,14 +340,14 @@ function loadClassificationData() {
     }
     
     // Load abundance table
-    displayAbundanceTable();
-    updateClassificationSummary();
+    displaySampleAbundanceTable();
+    updateSampleClassificationSummary();
 }
 
-function displayAbundanceTable() {
+function displaySampleAbundanceTable() {
     const tbody = document.getElementById('contaminationTableBody');
     
-    if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.top_species) {
+    if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.hits) {
         tbody.innerHTML = `
             <tr>
                 <td colspan="3" class="text-center py-4">
@@ -374,7 +369,7 @@ function displayAbundanceTable() {
         });
     }
     
-    const species = currentSample.taxonomic_data.top_species.sort((a, b) => b.abundance - a.abundance);
+    const species = currentSample.taxonomic_data.hits.sort((a, b) => b.abundance - a.abundance);
     
     tbody.innerHTML = '';
     species.forEach((organism, index) => {
@@ -425,32 +420,23 @@ function getAbundanceBadgeClass(abundance) {
 }
 
 function toggleContaminantFlag(species, button) {
-    console.log('Toggling contamination flag for:', species);
-    console.log('Current flagged contaminants:', Array.from(flaggedContaminants));
-    
     if (flaggedContaminants.has(species)) {
-        console.log('Removing flag for:', species);
         flaggedContaminants.delete(species);
         button.className = 'btn btn-sm btn-outline-secondary flag-btn';
         button.innerHTML = '<i class="bi bi-flag"></i>';
     } else {
-        console.log('Adding flag for:', species);
         flaggedContaminants.add(species);
         button.className = 'btn btn-sm btn-danger flag-btn';
         button.innerHTML = '<i class="bi bi-flag-fill"></i>';
     }
-    updateClassificationSummary();
+    updateSampleClassificationSummary();
     saveContaminationFlags();
 }
 
 async function saveContaminationFlags() {
     if (!currentSample) {
-        console.log('No current sample, skipping save');
         return;
     }
-    
-    console.log('Saving contamination flags:', Array.from(flaggedContaminants));
-    console.log('API URL will be:', `${window.API_BASE}/samples/${currentSample.sample_id}/contamination`);
     
     try {
         const response = await fetch(`${window.API_BASE}/samples/${currentSample.sample_id}/contamination`, {
@@ -464,24 +450,16 @@ async function saveContaminationFlags() {
             })
         });
         
-        console.log('Response status:', response.status);
-        const responseText = await response.text();
-        console.log('Response body:', responseText);
-        
         if (response.ok) {
-            console.log('Contamination flags saved successfully');
             // Update the current sample data to reflect the saved flags
             currentSample.flagged_contaminants = Array.from(flaggedContaminants);
-        } else {
-            console.error('Failed to save contamination flags:', response.status, response.statusText);
-            console.error('Response body:', responseText);
         }
     } catch (error) {
-        console.error('Error saving contamination flags:', error);
+        // Error handling could be added here if needed
     }
 }
 
-function updateClassificationSummary() {
+function updateSampleClassificationSummary() {
     if (!currentSample || !currentSample.taxonomic_data) {
         document.getElementById('totalSpecies').textContent = '0';
         document.getElementById('dominantSpecies').textContent = '-';
@@ -494,8 +472,8 @@ function updateClassificationSummary() {
     
     document.getElementById('totalSpecies').textContent = data.total_species || 0;
     
-    if (data.top_species && data.top_species.length > 0) {
-        const dominant = data.top_species.reduce((prev, current) => 
+    if (data.hits && data.hits.length > 0) {
+        const dominant = data.hits.reduce((prev, current) => 
             (prev.abundance > current.abundance) ? prev : current
         );
         document.getElementById('dominantSpecies').textContent = dominant.species;
@@ -505,7 +483,7 @@ function updateClassificationSummary() {
     
     document.getElementById('flaggedContaminants').textContent = flaggedContaminants.size;
     
-    const diversity = calculateShannonDiversity(data.top_species || []);
+    const diversity = calculateShannonDiversity(data.hits || []);
     document.getElementById('diversityIndex').textContent = diversity.toFixed(2);
 }
 
@@ -547,7 +525,7 @@ function exportContaminationData() {
         return;
     }
 
-    const data = currentSample.taxonomic_data.top_species || [];
+    const data = currentSample.taxonomic_data.hits || [];
     const csvContent = "data:text/csv;charset=utf-8," 
         + "Species,Genus,Family,Abundance,Flagged\n"
         + data.map(sp => 
@@ -672,7 +650,6 @@ async function checkAndDisplayFile(container, filePath, title, processingType) {
             displayPlotError(container, `No ${processingType} ${currentPlotType} data available`);
         }
     } catch (error) {
-        console.error('Error checking file:', error);
         displayPlotError(container, `Error loading ${processingType} ${currentPlotType} data`);
     }
 }
