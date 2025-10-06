@@ -97,6 +97,22 @@ class TaxonomicAbundance(BaseModel):
     contamination: bool = False  # Will be added during parsing
 
 
+class NanoPlotFileSet(BaseModel):
+    """Individual nanoplot files for processed or unprocessed data."""
+    report: Optional[str] = None
+    length_quality_scatter: Optional[str] = None
+    length_quality_kde: Optional[str] = None
+    histogram_unweighted: Optional[str] = None
+    histogram_weighted: Optional[str] = None
+    yield_by_length: Optional[str] = None
+
+
+class StructuredNanoPlot(BaseModel):
+    """Structured organization of nanoplot files."""
+    unprocessed: Optional[NanoPlotFileSet] = None
+    processed: Optional[NanoPlotFileSet] = None
+
+
 class SampleData(BaseModel):
     """Complete data for a single sample."""
     sample_info: SampleInfo
@@ -108,7 +124,7 @@ class SampleData(BaseModel):
     nano_stats_unprocessed: Optional[NanoStats] = None
     nano_stats_processed: Optional[NanoStats] = None
     taxonomic_abundances: List[TaxonomicAbundance] = []
-    pipeline_files: List[str] = []
+    nanoplot: Optional[StructuredNanoPlot] = None
 
 
 class ParsedSample(BaseModel):

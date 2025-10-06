@@ -10,7 +10,9 @@ from .models import (
     SampleData,
     NanoStats,
     TaxonomicAbundance,
-    ParsedSample
+    ParsedSample,
+    NanoPlotFileSet,
+    StructuredNanoPlot
 )
 
 
@@ -75,12 +77,12 @@ class SampleParser:
                     self.config.nanoplot.processed.stats_file
                 )
 
+            # Create structured nanoplot data
+            sample_data.nanoplot = self._create_structured_nanoplot()
+
         # Parse taxonomic abundances
         if self.config.results and self.config.results.enabled:
             sample_data.taxonomic_abundances = self._parse_rel_abundance()
-
-            # Collect pipeline files
-            sample_data.pipeline_files = self._collect_pipeline_files()
 
         return sample_data
 
@@ -177,7 +179,7 @@ class SampleParser:
                     species = row.get('species', '')
                     if not species or species in ['unmapped', 'mapped_unclassified']:
                         continue
-                    
+
                     # Check if there's a contamination column in the TSV
                     contamination = False
                     if 'contamination' in row:
@@ -203,20 +205,46 @@ class SampleParser:
 
         return abundances
 
-    def _collect_pipeline_files(self) -> List[str]:
-        """Collect additional pipeline files for the sample."""
-        pipeline_files = []
+    def _create_structured_nanoplot(self) -> Optional[StructuredNanoPlot]:
+        """Create structured nanoplot file organization."""
+        if not self.config.nanoplot:
+            return None
+        
+        structured_nanoplot = StructuredNanoPlot()
+        
+        # Process unprocessed files
+        if self.config.nanoplot.unprocessed and self.config.nanoplot.unprocessed.enabled:
+            unprocessed_files = NanoPlotFileSet()
+            for html_file in self.config.nanoplot.unprocessed.html_files:
+                file_path = self.seqrun_path / self.config.nanoplot.unprocessed.directory / html_file
+                if file_path.exists():
+                    relative_path = str(file_path.relative_to(self.seqrun_path))
+                    self._assign_file_to_structure(unprocessed_files, html_file, relative_path)
+            structured_nanoplot.unprocessed = unprocessed_files
+        
+        # Process processed files
+        if self.config.nanoplot.processed and self.config.nanoplot.processed.enabled:
+            processed_files = NanoPlotFileSet()
+            for html_file in self.config.nanoplot.processed.html_files:
+                file_path = self.seqrun_path / self.config.nanoplot.processed.directory / html_file
+                if file_path.exists():
+                    relative_path = str(file_path.relative_to(self.seqrun_path))
+                    self._assign_file_to_structure(processed_files, html_file, relative_path)
+            structured_nanoplot.processed = processed_files
+        
+        return structured_nanoplot
 
-        # Add NanoPlot HTML files
-        if self.config.nanoplot:
-            for stage_name, stage_config in [
-                ("unprocessed", self.config.nanoplot.unprocessed),
-                ("processed", self.config.nanoplot.processed)
-            ]:
-                if stage_config and stage_config.enabled:
-                    for html_file in stage_config.html_files:
-                        file_path = self.seqrun_path / stage_config.directory / html_file
-                        if file_path.exists():
-                            pipeline_files.append(str(file_path.relative_to(self.seqrun_path)))
-
-        return pipeline_files
+    def _assign_file_to_structure(self, file_set: NanoPlotFileSet, filename: str, relative_path: str):
+        """Assign a file to the appropriate field in the NanoPlotFileSet based on filename."""
+        if 'NanoPlot-report.html' in filename:
+            file_set.report = relative_path
+        elif 'LengthvsQualityScatterPlot_dot.html' in filename:
+            file_set.length_quality_scatter = relative_path
+        elif 'LengthvsQualityScatterPlot_kde.html' in filename:
+            file_set.length_quality_kde = relative_path
+        elif 'Non_weightedHistogramReadlength.html' in filename:
+            file_set.histogram_unweighted = relative_path
+        elif 'WeightedHistogramReadlength.html' in filename:
+            file_set.histogram_weighted = relative_path
+        elif 'Yield_By_Length.html' in filename:
+            file_set.yield_by_length = relative_path
