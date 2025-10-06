@@ -22,12 +22,12 @@ class SampleCreate(BaseModel):
     comments: str = ""
     krona_file: Optional[str] = None
     quality_plot: Optional[str] = None
-    pipeline_files: List[str] = []
     statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
     nano_stats_processed: Optional[Dict[str, Any]] = None
     nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: List[str] = []
+    nanoplot: Optional[Dict[str, Any]] = None
 
 class SampleUpdate(BaseModel):
     sample_name: Optional[str] = None
@@ -37,9 +37,9 @@ class SampleUpdate(BaseModel):
     comments: Optional[str] = None
     krona_file: Optional[str] = None
     quality_plot: Optional[str] = None
-    pipeline_files: Optional[List[str]] = None
     statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
     nano_stats_processed: Optional[Dict[str, Any]] = None
     nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: Optional[List[str]] = None
+    nanoplot: Optional[Dict[str, Any]] = None

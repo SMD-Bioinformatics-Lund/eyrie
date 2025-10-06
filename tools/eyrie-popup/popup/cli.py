@@ -73,6 +73,12 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
             if contaminants > 0:
                 click.echo(f"  ⚠️  Potential contaminants: {contaminants}")
 
+        # Add debug info about nanoplot structure
+        if sample_data.nanoplot:
+            click.echo(f"  ✓ Structured nanoplot data available")
+        else:
+            click.echo(f"  ✗ No structured nanoplot data found")
+
         if dry_run:
             click.echo("\n🏃 Dry run mode - skipping database upload")
             return
@@ -101,7 +107,7 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
 
 
 @cli.command()
-@click.argument('base_path', type=click.Path(exists=True, path_type=Path))
+@click.argument('trana_output_dirpath', type=click.Path(exists=True, path_type=Path))
 @click.argument('sample_id')
 @click.option('--output', '-o', type=click.Path(path_type=Path), 
               help='Output YAML file (default: {sample_id}_config.yaml)')
@@ -111,13 +117,14 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
 @click.option('--run-dir', help='Run directory name (default: auto-detect from path or use run-id)')
 @click.option('--classification', type=click.Choice(['16S', 'ITS']), default='16S',
               help='Classification type')
-def generate_config(base_path: Path, sample_id: str, output: Optional[Path], 
+def generate_config(trana_output_dirpath: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
                    run_id: Optional[str], run_dir: Optional[str], classification: str):
     """Generate a YAML configuration file for a single sample."""
 
     click.echo(f"🔍 Generating config for sample: {sample_id}")
-    click.echo(f"📁 Base path: {base_path}")
+    click.echo(f"📁 TRANA output path: {trana_output_dirpath}")
+    click.echo(f"📁 Base path (parent): {trana_output_dirpath.parent}")
 
     # Generate defaults
     if not sample_name:
@@ -132,10 +139,10 @@ def generate_config(base_path: Path, sample_id: str, output: Optional[Path],
 
     # Determine run directory
     if not run_dir:
-        # Try to auto-detect from base path
-        base_path_name = base_path.name
-        if base_path_name and base_path_name != ".":
-            run_dir = base_path_name
+        # Try to auto-detect from trana_output_dirpath
+        trana_output_dir_name = trana_output_dirpath.name
+        if trana_output_dir_name and trana_output_dir_name != ".":
+            run_dir = trana_output_dir_name
         else:
             # Fallback to run_id
             run_dir = run_id
@@ -150,7 +157,7 @@ def generate_config(base_path: Path, sample_id: str, output: Optional[Path],
             "sequencing_run_id": run_id,
             "classification_type": classification
         },
-        "base_path": str(base_path),
+        "base_path": str(trana_output_dirpath.parent),
         "run_directory": run_dir,
         "fastqc": {
             "enabled": True,
