@@ -26,11 +26,11 @@
                     <div class="card-body p-0">
                         <div class="list-group list-group-flush">
                             <button class="list-group-item list-group-item-action d-flex align-items-center" 
-                                    onclick="loadNanoplotView('report')" id="btn-report">
-                                <i class="bi bi-file-earmark-text me-3 text-primary"></i>
+                                    onclick="showSummaryStats()" id="btn-summary">
+                                <i class="bi bi-bar-chart-line me-3 text-primary"></i>
                                 <div>
-                                    <div class="fw-semibold">Report</div>
-                                    <small class="text-muted">Full NanoPlot report</small>
+                                    <div class="fw-semibold">Summary Statistics</div>
+                                    <small class="text-muted">Detailed read statistics comparison</small>
                                 </div>
                             </button>
                             
@@ -200,289 +200,18 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/blueprints/sample/static/js/sample_core.js"></script>
+    <script src="/blueprints/sample/static/js/sample_nanoplot.js"></script>
     <script>
         // Constants
         const API_BASE = '/api';
         const SAMPLE_ID = '{{ sample_id }}';
         
-        // Global variables
-        let currentSample = null;
-        let currentPlotType = null;
-
         // Page initialization
         document.addEventListener('DOMContentLoaded', function() {
-            loadSample();
             loadCurrentUser();
+            initializeNanoplotView(SAMPLE_ID);
         });
-
-        // Load sample data
-        async function loadSample() {
-            try {
-                const response = await fetch(`${API_BASE}/samples/${SAMPLE_ID}`);
-                const sample = await response.json();
-                
-                if (response.ok) {
-                    currentSample = sample;
-                    updateSampleTitle(sample);
-                    updateNanoStats();
-                } else {
-                    showError('Failed to load sample: ' + sample.error);
-                }
-            } catch (error) {
-                showError('Network error: ' + error.message);
-            }
-        }
-
-        // Update sample title in navbar
-        function updateSampleTitle(sample) {
-            const titleElement = document.getElementById('sampleTitle');
-            if (titleElement) {
-                titleElement.textContent = `${sample.sample_name} (${sample.sample_id})`;
-            }
-        }
-
-        // Load nanoplot view
-        function loadNanoplotView(plotType) {
-            currentPlotType = plotType;
-            
-            if (!currentSample) {
-                alert('No sample loaded');
-                return;
-            }
-
-            // Update button states
-            document.querySelectorAll('.list-group-item').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(`btn-${plotType}`).classList.add('active');
-
-            // Load both plots
-            loadPlot('unprocessed', plotType);
-            loadPlot('processed', plotType);
-        }
-
-        // Load individual plot
-        function loadPlot(processingType, plotType) {
-            const container = document.getElementById(`${processingType}PlotContainer`);
-            
-            const plotTypeMap = {
-                'report': {
-                    unprocessed: 'NanoPlot-report.html',
-                    processed: 'NanoPlot-report.html',
-                    title: 'NanoPlot Report'
-                },
-                'length-quality-scatter': {
-                    unprocessed: 'LengthvsQualityScatterPlot_dot.html',
-                    processed: 'LengthvsQualityScatterPlot_dot.html',
-                    title: 'Length vs Quality Scatter Plot'
-                },
-                'non-weighted-histogram': {
-                    unprocessed: 'Non_weightedHistogramReadlength.html',
-                    processed: 'Non_weightedHistogramReadlength.html',
-                    title: 'Non-weighted Histogram Read Length'
-                },
-                'weighted-histogram': {
-                    unprocessed: 'WeightedHistogramReadlength.html',
-                    processed: 'WeightedHistogramReadlength.html',
-                    title: 'Weighted Histogram Read Length'
-                },
-                'yield-by-length': {
-                    unprocessed: 'Yield_By_Length.html',
-                    processed: 'Yield_By_Length.html',
-                    title: 'Yield by Length'
-                }
-            };
-
-            const plotInfo = plotTypeMap[plotType];
-            if (!plotInfo) {
-                displayPlotError(container, 'Unknown plot type');
-                return;
-            }
-
-            const fileName = processingType === 'unprocessed' ? plotInfo.unprocessed : plotInfo.processed;
-            const filePath = `test/nanoplot_${processingType}/${SAMPLE_ID}_nanoplot_${processingType}_${fileName}`;
-            
-            checkAndDisplayFile(container, filePath, plotInfo.title, processingType);
-        }
-
-        // Check and display file
-        async function checkAndDisplayFile(container, filePath, title, processingType) {
-            try {
-                const response = await fetch(`/data/${filePath}`, { method: 'HEAD' });
-                
-                if (response.ok) {
-                    container.innerHTML = `
-                        <iframe src="/data/${filePath}" 
-                                class="w-100 h-100" 
-                                style="min-height: 500px; border: none;">
-                        </iframe>
-                    `;
-                } else {
-                    displayPlotError(container, `No ${processingType} ${currentPlotType} data available`);
-                }
-            } catch (error) {
-                displayPlotError(container, `Error loading ${processingType} ${currentPlotType} data`);
-            }
-        }
-
-        // Display plot error
-        function displayPlotError(container, message) {
-            container.innerHTML = `
-                <div class="d-flex justify-content-center align-items-center h-100">
-                    <div class="text-center">
-                        <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
-                        <p class="text-muted mt-3">${message}</p>
-                    </div>
-                </div>
-            `;
-        }
-
-        // Update nano stats display
-        function updateNanoStats() {
-            if (!currentSample) {
-                clearNanoStats();
-                return;
-            }
-
-            const unprocessed = currentSample.nano_stats_unprocessed;
-            if (unprocessed) {
-                document.getElementById('unproc-reads').textContent = formatNumber(unprocessed.number_of_reads) || '-';
-                document.getElementById('unproc-length').textContent = formatLength(unprocessed.mean_read_length) || '-';
-                document.getElementById('unproc-quality').textContent = formatQuality(unprocessed.mean_read_quality) || '-';
-                document.getElementById('unproc-bases').textContent = formatBases(unprocessed.total_bases) || '-';
-            } else {
-                ['unproc-reads', 'unproc-length', 'unproc-quality', 'unproc-bases'].forEach(id => {
-                    document.getElementById(id).textContent = '-';
-                });
-            }
-
-            const processed = currentSample.nano_stats_processed;
-            if (processed) {
-                document.getElementById('proc-reads').textContent = formatNumber(processed.number_of_reads) || '-';
-                document.getElementById('proc-length').textContent = formatLength(processed.mean_read_length) || '-';
-                document.getElementById('proc-quality').textContent = formatQuality(processed.mean_read_quality) || '-';
-                document.getElementById('proc-bases').textContent = formatBases(processed.total_bases) || '-';
-            } else {
-                ['proc-reads', 'proc-length', 'proc-quality', 'proc-bases'].forEach(id => {
-                    document.getElementById(id).textContent = '-';
-                });
-            }
-        }
-
-        // Format helper functions
-        function formatNumber(num) {
-            if (!num) return null;
-            return new Intl.NumberFormat().format(num);
-        }
-
-        function formatLength(length) {
-            if (!length) return null;
-            return `${Math.round(length)} bp`;
-        }
-
-        function formatQuality(quality) {
-            if (!quality) return null;
-            return `${quality.toFixed(1)}`;
-        }
-
-        function formatBases(bases) {
-            if (!bases) return null;
-            if (bases >= 1e9) {
-                return `${(bases / 1e9).toFixed(1)} Gb`;
-            } else if (bases >= 1e6) {
-                return `${(bases / 1e6).toFixed(1)} Mb`;
-            } else if (bases >= 1e3) {
-                return `${(bases / 1e3).toFixed(1)} Kb`;
-            }
-            return `${bases} bp`;
-        }
-
-        // Download plot
-        function downloadPlot(processingType) {
-            if (!currentSample || !currentPlotType) {
-                alert('Please select a plot type first');
-                return;
-            }
-
-            const plotTypeMap = {
-                'report': {
-                    unprocessed: 'NanoPlot-report.html',
-                    processed: 'NanoPlot-report.html'
-                },
-                'length-quality-scatter': {
-                    unprocessed: 'LengthvsQualityScatterPlot_dot.html',
-                    processed: 'LengthvsQualityScatterPlot_dot.html'
-                },
-                'non-weighted-histogram': {
-                    unprocessed: 'Non_weightedHistogramReadlength.html',
-                    processed: 'Non_weightedHistogramReadlength.html'
-                },
-                'weighted-histogram': {
-                    unprocessed: 'WeightedHistogramReadlength.html',
-                    processed: 'WeightedHistogramReadlength.html'
-                },
-                'yield-by-length': {
-                    unprocessed: 'Yield_By_Length.html',
-                    processed: 'Yield_By_Length.html'
-                }
-            };
-
-            const plotInfo = plotTypeMap[currentPlotType];
-            const fileName = processingType === 'unprocessed' ? plotInfo.unprocessed : plotInfo.processed;
-            const filePath = `test/nanoplot_${processingType}/${SAMPLE_ID}_nanoplot_${processingType}_${fileName}`;
-            
-            window.open(`/data/${filePath}`, '_blank');
-        }
-
-        // Clear nano stats
-        function clearNanoStats() {
-            ['unproc-reads', 'unproc-length', 'unproc-quality', 'unproc-bases',
-             'proc-reads', 'proc-length', 'proc-quality', 'proc-bases'].forEach(id => {
-                document.getElementById(id).textContent = '-';
-            });
-        }
-
-        // Load current user for navbar
-        async function loadCurrentUser() {
-            try {
-                const response = await fetch(`${API_BASE}/auth/current-user`, {
-                    credentials: 'include'
-                });
-                
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('currentUsername').textContent = user.username;
-                    
-                    // Show/hide admin button based on role
-                    const adminButton = document.querySelector('a[href="/admin"]');
-                    if (user.role !== 'admin') {
-                        adminButton.style.display = 'none';
-                    }
-                } else {
-                    window.location.href = '/login';
-                }
-            } catch (error) {
-                window.location.href = '/login';
-            }
-        }
-
-        // Logout function
-        async function logout() {
-            try {
-                await fetch(`${API_BASE}/auth/logout`, {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-                window.location.href = '/login';
-            } catch (error) {
-                window.location.href = '/login';
-            }
-        }
-
-        // Error handling
-        function showError(message) {
-            alert('Error: ' + message);
-        }
     </script>
 </body>
 </html>
