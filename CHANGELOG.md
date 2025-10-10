@@ -5,6 +5,16 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+
+### Enhanced
+
+### Fixed
+
+### Changed
+
+## [0.2.0]
+
+### Added
 - **Contamination Flag Management System**
   - Added persistent contamination flagging functionality for taxonomic species
   - Implemented contamination flags API endpoint (`PUT /api/samples/{sample_id}/contamination`)
