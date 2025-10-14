@@ -10,6 +10,8 @@ All notable changes to the Eyrie sample management system will be documented in 
 
 ### Fixed
 
+ - Fixed `.gitignore` *auth* bug
+
 ### Changed
 
 ## [0.2.0]
