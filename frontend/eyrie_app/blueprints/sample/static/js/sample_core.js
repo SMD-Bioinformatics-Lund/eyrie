@@ -3,7 +3,7 @@
  */
 
 // Constants
-window.API_BASE = '/api';
+window.API_BASE = window.API_BASE || '/api';
 
 // Global variables
 let currentSample = null;
