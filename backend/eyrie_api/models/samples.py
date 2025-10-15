@@ -9,8 +9,9 @@ class QCUpdate(BaseModel):
 class CommentUpdate(BaseModel):
     comments: str
 
-class ContaminationFlagsUpdate(BaseModel):
-    flagged_species: List[str]
+class SpeciesFlagsUpdate(BaseModel):
+    flagged_contaminants: Optional[List[str]] = None
+    flagged_top_hits: Optional[List[str]] = None
 
 class SampleCreate(BaseModel):
     sample_name: str
@@ -27,6 +28,7 @@ class SampleCreate(BaseModel):
     nano_stats_processed: Optional[Dict[str, Any]] = None
     nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: List[str] = []
+    flagged_top_hits: List[str] = []
     nanoplot: Optional[Dict[str, Any]] = None
 
 class SampleUpdate(BaseModel):
@@ -42,4 +44,5 @@ class SampleUpdate(BaseModel):
     nano_stats_processed: Optional[Dict[str, Any]] = None
     nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: Optional[List[str]] = None
+    flagged_top_hits: Optional[List[str]] = None
     nanoplot: Optional[Dict[str, Any]] = None

@@ -117,6 +117,9 @@ function renderSampleDetail(sample) {
     
     // Render statistics
     renderStatistics(sample.statistics || {});
+    
+    // Render classification summary
+    renderOverviewClassificationSummary();
 }
 
 /**
@@ -259,6 +262,83 @@ async function saveComments() {
         }
     } catch (error) {
         showError('Network error: ' + error.message);
+    }
+}
+
+/**
+ * Render classification summary for overview
+ */
+function renderOverviewClassificationSummary() {
+    if (!currentSample || !currentSample.taxonomic_data) {
+        updateElement('overviewTotalSpecies', '0');
+        updateElement('overviewDominantSpecies', '-');
+        updateElement('overviewFlaggedContaminants', '0');
+        updateElement('overviewFlaggedTopHits', '0');
+        
+        const topHitsList = document.getElementById('overviewTopHitsList');
+        const contaminantsList = document.getElementById('overviewContaminantsList');
+        if (topHitsList) topHitsList.style.display = 'none';
+        if (contaminantsList) contaminantsList.style.display = 'none';
+        return;
+    }
+
+    const data = currentSample.taxonomic_data;
+    const flaggedContaminants = currentSample.flagged_contaminants || [];
+    const flaggedTopHits = currentSample.flagged_top_hits || [];
+    
+    // Update total species
+    updateElement('overviewTotalSpecies', data.total_species || (data.hits ? data.hits.length : 0));
+    
+    // Update dominant species
+    if (data.hits && data.hits.length > 0) {
+        const dominant = data.hits.reduce((prev, current) => 
+            (prev.abundance > current.abundance) ? prev : current
+        );
+        updateElement('overviewDominantSpecies', dominant.species);
+    } else {
+        updateElement('overviewDominantSpecies', '-');
+    }
+    
+    // Update flagged counts
+    updateElement('overviewFlaggedContaminants', flaggedContaminants.length);
+    updateElement('overviewFlaggedTopHits', flaggedTopHits.length);
+    
+    // Show/hide top hits list with abundance data
+    const topHitsList = document.getElementById('overviewTopHitsList');
+    const topHitsDiv = document.getElementById('overviewTopHitsSpecies');
+    
+    if (flaggedTopHits.length > 0) {
+        if (topHitsList) topHitsList.style.display = 'block';
+        if (topHitsDiv) {
+            topHitsDiv.innerHTML = flaggedTopHits
+                .map(species => {
+                    const hit = data.hits ? data.hits.find(h => h.species === species) : null;
+                    const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
+                    return `<span class="badge bg-success me-1 mb-1" title="Abundance: ${abundance}">${species} ${abundance ? '(' + abundance + ')' : ''}</span>`;
+                })
+                .join('');
+        }
+    } else {
+        if (topHitsList) topHitsList.style.display = 'none';
+    }
+    
+    // Show/hide contaminants list with abundance data
+    const contaminantsList = document.getElementById('overviewContaminantsList');
+    const contaminantsDiv = document.getElementById('overviewContaminantsSpecies');
+    
+    if (flaggedContaminants.length > 0) {
+        if (contaminantsList) contaminantsList.style.display = 'block';
+        if (contaminantsDiv) {
+            contaminantsDiv.innerHTML = flaggedContaminants
+                .map(species => {
+                    const hit = data.hits ? data.hits.find(h => h.species === species) : null;
+                    const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
+                    return `<span class="badge bg-warning text-dark me-1 mb-1" title="Abundance: ${abundance}">${species} ${abundance ? '(' + abundance + ')' : ''}</span>`;
+                })
+                .join('');
+        }
+    } else {
+        if (contaminantsList) contaminantsList.style.display = 'none';
     }
 }
 

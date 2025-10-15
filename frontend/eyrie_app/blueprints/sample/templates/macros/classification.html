@@ -46,12 +46,13 @@
                                 <tr>
                                     <th>Species</th>
                                     <th>Abundance</th>
-                                    <th>Flag</th>
+                                    <th>Top Hit</th>
+                                    <th>Contaminant</th>
                                 </tr>
                             </thead>
                             <tbody id="contaminationTableBody">
                                 <tr>
-                                    <td colspan="3" class="text-center py-4">
+                                    <td colspan="4" class="text-center py-4">
                                         <div class="text-muted">
                                             <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
                                             <p class="mt-2">No abundance data available</p>
@@ -77,25 +78,31 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-lg-2 col-md-4 col-6">
                             <div class="text-center">
                                 <div class="h4 text-primary mb-1" id="totalSpecies">0</div>
                                 <small class="text-muted">Total Species</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-2 col-md-4 col-6">
                             <div class="text-center">
-                                <div class="h4 text-success mb-1" id="dominantSpecies">-</div>
+                                <div class="h4 text-success mb-1" id="flaggedTopHits">0</div>
+                                <small class="text-muted">Top Hits</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-6">
+                            <div class="text-center">
+                                <div class="h4 text-warning mb-1" id="flaggedContaminants">0</div>
+                                <small class="text-muted">Contaminants</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-6">
+                            <div class="text-center">
+                                <div class="h4 text-info mb-1" id="dominantSpecies">-</div>
                                 <small class="text-muted">Dominant Species</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="text-center">
-                                <div class="h4 text-warning mb-1" id="flaggedContaminants">0</div>
-                                <small class="text-muted">Flagged Contaminants</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-lg-3 col-md-6 col-12">
                             <div class="text-center">
                                 <div class="h4 text-danger mb-1" id="diversityIndex">0.00</div>
                                 <small class="text-muted">Shannon Diversity</small>

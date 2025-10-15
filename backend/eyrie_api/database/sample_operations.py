@@ -1,6 +1,6 @@
 from datetime import datetime
 from .connection import db
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 def get_all_samples():
     """Get all samples"""
@@ -16,11 +16,11 @@ def create_sample(sample_data: Dict[str, Any]) -> str:
     existing = db.samples.find_one({'sample_id': sample_data['sample_id']})
     if existing:
         raise ValueError(f"Sample with ID '{sample_data['sample_id']}' already exists")
-    
+
     # Add timestamps
     sample_data['created_date'] = datetime.now()
     sample_data['updated_date'] = datetime.now()
-    
+
     result = db.samples.insert_one(sample_data)
     return str(result.inserted_id)
 
@@ -28,13 +28,13 @@ def update_sample(sample_id: str, update_data: Dict[str, Any]) -> bool:
     """Update an existing sample"""
     # Remove None values from update data
     filtered_data = {k: v for k, v in update_data.items() if v is not None}
-    
+
     if not filtered_data:
         return False
-    
+
     # Add updated timestamp
     filtered_data['updated_date'] = datetime.now()
-    
+
     result = db.samples.update_one(
         {'sample_id': sample_id},
         {'$set': filtered_data}
@@ -44,12 +44,12 @@ def update_sample(sample_id: str, update_data: Dict[str, Any]) -> bool:
 def upsert_sample(sample_data: Dict[str, Any]) -> tuple[str, bool]:
     """Create sample if it doesn't exist, update if it does. Returns (id, was_created)"""
     existing = db.samples.find_one({'sample_id': sample_data['sample_id']})
-    
+
     if existing:
         # Update existing sample
         update_data = {k: v for k, v in sample_data.items() if k != 'sample_id'}
         update_data['updated_date'] = datetime.now()
-        
+
         db.samples.update_one(
             {'sample_id': sample_data['sample_id']},
             {'$set': update_data}
@@ -89,15 +89,19 @@ def update_sample_comment(sample_id, comments):
     )
     return result.matched_count > 0
 
-def update_sample_contamination_flags(sample_id, flagged_species):
-    """Update sample contamination flags"""
+
+def update_sample_species_flags(sample_id, flagged_contaminants=None, flagged_top_hits=None):
+    """Update sample species flags (contaminants and/or top hits)"""
+    update_data = {'updated_date': datetime.now()}
+
+    if flagged_contaminants is not None:
+        update_data['flagged_contaminants'] = flagged_contaminants
+
+    if flagged_top_hits is not None:
+        update_data['flagged_top_hits'] = flagged_top_hits
+
     result = db.samples.update_one(
         {'sample_id': sample_id},
-        {
-            '$set': {
-                'flagged_contaminants': flagged_species,
-                'updated_date': datetime.now()
-            }
-        }
+        {'$set': update_data}
     )
     return result.matched_count > 0

@@ -30,7 +30,9 @@ db.samples.insertMany([
       quality_passed: 118204,
       avg_length: 287,
       avg_quality: 32.4
-    }
+    },
+    flagged_contaminants: [],
+    flagged_top_hits: []
   },
   {
     sample_name: "Sample_002",
@@ -50,7 +52,9 @@ db.samples.insertMany([
       quality_passed: 32890,
       avg_length: 245,
       avg_quality: 28.1
-    }
+    },
+    flagged_contaminants: [],
+    flagged_top_hits: []
   },
   {
     sample_name: "Sample_003",
@@ -70,6 +74,8 @@ db.samples.insertMany([
       quality_passed: 78234,
       avg_length: 301,
       avg_quality: 31.2
-    }
+    },
+    flagged_contaminants: [],
+    flagged_top_hits: []
   }
 ]);
