@@ -170,3 +170,18 @@ body {
 .pipeline-links .list-group-item:last-child {
     border-bottom: none;
 }
+
+/* Classification Summary Card Styles */
+.classification-summary-card .card-body {
+    padding: 1rem;
+}
+
+.flagged-species-list {
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.flagged-species-list .badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.5rem;
+}

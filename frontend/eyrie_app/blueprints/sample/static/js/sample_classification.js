@@ -4,6 +4,7 @@
 
 // Global variables for classification
 let flaggedContaminants = new Set();
+let flaggedTopHits = new Set();
 
 /**
  * Initialize classification view
@@ -65,11 +66,19 @@ function displaySampleAbundanceTable() {
         return;
     }
 
-    // Load saved contamination flags from database
+    // Load saved flags from database
     flaggedContaminants.clear();
+    flaggedTopHits.clear();
+    
     if (currentSample.flagged_contaminants) {
         currentSample.flagged_contaminants.forEach(species => {
             flaggedContaminants.add(species);
+        });
+    }
+    
+    if (currentSample.flagged_top_hits) {
+        currentSample.flagged_top_hits.forEach(species => {
+            flaggedTopHits.add(species);
         });
     }
     
@@ -82,6 +91,7 @@ function displaySampleAbundanceTable() {
         row.dataset.species = organism.species;
         
         // Check if this species is flagged
+        const isTopHit = flaggedTopHits.has(organism.species);
         const isContaminant = flaggedContaminants.has(organism.species);
         
         row.innerHTML = `
@@ -105,8 +115,16 @@ function displaySampleAbundanceTable() {
                 </div>
             </td>
             <td>
-                <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-secondary'} flag-btn" 
-                        onclick="toggleContaminantFlag('${organism.species}', this)">
+                <button class="btn btn-sm ${isTopHit ? 'btn-success' : 'btn-outline-success'} top-hit-btn" 
+                        data-species="${organism.species}" 
+                        data-flag-type="top-hit">
+                    <i class="bi ${isTopHit ? 'bi-star-fill' : 'bi-star'}"></i>
+                </button>
+            </td>
+            <td>
+                <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-danger'} contaminant-btn" 
+                        data-species="${organism.species}" 
+                        data-flag-type="contaminant">
                     <i class="bi ${isContaminant ? 'bi-flag-fill' : 'bi-flag'}"></i>
                 </button>
             </td>
@@ -114,6 +132,45 @@ function displaySampleAbundanceTable() {
         
         tbody.appendChild(row);
     });
+    
+    // Set up event delegation for flag buttons
+    setupFlagButtonEventListeners();
+}
+
+/**
+ * Set up event listeners for flag buttons using event delegation
+ */
+function setupFlagButtonEventListeners() {
+    const tbody = document.getElementById('contaminationTableBody');
+    if (!tbody) return;
+    
+    // Remove existing listeners first
+    tbody.removeEventListener('click', handleFlagButtonClick);
+    
+    // Add new listener
+    tbody.addEventListener('click', handleFlagButtonClick);
+}
+
+/**
+ * Handle flag button clicks
+ */
+function handleFlagButtonClick(event) {
+    const button = event.target.closest('button[data-flag-type]');
+    if (!button) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const species = button.dataset.species;
+    const flagType = button.dataset.flagType;
+    
+    console.log('Flag button clicked:', { species, flagType });
+    
+    if (flagType === 'top-hit') {
+        toggleTopHitFlag(species, button);
+    } else if (flagType === 'contaminant') {
+        toggleContaminantFlag(species, button);
+    }
 }
 
 /**
@@ -127,49 +184,111 @@ function getAbundanceBadgeClass(abundance) {
 }
 
 /**
- * Toggle contamination flag for a species
+ * Toggle top hit flag for a species
  */
-function toggleContaminantFlag(species, button) {
-    if (flaggedContaminants.has(species)) {
-        flaggedContaminants.delete(species);
-        button.className = 'btn btn-sm btn-outline-secondary flag-btn';
-        button.innerHTML = '<i class="bi bi-flag"></i>';
+function toggleTopHitFlag(species, button) {
+    console.log('toggleTopHitFlag called with species:', species);
+    if (flaggedTopHits.has(species)) {
+        flaggedTopHits.delete(species);
+        button.className = 'btn btn-sm btn-outline-success top-hit-btn';
+        button.innerHTML = '<i class="bi bi-star"></i>';
+        console.log('Removed from flaggedTopHits:', species);
     } else {
-        flaggedContaminants.add(species);
-        button.className = 'btn btn-sm btn-danger flag-btn';
-        button.innerHTML = '<i class="bi bi-flag-fill"></i>';
+        flaggedTopHits.add(species);
+        button.className = 'btn btn-sm btn-success top-hit-btn';
+        button.innerHTML = '<i class="bi bi-star-fill"></i>';
+        console.log('Added to flaggedTopHits:', species);
     }
+    console.log('Current flaggedTopHits:', Array.from(flaggedTopHits));
+    
+    // Update the current sample object to reflect changes
+    if (currentSample) {
+        currentSample.flagged_top_hits = Array.from(flaggedTopHits);
+    }
+    
     updateSampleClassificationSummary();
-    saveContaminationFlags();
+    saveSpeciesFlags();
+    
+    // Update overview classification summary if function exists
+    if (typeof renderOverviewClassificationSummary === 'function') {
+        renderOverviewClassificationSummary();
+    }
 }
 
 /**
- * Save contamination flags to the database
+ * Toggle contamination flag for a species
  */
-async function saveContaminationFlags() {
+function toggleContaminantFlag(species, button) {
+    console.log('toggleContaminantFlag called with species:', species);
+    if (flaggedContaminants.has(species)) {
+        flaggedContaminants.delete(species);
+        button.className = 'btn btn-sm btn-outline-danger contaminant-btn';
+        button.innerHTML = '<i class="bi bi-flag"></i>';
+        console.log('Removed from flaggedContaminants:', species);
+    } else {
+        flaggedContaminants.add(species);
+        button.className = 'btn btn-sm btn-danger contaminant-btn';
+        button.innerHTML = '<i class="bi bi-flag-fill"></i>';
+        console.log('Added to flaggedContaminants:', species);
+    }
+    console.log('Current flaggedContaminants:', Array.from(flaggedContaminants));
+    
+    // Update the current sample object to reflect changes
+    if (currentSample) {
+        currentSample.flagged_contaminants = Array.from(flaggedContaminants);
+    }
+    
+    updateSampleClassificationSummary();
+    saveSpeciesFlags();
+    
+    // Update overview classification summary if function exists
+    if (typeof renderOverviewClassificationSummary === 'function') {
+        renderOverviewClassificationSummary();
+    }
+}
+
+/**
+ * Save species flags to the database
+ */
+async function saveSpeciesFlags() {
     if (!currentSample) {
+        console.error('No current sample available for saving flags');
         return;
     }
     
+    const apiBase = window.API_BASE || '/api';
+    const url = `${apiBase}/samples/${currentSample.sample_id}/species-flags`;
+    const payload = {
+        flagged_contaminants: Array.from(flaggedContaminants),
+        flagged_top_hits: Array.from(flaggedTopHits)
+    };
+    
+    console.log('Saving species flags:', payload);
+    console.log('API URL:', url);
+    
     try {
-        const response = await fetch(`${window.API_BASE}/samples/${currentSample.sample_id}/contamination`, {
+        const response = await fetch(url, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
             credentials: 'include',
-            body: JSON.stringify({
-                flagged_species: Array.from(flaggedContaminants)
-            })
+            body: JSON.stringify(payload)
         });
         
         if (response.ok) {
+            const result = await response.json();
+            console.log('Flags saved successfully:', result);
             // Update the current sample data to reflect the saved flags
             currentSample.flagged_contaminants = Array.from(flaggedContaminants);
+            currentSample.flagged_top_hits = Array.from(flaggedTopHits);
+        } else {
+            console.error('Failed to save flags. Status:', response.status);
+            const errorText = await response.text();
+            console.error('Error response:', errorText);
         }
     } catch (error) {
-        // Silent error handling - could be enhanced with user feedback
-        console.error('Error saving contamination flags:', error);
+        console.error('Error saving species flags:', error);
     }
 }
 
@@ -215,6 +334,11 @@ function updateSampleClassificationSummary() {
     const flaggedContaminantsEl = document.getElementById('flaggedContaminants');
     if (flaggedContaminantsEl) {
         flaggedContaminantsEl.textContent = flaggedContaminants.size;
+    }
+    
+    const flaggedTopHitsEl = document.getElementById('flaggedTopHits');
+    if (flaggedTopHitsEl) {
+        flaggedTopHitsEl.textContent = flaggedTopHits.size;
     }
     
     const diversity = calculateShannonDiversity(data.hits || []);

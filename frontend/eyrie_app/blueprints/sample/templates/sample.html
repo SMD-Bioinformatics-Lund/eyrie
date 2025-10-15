@@ -107,6 +107,53 @@
 
                 <!-- Right Column - Stats and Links -->
                 <div class="col-lg-3 mb-4">
+                    <!-- Classification Summary Card -->
+                    <div class="card classification-summary-card mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h6 class="mb-0">
+                                <i class="bi bi-flag me-2"></i>Classification Summary
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <div class="h6 text-primary mb-0" id="overviewTotalSpecies">--</div>
+                                        <small class="text-muted">Total Species</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <div class="h6 text-success mb-0" id="overviewFlaggedTopHits">--</div>
+                                        <small class="text-muted">Top Hits</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <div class="h6 text-warning mb-0" id="overviewFlaggedContaminants">--</div>
+                                        <small class="text-muted">Contaminants</small>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="text-center">
+                                        <div class="h6 text-info mb-0" id="overviewDominantSpecies">--</div>
+                                        <small class="text-muted">Dominant Species</small>
+                                    </div>
+                                </div>
+                                <div class="col-12" id="overviewTopHitsList" style="display: none;">
+                                    <hr class="my-2">
+                                    <small class="text-muted d-block mb-1">Top Hits:</small>
+                                    <div id="overviewTopHitsSpecies" class="flagged-species-list"></div>
+                                </div>
+                                <div class="col-12" id="overviewContaminantsList" style="display: none;">
+                                    <hr class="my-2">
+                                    <small class="text-muted d-block mb-1">Contaminants:</small>
+                                    <div id="overviewContaminantsSpecies" class="flagged-species-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Summary Statistics Card -->
                     <div class="card stats-card mb-4">
                         <div class="card-header bg-primary text-white">
@@ -237,12 +284,13 @@
                                         <tr>
                                             <th>Species</th>
                                             <th>Abundance %</th>
-                                            <th>Flag</th>
+                                            <th>Top Hit</th>
+                                            <th>Contaminant</th>
                                         </tr>
                                     </thead>
                                     <tbody id="contaminationTableBody">
                                         <tr>
-                                            <td colspan="3" class="text-center py-4">
+                                            <td colspan="4" class="text-center py-4">
                                                 <div class="text-muted">
                                                     <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
                                                     <p class="mt-2">No abundance data available</p>
@@ -274,25 +322,31 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3">
+                                <div class="col-lg-2 col-md-4 col-6">
                                     <div class="text-center">
                                         <div class="h4 text-primary mb-1" id="totalSpecies">0</div>
                                         <small class="text-muted">Total Species</small>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
+                                <div class="col-lg-2 col-md-4 col-6">
                                     <div class="text-center">
-                                        <div class="h4 text-success mb-1" id="dominantSpecies">-</div>
+                                        <div class="h4 text-success mb-1" id="flaggedTopHits">0</div>
+                                        <small class="text-muted">Top Hits</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-2 col-md-4 col-6">
+                                    <div class="text-center">
+                                        <div class="h4 text-warning mb-1" id="flaggedContaminants">0</div>
+                                        <small class="text-muted">Contaminants</small>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 col-md-6 col-6">
+                                    <div class="text-center">
+                                        <div class="h4 text-info mb-1" id="dominantSpecies">-</div>
                                         <small class="text-muted">Dominant Species</small>
                                     </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <div class="text-center">
-                                        <div class="h4 text-warning mb-1" id="flaggedContaminants">0</div>
-                                        <small class="text-muted">Flagged Contaminants</small>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
+                                <div class="col-lg-3 col-md-6 col-12">
                                     <div class="text-center">
                                         <div class="h4 text-danger mb-1" id="diversityIndex">0.0</div>
                                         <small class="text-muted">Shannon Diversity</small>
@@ -552,7 +606,7 @@
             return path;
         };
         
-        // API base URL - simplified for debugging
+        // API base URL - use Flask backend for auth, FastAPI for data  
         window.API_BASE = '/api';
     </script>
 
