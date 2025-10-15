@@ -47,7 +47,7 @@ def verify_jwt_token(token: str) -> dict:
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     """Get current authenticated user from JWT token"""
     payload = verify_jwt_token(credentials.credentials)
-    
+
     # Get user from database
     user = db.users.find_one({'_id': ObjectId(payload['user_id'])})
     if not user:
@@ -55,13 +55,13 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User not found"
         )
-    
+
     if not user.get('is_active', True):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is disabled"
         )
-    
+
     return user
 
 async def require_admin_or_uploader(current_user: dict = Depends(get_current_user)):
@@ -87,30 +87,30 @@ async def login(login_data: LoginRequest):
     """Authenticate user and return JWT token"""
     # Find user in database
     user = db.users.find_one({'username': login_data.username})
-    
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
-    
+
     # Check password
     if not check_password_hash(user['password_hash'], login_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
-    
+
     # Check if user is active
     if not user.get('is_active', True):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is disabled"
         )
-    
+
     # Create JWT token
     token = create_jwt_token(user)
-    
+
     return {
         "access_token": token,
         "token_type": "bearer",
@@ -144,7 +144,7 @@ async def create_uploader_user(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already exists"
         )
-    
+
     # Create new user
     new_user = {
         'username': user_data.username,
@@ -154,9 +154,9 @@ async def create_uploader_user(
         'created_date': datetime.now(),
         'is_active': True
     }
-    
+
     result = db.users.insert_one(new_user)
-    
+
     return {
         "message": f"User '{user_data.username}' created successfully",
         "user_id": str(result.inserted_id),
