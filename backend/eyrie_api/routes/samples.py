@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Depends, status
-from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, ContaminationFlagsUpdate
+from fastapi import APIRouter, HTTPException, Depends
+from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
 from eyrie_api.database.sample_operations import (
     get_all_samples, find_sample, update_sample_qc, update_sample_comment,
-    create_sample, update_sample, upsert_sample, update_sample_contamination_flags
+    create_sample, update_sample, upsert_sample, update_sample_species_flags
 )
-from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
+from eyrie_api.routes.auth import require_admin_or_uploader
 from eyrie_api.utils.json_encoder import JSONEncoder
 import json
 
@@ -63,10 +63,10 @@ async def upsert_sample_endpoint(
                 status_code=400, 
                 detail="Sample ID in URL must match sample ID in data"
             )
-        
+
         sample_dict = sample_data.dict()
         db_id, was_created = upsert_sample(sample_dict)
-        
+
         action = "created" if was_created else "updated"
         return {
             "message": f"Sample '{sample_id}' {action} successfully",
@@ -88,11 +88,11 @@ async def partial_update_sample(
         update_dict = sample_data.dict(exclude_unset=True)
         if not update_dict:
             raise HTTPException(status_code=400, detail="No data provided for update")
-        
+
         success = update_sample(sample_id, update_dict)
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
-        
+
         return {
             "message": f"Sample '{sample_id}' updated successfully",
             "updated_fields": list(update_dict.keys())
@@ -141,14 +141,19 @@ async def update_comment(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/{sample_id}/contamination")
-async def update_contamination_flags(
-    sample_id: str, 
-    contamination_data: ContaminationFlagsUpdate
+
+@router.put("/{sample_id}/species-flags")
+async def update_species_flags(
+    sample_id: str,
+    species_flags_data: SpeciesFlagsUpdate
 ):
-    """Update sample contamination flags"""
+    """Update sample species flags (contaminants and/or top hits)"""
     try:
-        success = update_sample_contamination_flags(sample_id, contamination_data.flagged_species)
+        success = update_sample_species_flags(
+            sample_id,
+            species_flags_data.flagged_contaminants,
+            species_flags_data.flagged_top_hits
+        )
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
