@@ -64,9 +64,9 @@ docker pull clinicalgenomicslund/eyrie-backend:latest
 docker pull clinicalgenomicslund/eyrie-popup:latest
 
 # Or use specific version
-docker pull clinicalgenomicslund/eyrie-frontend:0.1.0
-docker pull clinicalgenomicslund/eyrie-backend:0.1.0
-docker pull clinicalgenomicslund/eyrie-popup:0.1.0
+docker pull clinicalgenomicslund/eyrie-frontend:0.2.1
+docker pull clinicalgenomicslund/eyrie-backend:0.2.1
+docker pull clinicalgenomicslund/eyrie-popup:0.2.1
 ```
 
 ## Project Structure
@@ -124,7 +124,7 @@ eyrie/
 - `PATCH /api/samples/{sample_id}` - Partially update sample (admin/uploader only)
 - `PUT /api/samples/{sample_id}/qc` - Update QC status (admin/uploader only)
 - `PUT /api/samples/{sample_id}/comment` - Update comments (admin/uploader only)
-- `PUT /api/samples/{sample_id}/contamination` - Update contamination flags
+- `PUT /api/samples/{sample_id}/species-flags` - Update species flags (contaminants and/or top hits)
 
 ### Admin Endpoints (Admin access required)
 - `GET /api/admin/users` - List all users
@@ -240,7 +240,7 @@ Ryan Kennedy (ryan.kennedy@skane.se)
 
 ## Version
 
-Current version: 0.1.0
+Current version: 0.2.1
 
 ## Docker Hub
 
