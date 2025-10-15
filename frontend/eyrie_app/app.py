@@ -517,26 +517,34 @@ def create_app():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    @app.route("/api/samples/<sample_id>/contamination", methods=['PUT'])
+    @app.route("/api/samples/<sample_id>/species-flags", methods=['PUT'])
     @api_authentication
-    def update_contamination_flags(sample_id, current_user=None):
-        global db
+    def update_species_flags(sample_id, current_user=None):
+        global db, USE_MONGO, samples_db
         try:
             data = request.get_json()
-            flagged_species = data.get('flagged_species', [])
+            flagged_contaminants = data.get('flagged_contaminants', [])
+            flagged_top_hits = data.get('flagged_top_hits', [])
 
-            result = db.samples.update_one(
-                {'sample_id': sample_id},
-                {
-                    '$set': {
-                        'flagged_contaminants': flagged_species,
-                        'updated_date': datetime.now()
-                    }
-                }
-            )
+            update_data = {
+                'flagged_contaminants': flagged_contaminants,
+                'flagged_top_hits': flagged_top_hits,
+                'updated_date': datetime.now()
+            }
 
-            if result.matched_count == 0:
-                return jsonify({'error': 'Sample not found'}), 404
+            if USE_MONGO:
+                result = db.samples.update_one(
+                    {'sample_id': sample_id},
+                    {'$set': update_data}
+                )
+                if result.matched_count == 0:
+                    return jsonify({'error': 'Sample not found'}), 404
+            else:
+                # Update in-memory samples_db
+                sample = next((s for s in samples_db if s['sample_id'] == sample_id), None)
+                if not sample:
+                    return jsonify({'error': 'Sample not found'}), 404
+                sample.update(update_data)
 
             return jsonify({'success': True})
         except Exception as e:

@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     loadCurrentUser();
     loadSamples();
-    
+
     // Setup search functionality
     const searchInput = document.getElementById('tableSearch');
     searchInput.addEventListener('input', filterTable);
@@ -11,7 +11,7 @@ async function loadSamples() {
     try {
         const response = await fetch(`${window.API_BASE}/samples`);
         const samples = await response.json();
-        
+
         if (response.ok) {
             renderSamplesTable(samples);
         } else {
@@ -24,12 +24,12 @@ async function loadSamples() {
 
 function renderSamplesTable(samples) {
     const tbody = document.getElementById('samplesTableBody');
-    
+
     if (samples.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No samples found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="12" class="text-center py-4">No samples found</td></tr>';
         return;
     }
-    
+
     tbody.innerHTML = samples.map(sample => `
         <tr>
             <td>
@@ -44,6 +44,8 @@ function renderSamplesTable(samples) {
             <td>
                 <span class="badge ${sample.classification === '16S' ? 'bg-primary' : 'bg-info'}">${sample.classification}</span>
             </td>
+            <td>${renderFlaggedSpecies(sample.flagged_top_hits, 'success')}</td>
+            <td>${renderFlaggedSpecies(sample.flagged_contaminants, 'warning')}</td>
             <td>
                 <span class="badge ${getQCBadgeClass(sample.qc)}">${sample.qc.toUpperCase()}</span>
             </td>
@@ -53,6 +55,35 @@ function renderSamplesTable(samples) {
         </tr>
     `).join('');
 }
+
+function renderFlaggedSpecies(flaggedSpecies, badgeType) {
+    if (!flaggedSpecies || flaggedSpecies.length === 0) {
+        return '<span class="text-muted">None</span>';
+    }
+
+    const count = flaggedSpecies.length;
+    const badgeClass = `bg-${badgeType}`;
+    const textClass = badgeType === 'warning' ? 'text-dark' : '';
+
+    if (count <= 2) {
+        return `
+            <div>
+                <span class="badge ${badgeClass} ${textClass} mb-1">${count}</span><br>
+                <small class="text-muted">${flaggedSpecies.join(', ')}</small>
+            </div>
+        `;
+    } else {
+        return `
+            <div>
+                <span class="badge ${badgeClass} ${textClass} mb-1">${count}</span><br>
+                <small class="text-muted" title="${flaggedSpecies.join(', ')}">
+                    ${flaggedSpecies.slice(0, 2).join(', ')}...
+                </small>
+            </div>
+        `;
+    }
+}
+
 
 function getQCBadgeClass(qc) {
     switch (qc) {
@@ -78,11 +109,11 @@ async function loadCurrentUser() {
         const response = await fetch(`${window.API_BASE}/auth/current-user`, {
             credentials: 'include'
         });
-        
+
         if (response.ok) {
             const user = await response.json();
             document.getElementById('currentUsername').textContent = user.username;
-            
+    
             // Show/hide admin button based on role
             const adminButton = document.querySelector('a[href="/admin"]');
             if (user.role !== 'admin') {
@@ -102,15 +133,15 @@ function filterTable() {
     const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
     const tbody = document.getElementById('samplesTableBody');
     const rows = tbody.getElementsByTagName('tr');
-    
+
     for (let i = 0; i < rows.length; i++) {
         const row = rows[i];
         const cells = row.getElementsByTagName('td');
         let shouldShow = false;
-        
+
         // Skip the loading/error rows
         if (cells.length === 1) continue;
-        
+
         // Search through all text content in the row
         for (let j = 0; j < cells.length; j++) {
             const cellText = cells[j].textContent.toLowerCase();
@@ -119,7 +150,7 @@ function filterTable() {
                 break;
             }
         }
-        
+
         row.style.display = shouldShow ? '' : 'none';
     }
 }
@@ -139,5 +170,5 @@ async function logout() {
 
 function showError(message) {
     const tbody = document.getElementById('samplesTableBody');
-    tbody.innerHTML = `<tr><td colspan="10" class="text-center py-4 text-danger">${message}</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="text-center py-4 text-danger">${message}</td></tr>`;
 }
