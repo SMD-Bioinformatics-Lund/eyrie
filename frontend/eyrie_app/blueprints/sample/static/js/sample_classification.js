@@ -94,6 +94,13 @@ function displaySampleAbundanceTable() {
         const isTopHit = flaggedTopHits.has(organism.species);
         const isContaminant = flaggedContaminants.has(organism.species);
         
+        // Check if this species is the detected spike species
+        const isSpike = currentSample.spike && currentSample.spike === organism.species;
+        if (isSpike) {
+            row.classList.add('spike-row');
+            row.title = `Spike Species: ${organism.species} (${organism.abundance.toFixed(2)}%)`;
+        }
+        
         row.innerHTML = `
             <td>
                 <div class="d-flex align-items-center">
@@ -345,6 +352,16 @@ function updateSampleClassificationSummary() {
     const diversityIndexEl = document.getElementById('diversityIndex');
     if (diversityIndexEl) {
         diversityIndexEl.textContent = diversity.toFixed(2);
+    }
+    
+    // Update spike species
+    const spikeEl = document.getElementById('spike');
+    if (spikeEl) {
+        if (currentSample.spike) {
+            spikeEl.textContent = currentSample.spike;
+        } else {
+            spikeEl.textContent = '-';
+        }
     }
 }
 
