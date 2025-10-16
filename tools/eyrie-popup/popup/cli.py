@@ -8,11 +8,12 @@ from typing import Optional
 
 from .models import SampleConfig
 from .parser import SampleParser
-from .api_client import EyrieAPIClient
+from .api import EyrieAPIClient
+from .__version__ import __version__
 
 
 @click.group()
-@click.version_option(version="0.1.0", prog_name="eyrie-popup")
+@click.version_option(version=__version__, prog_name="eyrie-popup")
 def cli():
     """Eyrie POPUP - Pipeline Output Processor and UPloader for sequencing analysis results."""
     pass
@@ -72,6 +73,21 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
             click.echo(f"  ✓ Taxonomic data: {total_species} species")
             if contaminants > 0:
                 click.echo(f"  ⚠️  Potential contaminants: {contaminants}")
+            
+            # Display spike species detection
+            if hasattr(sample_data, 'spike') and sample_data.spike:
+                # Find abundance for the spike species
+                spike_abundance = None
+                for taxa in sample_data.taxonomic_abundances:
+                    if taxa.species == sample_data.spike:
+                        spike_abundance = taxa.abundance
+                        break
+                if spike_abundance is not None:
+                    click.echo(f"  🎯 Spike species detected: {sample_data.spike} ({spike_abundance:.2%})")
+                else:
+                    click.echo(f"  🎯 Spike species detected: {sample_data.spike}")
+            else:
+                click.echo(f"  ❌ No spike species detected")
 
         # Add debug info about nanoplot structure
         if sample_data.nanoplot:
@@ -81,6 +97,13 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
 
         if dry_run:
             click.echo("\n🏃 Dry run mode - skipping database upload")
+            
+            # In dry run mode, show what would be uploaded
+            if verbose:
+                temp_client = EyrieAPIClient(api, username, password)
+                eyrie_sample = temp_client._convert_to_eyrie_format(sample_data, config)
+                click.echo(f"\n📋 Would upload spike field: {eyrie_sample.get('spike', 'NOT_FOUND')}")
+                click.echo(f"📋 Sample data spike attr: {getattr(sample_data, 'spike', 'NO_SPIKE_ATTR')}")
             return
 
         # Upload to Eyrie
