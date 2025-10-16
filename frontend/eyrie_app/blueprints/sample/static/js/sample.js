@@ -340,6 +340,21 @@ function renderOverviewClassificationSummary() {
     } else {
         if (contaminantsList) contaminantsList.style.display = 'none';
     }
+    
+    // Show/hide spike with abundance data
+    const spikeList = document.getElementById('overviewSpikeList');
+    const spikeDiv = document.getElementById('overviewSpike');
+    
+    if (currentSample.spike) {
+        if (spikeList) spikeList.style.display = 'block';
+        if (spikeDiv) {
+            const hit = data.hits ? data.hits.find(h => h.species === currentSample.spike) : null;
+            const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
+            spikeDiv.innerHTML = `<span class="badge bg-info me-1 mb-1" title="Abundance: ${abundance}">${currentSample.spike} ${abundance ? '(' + abundance + ')' : ''}</span>`;
+        }
+    } else {
+        if (spikeList) spikeList.style.display = 'none';
+    }
 }
 
 /**

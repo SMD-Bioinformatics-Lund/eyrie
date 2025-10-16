@@ -185,3 +185,12 @@ body {
     font-size: 0.7rem;
     padding: 0.3rem 0.5rem;
 }
+
+/* Spike Species Highlighting */
+.spike-row {
+    background-color: rgba(13, 202, 240, 0.25) !important;
+}
+
+.spike-row td {
+    background-color: rgba(13, 202, 240, 0.25) !important;
+}
