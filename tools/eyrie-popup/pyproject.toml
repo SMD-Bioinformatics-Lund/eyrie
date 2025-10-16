@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "eyrie-popup"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Pipeline Output Processor and UPloader for Eyrie - parsing sequencing analysis results"
 readme = "README.md"
 license = {text = "MIT"}
@@ -46,6 +46,9 @@ Issues = "https://github.com/clinicalgenomicslund/eyrie/issues"
 
 [project.scripts]
 popup = "popup.cli:cli"
+
+[tool.hatch.version]
+path = "popup/__version__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["popup"]
