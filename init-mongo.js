@@ -32,7 +32,8 @@ db.samples.insertMany([
       avg_quality: 32.4
     },
     flagged_contaminants: [],
-    flagged_top_hits: []
+    flagged_top_hits: [],
+    spike: null
   },
   {
     sample_name: "Sample_002",
@@ -54,7 +55,8 @@ db.samples.insertMany([
       avg_quality: 28.1
     },
     flagged_contaminants: [],
-    flagged_top_hits: []
+    flagged_top_hits: [],
+    spike: null
   },
   {
     sample_name: "Sample_003",
@@ -76,6 +78,7 @@ db.samples.insertMany([
       avg_quality: 31.2
     },
     flagged_contaminants: [],
-    flagged_top_hits: []
+    flagged_top_hits: [],
+    spike: null
   }
 ]);
