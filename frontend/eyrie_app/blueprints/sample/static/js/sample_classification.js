@@ -55,7 +55,7 @@ function displaySampleAbundanceTable() {
     if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.hits) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3" class="text-center py-4">
+                <td colspan="5" class="text-center py-4">
                     <div class="text-muted">
                         <i class="bi bi-exclamation-circle text-warning" style="font-size: 2rem;"></i>
                         <p class="mt-2">No taxonomic data available</p>
@@ -111,8 +111,8 @@ function displaySampleAbundanceTable() {
                     </div>
                 </div>
             </td>
-            <td>
-                <div class="d-flex align-items-center">
+            <td class="text-center">
+                <div class="d-flex align-items-center justify-content-center">
                     <span class="badge ${getAbundanceBadgeClass(organism.abundance)} me-2">
                         ${organism.abundance.toFixed(2)}%
                     </span>
@@ -121,14 +121,19 @@ function displaySampleAbundanceTable() {
                     </div>
                 </div>
             </td>
-            <td>
+            <td class="text-center">
+                <span class="fw-semibold text-muted">
+                    ${organism.estimated_counts ? formatNumber(Math.round(organism.estimated_counts)) : '--'}
+                </span>
+            </td>
+            <td class="text-center">
                 <button class="btn btn-sm ${isTopHit ? 'btn-success' : 'btn-outline-success'} top-hit-btn" 
                         data-species="${organism.species}" 
                         data-flag-type="top-hit">
                     <i class="bi ${isTopHit ? 'bi-star-fill' : 'bi-star'}"></i>
                 </button>
             </td>
-            <td>
+            <td class="text-center">
                 <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-danger'} contaminant-btn" 
                         data-species="${organism.species}" 
                         data-flag-type="contaminant">

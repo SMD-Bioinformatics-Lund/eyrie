@@ -55,7 +55,8 @@ class FormatHandler:
                     "species": taxa.species,
                     "abundance": round(taxa.abundance * 100, 2),  # Convert to percentage
                     "genus": taxa.genus,
-                    "family": taxa.family
+                    "family": taxa.family,
+                    "estimated_counts": taxa.estimated_counts
                 }
                 for taxa in sorted(
                     sample_data.taxonomic_abundances, 
