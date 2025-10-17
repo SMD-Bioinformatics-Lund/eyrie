@@ -11,9 +11,41 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added classification view with two-column flagging: green stars (top hits) and red flags (contaminants)
  - Added comprehensive flagging summary statistics display for both flag types
 
+**Spike Species Detection System**
+ - Added spike species configuration and detection functionality
+ - Implemented end-to-end spike detection from parsing to frontend display
+ - Added spike species highlighting in Species Abundance table with blue background
+ - Added spike species display in Classification Summary cards
+ - Added native browser tooltips for spike species identification
+
+**Enhanced Species Abundance Table**
+ - Added "Estimated Counts" column to Species Abundance table
+ - Implemented centered alignment for table headers and cells (except Species column)
+ - Added CSV export functionality for abundance data
+
+**Eyrie-Popup Modularization**
+ - Restructured eyrie-popup codebase into logical modules:
+  - Separated parser into specialized modules (nanoplot, nanostats, taxonomic)
+  - Split models by purpose (config, data, parsing)
+  - Organized API client by functionality (client, upload, format)
+  - Created `utils/` directory for reusable utility functions
+ - Added dynamic version management with `__version__.py`
+ - Updated import structure for improved maintainability
+
+**UI Improvements**
+ - Improved Species Abundance table layout (col-lg-6 for better width)
+ - Made Krona plot responsive with viewport height (85vh)
+ - Enhanced table styling with centered content alignment
+
 ### Enhanced
+**Data Flow**
+ - Updated backend API format conversion to include estimated_counts field
+ - Improved spike detection integration across parsing, backend, and frontend
 
 ### Fixed
+**Backend Models**
+ - Added spike field support to SampleCreate and SampleUpdate models
+ - Updated MongoDB initialization scripts for spike field support
 
 ### Changed
 **API Endpoints**
@@ -22,6 +54,16 @@ All notable changes to the Eyrie sample management system will be documented in 
 **Data Model Updates**
  - Added `flagged_contaminants` and `flagged_top_hits` fields to sample schema
  - Updated sample timestamps for species flag changes
+
+**Layout Adjustments**
+ - Changed Krona plot from col-lg-8 to col-lg-6 (narrower)
+ - Changed Species Abundance table from col-lg-4 to col-lg-6 (wider)
+ - Updated Krona plot height to use responsive viewport units (85vh)
+
+**Code Organization**
+ - Moved spike detection utilities from config.py to utils/spike_detection.py
+ - Simplified config.py to contain only static configuration variables
+ - Improved code structure with logical separation of concerns
 
 ## [0.2.1]
 
