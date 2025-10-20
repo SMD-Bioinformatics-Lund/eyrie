@@ -236,11 +236,13 @@ def register_blueprints(app):
     from .blueprints.sample.views import bp as sample_bp
     from .blueprints.admin.views import bp as admin_bp
     from .blueprints.login.views import bp as login_bp
+    from .blueprints.trends.views import trends_bp
 
     app.register_blueprint(samples_bp)
     app.register_blueprint(sample_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(login_bp)
+    app.register_blueprint(trends_bp)
 
 def create_app():
     """Create and configure Flask application"""
