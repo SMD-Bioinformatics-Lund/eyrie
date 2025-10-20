@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Load user and sample data
-    loadCurrentUser();
+    requireAuthentication();
     
     // Extract sample ID from URL path: /sample/S001
     const pathParts = window.location.pathname.split('/');

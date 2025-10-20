@@ -57,20 +57,6 @@ async function loadCurrentUser() {
     }
 }
 
-/**
- * Logout user
- */
-async function logout() {
-    try {
-        await fetch(`${window.API_BASE}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        window.location.href = '/login';
-    } catch (error) {
-        window.location.href = '/login';
-    }
-}
 
 /**
  * Update sample title in navbar
