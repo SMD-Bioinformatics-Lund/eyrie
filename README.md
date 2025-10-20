@@ -6,6 +6,7 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 
 - **Sample Management**: View, search, and manage sequencing samples with detailed metadata
 - **Authentication**: JWT-based authentication with role-based access control (admin, uploader, user)
+- **Trends Analysis**: Interactive data visualization with Plotly charts for sample metrics over time
 - **Contamination Flagging**: Interactive flagging system for taxonomic species with persistent storage
 - **Three-Tab Sample View**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
 - **NanoStats Integration**: Display all 8 processed NanoStats from sequencing quality analysis
@@ -15,6 +16,7 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 - **Sample Processing Tool**: eyrie-popup CLI tool for processing and uploading sample data
 - **Docker Deployment**: Full containerized deployment with Docker Compose
 - **Multi-architecture Support**: Built for both AMD64 and ARM64 platforms
+- **Centralized Authentication**: Unified authentication system across all views with automatic logout functionality
 
 ## Architecture
 
@@ -80,6 +82,10 @@ eyrie/
 │   │   ├── database/           # Database operations
 │   │   ├── models/             # Pydantic data models
 │   │   ├── routes/             # API route handlers
+│   │   │   ├── auth.py         # Authentication endpoints
+│   │   │   ├── admin.py        # Admin endpoints
+│   │   │   ├── samples.py      # Sample endpoints
+│   │   │   └── trends.py       # Trends analysis endpoints
 │   │   ├── utils/              # Utility functions
 │   │   └── main.py             # FastAPI application
 │   ├── Dockerfile              # Backend container
@@ -90,9 +96,11 @@ eyrie/
 │   │   │   ├── admin/          # Admin dashboard
 │   │   │   ├── login/          # Login page
 │   │   │   ├── sample/         # Sample detail view
-│   │   │   └── samples/        # Sample list view
+│   │   │   ├── samples/        # Sample list view
+│   │   │   └── trends/         # Trends analysis view
 │   │   ├── shared/             # Shared templates and assets
 │   │   │   ├── static/css/     # Stylesheets
+│   │   │   ├── static/js/      # Shared JavaScript functions
 │   │   │   └── templates/      # Base templates
 │   │   └── app.py              # Flask application
 │   ├── Dockerfile              # Frontend container
@@ -125,6 +133,9 @@ eyrie/
 - `PUT /api/samples/{sample_id}/qc` - Update QC status (admin/uploader only)
 - `PUT /api/samples/{sample_id}/comment` - Update comments (admin/uploader only)
 - `PUT /api/samples/{sample_id}/species-flags` - Update species flags (contaminants and/or top hits)
+
+### Trends Endpoints
+- `GET /api/trends/data` - Get trends analysis data with filtering and grouping options
 
 ### Admin Endpoints (Admin access required)
 - `GET /api/admin/users` - List all users

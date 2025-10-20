@@ -5,6 +5,25 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+**Trends Analysis System**
+ - Added comprehensive trends analysis with interactive Plotly charts
+ - Implemented trends API endpoint (`GET /api/trends/data`) with filtering and grouping
+ - Added time-based filtering: 7 days, 30 days, 90 days, 1 year, all time
+ - Added grouping options: daily, weekly, monthly aggregation
+ - Added multiple metrics analysis: read counts, quality scores, contaminants, top hits
+ - Added category-based analysis: tissue sample type, classification type, spike species
+ - Added manual chart updates with export functionality
+ - Created dedicated trends blueprint with complete frontend implementation
+ - Added British English spelling throughout the trends interface
+
+**Centralized Authentication System**
+ - Created shared.js with unified authentication functions across all views
+ - Added `requireAuthentication()` function for automatic login redirects
+ - Implemented centralized `logout()` function with correct API endpoint
+ - Added authentication protection to samples and trends views
+ - Fixed logout functionality in sample detail, classification, and nanoplot views
+ - Consolidated duplicate authentication code across blueprints
+
 **Two-Column Species Flagging System**
  - Added unified species flags API endpoint (`PUT /api/samples/{sample_id}/species-flags`) 
  - Added flags persistence in MongoDB with `flagged_contaminants` and `flagged_top_hits` fields
@@ -32,24 +51,42 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added dynamic version management with `__version__.py`
  - Updated import structure for improved maintainability
 
-**UI Improvements**
+### Enhanced
+**UI/UX Improvements**
+ - Left-aligned navbar navigation buttons with right-aligned user dropdown
+ - Disabled automatic chart updates in favor of manual "Update Chart" button
+ - Removed distracting chart footer text for cleaner visualization
+ - Fixed navbar positioning and responsive layout across all views
  - Improved Species Abundance table layout (col-lg-6 for better width)
  - Made Krona plot responsive with viewport height (85vh)
  - Enhanced table styling with centered content alignment
 
-### Enhanced
 **Data Flow**
  - Updated backend API format conversion to include estimated_counts field
  - Improved spike detection integration across parsing, backend, and frontend
+ - Enhanced trends data aggregation with comprehensive filtering options
 
 ### Fixed
+**Authentication Issues**
+ - Fixed logout function not working in sample detail, classification, and nanoplot views
+ - Resolved duplicate authentication functions across multiple blueprints
+ - Fixed incorrect logout API endpoint calls (was `/logout`, now `/api/auth/logout`)
+ - Added missing shared.js imports to sample view templates
+
 **Backend Models**
  - Added spike field support to SampleCreate and SampleUpdate models
  - Updated MongoDB initialization scripts for spike field support
 
 ### Changed
+**Authentication Architecture**
+ - Replaced individual authentication functions with centralized shared.js system
+ - Updated all view templates to use `requireAuthentication()` instead of `loadCurrentUser()`
+ - Consolidated logout functionality into single shared implementation
+ - Removed template inheritance attempt in favor of standalone templates
+
 **API Endpoints**
  - Modified species flagging endpoints to use session-based authentication for frontend compatibility
+ - Added new trends endpoint with comprehensive filtering and grouping capabilities
 
 **Data Model Updates**
  - Added `flagged_contaminants` and `flagged_top_hits` fields to sample schema
@@ -61,9 +98,11 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Updated Krona plot height to use responsive viewport units (85vh)
 
 **Code Organization**
+ - Created shared JavaScript directory (`frontend/eyrie_app/shared/static/js/`)
  - Moved spike detection utilities from config.py to utils/spike_detection.py
  - Simplified config.py to contain only static configuration variables
  - Improved code structure with logical separation of concerns
+ - Removed failed template inheritance files (`base.html`)
 
 ## [0.2.1]
 
