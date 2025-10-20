@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    loadCurrentUser();
     loadSamples();
 
     // Setup search functionality
@@ -94,40 +93,11 @@ function getQCBadgeClass(qc) {
     }
 }
 
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-}
 
 function openSample(sampleId) {
     window.location.href = `/sample/${sampleId}`;
 }
 
-async function loadCurrentUser() {
-    try {
-        const response = await fetch(`${window.API_BASE}/auth/current-user`, {
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const user = await response.json();
-            document.getElementById('currentUsername').textContent = user.username;
-    
-            // Show/hide admin button based on role
-            const adminButton = document.querySelector('a[href="/admin"]');
-            if (user.role !== 'admin') {
-                adminButton.style.display = 'none';
-            }
-        } else {
-            // User not authenticated, redirect to login
-            window.location.href = '/login';
-        }
-    } catch (error) {
-        console.error('Error loading current user:', error);
-        window.location.href = '/login';
-    }
-}
 
 function filterTable() {
     const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
@@ -155,18 +125,6 @@ function filterTable() {
     }
 }
 
-async function logout() {
-    try {
-        await fetch(`${window.API_BASE}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        window.location.href = '/login';
-    } catch (error) {
-        console.error('Logout error:', error);
-        window.location.href = '/login';
-    }
-}
 
 function showError(message) {
     const tbody = document.getElementById('samplesTableBody');

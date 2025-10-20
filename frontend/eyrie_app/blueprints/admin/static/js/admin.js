@@ -5,36 +5,10 @@ document.addEventListener('DOMContentLoaded', function() {
     createUserModal = new bootstrap.Modal(document.getElementById('createUserModal'));
     editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
     
-    // Load current user info
-    loadCurrentUser();
-    
     // Load users
     loadUsers();
 });
 
-async function loadCurrentUser() {
-    try {
-        const response = await fetch(`${window.API_BASE}/auth/current-user`, {
-            credentials: 'include'
-        });
-        
-        if (response.ok) {
-            const user = await response.json();
-            document.getElementById('currentUsername').textContent = user.username;
-            
-            // Check if user is admin, if not redirect
-            if (user.role !== 'admin') {
-                window.location.href = '/samples';
-            }
-        } else {
-            // User not authenticated, redirect to login
-            window.location.href = '/login';
-        }
-    } catch (error) {
-        console.error('Error loading current user:', error);
-        window.location.href = '/login';
-    }
-}
 
 async function loadUsers() {
     try {
@@ -94,11 +68,6 @@ function getRoleBadgeClass(role) {
     }
 }
 
-function formatDate(dateString) {
-    if (!dateString) return '-';
-    const date = new Date(dateString);
-    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-}
 
 function showCreateUserModal() {
     document.getElementById('createUserForm').reset();
@@ -239,54 +208,9 @@ async function deleteUser(userId, username) {
     }
 }
 
-async function logout() {
-    try {
-        await fetch(`${window.API_BASE}/auth/logout`, {
-            method: 'POST',
-            credentials: 'include'
-        });
-        window.location.href = '/login';
-    } catch (error) {
-        console.error('Logout error:', error);
-        window.location.href = '/login';
-    }
-}
 
 function showMessage(elementId, message, type) {
     const element = document.getElementById(elementId);
     element.innerHTML = `<div class="alert alert-${type} mt-3">${message}</div>`;
 }
 
-function showError(message) {
-    const alert = document.createElement('div');
-    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-    alert.style.zIndex = '9999';
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alert);
-    
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
-}
-
-function showSuccess(message) {
-    const alert = document.createElement('div');
-    alert.className = 'alert alert-success alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
-    alert.style.zIndex = '9999';
-    alert.innerHTML = `
-        ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    `;
-    document.body.appendChild(alert);
-    
-    setTimeout(() => {
-        if (alert.parentNode) {
-            alert.remove();
-        }
-    }, 3000);
-}
