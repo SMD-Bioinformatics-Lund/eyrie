@@ -81,11 +81,8 @@ window.EyrieShared = {
                 const user = await response.json();
                 document.getElementById('currentUsername').textContent = user.username;
                 
-                // Show/hide admin button based on role
-                const adminButton = document.getElementById('adminButton');
-                if (adminButton && user.role !== 'admin') {
-                    adminButton.style.display = 'none';
-                }
+                // Note: Admin button visibility should be controlled server-side in templates
+                // based on authenticated user role, not client-side JavaScript
                 return user;
             } else {
                 document.getElementById('currentUsername').textContent = 'Unknown';
@@ -98,17 +95,6 @@ window.EyrieShared = {
         }
     },
 
-    /**
-     * Check authentication and redirect if not authenticated
-     */
-    requireAuthentication: async function() {
-        const user = await this.loadCurrentUser();
-        if (!user) {
-            window.location.href = '/login';
-            return false;
-        }
-        return true;
-    }
 };
 
 // Make functions available globally for backward compatibility
@@ -117,4 +103,3 @@ window.showSuccess = window.EyrieShared.showSuccess;
 window.formatDate = window.EyrieShared.formatDate;
 window.logout = window.EyrieShared.logout;
 window.loadCurrentUser = window.EyrieShared.loadCurrentUser;
-window.requireAuthentication = window.EyrieShared.requireAuthentication;
