@@ -5,9 +5,16 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+**Server-Side Authentication System**
+ - Created Flask authentication decorators (`@login_required`, `@admin_required_view`, `@role_required`)
+ - Implemented server-side route protection that cannot be bypassed client-side
+ - Added session-based authentication validation for all protected routes
+ - Created centralized authentication decorator system in `auth/decorators.py`
+
 **Trends Analysis System**
  - Added comprehensive trends analysis with interactive Plotly charts
  - Implemented trends API endpoint (`GET /api/trends/data`) with filtering and grouping
+ - Added Flask proxy route to forward trends requests to FastAPI backend
  - Added time-based filtering: 7 days, 30 days, 90 days, 1 year, all time
  - Added grouping options: daily, weekly, monthly aggregation
  - Added multiple metrics analysis: read counts, quality scores, contaminants, top hits
@@ -16,13 +23,17 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Created dedicated trends blueprint with complete frontend implementation
  - Added British English spelling throughout the trends interface
 
-**Centralized Authentication System**
- - Created shared.js with unified authentication functions across all views
- - Added `requireAuthentication()` function for automatic login redirects
- - Implemented centralized `logout()` function with correct API endpoint
- - Added authentication protection to samples and trends views
- - Fixed logout functionality in sample detail, classification, and nanoplot views
- - Consolidated duplicate authentication code across blueprints
+**Server-Side Admin Button Visibility**
+ - Implemented Jinja template conditionals for admin button rendering
+ - Admin buttons only exist in HTML for admin users (cannot be bypassed)
+ - Switched from `send_file()` to `render_template()` for dynamic user context
+ - Added `current_user` parameter to all templates for role-based rendering
+
+**Enhanced API Security**
+ - Added `@api_authentication` decorator to all sample data endpoints
+ - Protected trends API with authentication requirements
+ - Added server-side validation to QC and comment update endpoints
+ - Implemented comprehensive API endpoint protection
 
 **Two-Column Species Flagging System**
  - Added unified species flags API endpoint (`PUT /api/samples/{sample_id}/species-flags`) 
@@ -52,6 +63,12 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Updated import structure for improved maintainability
 
 ### Enhanced
+**Security Architecture**
+ - Replaced client-side authentication with server-side Flask decorators
+ - Eliminated JavaScript-based security decisions that could be bypassed
+ - Implemented robust session-based authentication with HTTP-only cookies
+ - Enhanced API endpoint security with comprehensive authentication requirements
+
 **UI/UX Improvements**
  - Left-aligned navbar navigation buttons with right-aligned user dropdown
  - Disabled automatic chart updates in favor of manual "Update Chart" button
@@ -61,17 +78,40 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Made Krona plot responsive with viewport height (85vh)
  - Enhanced table styling with centered content alignment
 
+**Infrastructure and Networking**
+ - Fixed Docker container networking for trends API communication
+ - Added Flask proxy routes for seamless frontend-backend integration
+ - Improved URL routing with clean `/trends` endpoint (no trailing slash)
+ - Enhanced backend connectivity between Flask and FastAPI services
+
 **Data Flow**
  - Updated backend API format conversion to include estimated_counts field
  - Improved spike detection integration across parsing, backend, and frontend
  - Enhanced trends data aggregation with comprehensive filtering options
 
 ### Fixed
+**Critical Security Vulnerabilities**
+ - Eliminated client-side admin page protection that could be bypassed
+ - Fixed client-side admin button hiding that could be manipulated
+ - Removed JavaScript-based authentication checks in favor of server-side protection
+ - Fixed API endpoints missing authentication requirements
+
 **Authentication Issues**
  - Fixed logout function not working in sample detail, classification, and nanoplot views
  - Resolved duplicate authentication functions across multiple blueprints
  - Fixed incorrect logout API endpoint calls (was `/logout`, now `/api/auth/logout`)
  - Added missing shared.js imports to sample view templates
+
+**Infrastructure Issues**
+ - Fixed Docker container networking (changed `eyrie-backend` to `eyrie_backend`)
+ - Fixed trends chart not rendering due to missing API proxy route
+ - Fixed trends URL ending with unnecessary trailing slash
+ - Fixed hardcoded API URLs to use relative paths
+
+**Code Quality**
+ - Added missing newlines to all source files for POSIX compliance
+ - Fixed inconsistent file formatting across Python, JavaScript, and HTML files
+ - Removed deprecated `requireAuthentication()` function
 
 **Backend Models**
  - Added spike field support to SampleCreate and SampleUpdate models
@@ -79,14 +119,23 @@ All notable changes to the Eyrie sample management system will be documented in 
 
 ### Changed
 **Authentication Architecture**
- - Replaced individual authentication functions with centralized shared.js system
- - Updated all view templates to use `requireAuthentication()` instead of `loadCurrentUser()`
- - Consolidated logout functionality into single shared implementation
- - Removed template inheritance attempt in favor of standalone templates
+ - Replaced client-side authentication with server-side Flask decorators
+ - Switched from `send_file()` to `render_template()` for dynamic user context
+ - Updated all view templates to receive `current_user` parameter
+ - Consolidated authentication logic into centralized decorator system
+ - Removed template inheritance attempt in favor of standalone templates with user context
 
-**API Endpoints**
+**API Security Model**
+ - All sample API endpoints now require authentication
+ - Trends API endpoints require authentication
+ - QC and comment update endpoints require authentication
  - Modified species flagging endpoints to use session-based authentication for frontend compatibility
  - Added new trends endpoint with comprehensive filtering and grouping capabilities
+
+**Template Rendering**
+ - Changed from static file serving to dynamic Jinja template rendering
+ - Admin buttons conditionally rendered based on server-side user role
+ - User context passed to all templates for role-based UI decisions
 
 **Data Model Updates**
  - Added `flagged_contaminants` and `flagged_top_hits` fields to sample schema

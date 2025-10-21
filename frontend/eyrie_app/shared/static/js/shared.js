@@ -80,9 +80,6 @@ window.EyrieShared = {
             if (response.ok) {
                 const user = await response.json();
                 document.getElementById('currentUsername').textContent = user.username;
-                
-                // Note: Admin button visibility should be controlled server-side in templates
-                // based on authenticated user role, not client-side JavaScript
                 return user;
             } else {
                 document.getElementById('currentUsername').textContent = 'Unknown';
