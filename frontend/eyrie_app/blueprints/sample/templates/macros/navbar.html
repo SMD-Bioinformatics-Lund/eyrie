@@ -1,4 +1,4 @@
-{% macro sample_navbar(sample_id, active_tab='overview') %}
+{% macro sample_navbar(sample_id, active_tab='overview', current_user=None) %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-0">
     <div class="container-fluid">
         <a href="/samples" class="navbar-brand mb-0 h1">
@@ -21,9 +21,11 @@
         </div>
         
         <div class="d-flex align-items-center">
+            {% if current_user and current_user.role == 'admin' %}
             <a href="/admin" class="btn btn-outline-light me-3">
                 <i class="bi bi-gear me-2"></i>Admin
             </a>
+            {% endif %}
             <div class="dropdown">
                 <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
                     <i class="bi bi-person-circle me-2"></i><span id="currentUsername">Loading...</span>

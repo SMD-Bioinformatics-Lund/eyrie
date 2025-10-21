@@ -10,7 +10,7 @@
 </head>
 <body>
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'overview') }}
+    {{ sample_navbar(sample_id, 'overview', current_user) }}
 
     <div class="container-fluid sample-detail-container mt-4">
         <!-- Overview View -->

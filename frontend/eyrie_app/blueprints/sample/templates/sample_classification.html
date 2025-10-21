@@ -10,7 +10,7 @@
 </head>
 <body>
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'classification') }}
+    {{ sample_navbar(sample_id, 'classification', current_user) }}
 
     <!-- Main Content -->
     {% from 'macros/classification.html' import classification_content %}
@@ -28,7 +28,7 @@
         
         // Page initialization
         document.addEventListener('DOMContentLoaded', function() {
-            requireAuthentication();
+            loadCurrentUser();
             initializeClassificationView(SAMPLE_ID);
         });
         

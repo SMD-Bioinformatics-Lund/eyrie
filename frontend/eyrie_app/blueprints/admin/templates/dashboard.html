@@ -22,9 +22,11 @@
                     <a href="/trends" class="btn btn-outline-light me-3">
                         <i class="bi bi-graph-up me-2"></i>Trends
                     </a>
+                    {% if current_user and current_user.role == 'admin' %}
                     <a href="/admin" class="btn btn-light me-3">
                         <i class="bi bi-gear me-2"></i>Admin
                     </a>
+                    {% endif %}
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
@@ -187,19 +189,12 @@
 
         // Authentication functions are now provided by shared.js
         
-        // Custom admin authentication logic
-        async function loadCurrentUserAdmin() {
-            const user = await loadCurrentUser(); // Use shared function
-            if (user && user.role !== 'admin') {
-                window.location.href = '/samples';
-            } else if (!user) {
-                window.location.href = '/login';
-            }
-        }
-
+        // Note: Admin access is now protected server-side with @admin_required_view decorator
+        // Client-side authentication is only used for UI updates (username display)
+        
         // Initialize shared functionality
         document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUserAdmin();
+            loadCurrentUser(); // Only for UI updates, not security
         });
     </script>
 
