@@ -441,7 +441,8 @@ def create_app():
 
     # Sample endpoints
     @app.route("/api/samples", methods=['GET'])
-    def get_samples():
+    @api_authentication
+    def get_samples(current_user=None):
         global db, USE_MONGO, samples_db
         try:
             if USE_MONGO:
@@ -453,7 +454,8 @@ def create_app():
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>", methods=['GET'])
-    def get_sample(sample_id):
+    @api_authentication
+    def get_sample(sample_id, current_user=None):
         global db, USE_MONGO, samples_db
         try:
             if USE_MONGO:
@@ -468,7 +470,8 @@ def create_app():
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>/qc", methods=['PUT'])
-    def update_qc(sample_id):
+    @api_authentication
+    def update_qc(sample_id, current_user=None):
         global db
         try:
             data = request.get_json()
@@ -496,7 +499,8 @@ def create_app():
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>/comment", methods=['PUT'])
-    def update_comment(sample_id):
+    @api_authentication
+    def update_comment(sample_id, current_user=None):
         global db
         try:
             data = request.get_json()
@@ -573,6 +577,33 @@ def create_app():
         from flask import current_app
         static_dir = os.path.join(current_app.root_path, 'blueprints', blueprint)
         return send_from_directory(static_dir, filename)
+
+    # Trends API proxy to backend
+    @app.route("/api/trends/data", methods=['GET'])
+    @api_authentication
+    def trends_data_proxy(current_user=None):
+        """Proxy trends data requests to FastAPI backend"""
+        try:
+            import urllib.request
+            import urllib.parse
+            
+            # Get query parameters from the request
+            query_params = request.args.to_dict()
+            query_string = urllib.parse.urlencode(query_params)
+            
+            # Forward request to FastAPI backend
+            backend_url = os.getenv('BACKEND_URL', 'http://localhost:8000')
+            full_url = f"{backend_url}/api/trends/data?{query_string}"
+            
+            with urllib.request.urlopen(full_url) as response:
+                if response.status == 200:
+                    data = json.loads(response.read().decode('utf-8'))
+                    return jsonify(data)
+                else:
+                    return jsonify({'error': 'Backend request failed'}), response.status
+                
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     # Health check
     @app.route("/health", methods=['GET'])
