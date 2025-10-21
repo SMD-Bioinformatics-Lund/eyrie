@@ -187,11 +187,6 @@
         // API base URL
         window.API_BASE = '/api';
 
-        // Authentication functions are now provided by shared.js
-        
-        // Note: Admin access is now protected server-side with @admin_required_view decorator
-        // Client-side authentication is only used for UI updates (username display)
-        
         // Initialize shared functionality
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentUser(); // Only for UI updates, not security

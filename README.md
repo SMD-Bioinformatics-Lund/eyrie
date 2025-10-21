@@ -5,18 +5,18 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 ## Features
 
 - **Sample Management**: View, search, and manage sequencing samples with detailed metadata
-- **Authentication**: JWT-based authentication with role-based access control (admin, uploader, user)
+- **Server-Side Authentication**: Flask decorator-based authentication with role-based access control (admin, uploader, user)
 - **Trends Analysis**: Interactive data visualization with Plotly charts for sample metrics over time
 - **Contamination Flagging**: Interactive flagging system for taxonomic species with persistent storage
 - **Three-Tab Sample View**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
 - **NanoStats Integration**: Display all 8 processed NanoStats from sequencing quality analysis
 - **QC Management**: Update sample QC status (passed/failed/unprocessed) with comments
-- **Modern UI**: Clean Bootstrap-based interface with responsive design and tabbed navigation
-- **Admin Dashboard**: User management and administrative functions
+- **Modern UI**: Clean Bootstrap-based interface with responsive design and server-side rendering
+- **Admin Dashboard**: User management and administrative functions with role-based visibility
 - **Sample Processing Tool**: eyrie-popup CLI tool for processing and uploading sample data
 - **Docker Deployment**: Full containerized deployment with Docker Compose
 - **Multi-architecture Support**: Built for both AMD64 and ARM64 platforms
-- **Centralized Authentication**: Unified authentication system across all views with automatic logout functionality
+- **Security-First Design**: Server-side authentication, API protection, and secure template rendering
 
 ## Architecture
 
@@ -124,17 +124,17 @@ eyrie/
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/current-user` - Get current user info
 
-### Sample Endpoints
+### Sample Endpoints (Authentication required)
 - `GET /api/samples` - List all samples
 - `GET /api/samples/{sample_id}` - Get sample details
 - `POST /api/samples` - Create new sample (admin/uploader only)
 - `PUT /api/samples/{sample_id}` - Create or update sample (admin/uploader only)
 - `PATCH /api/samples/{sample_id}` - Partially update sample (admin/uploader only)
-- `PUT /api/samples/{sample_id}/qc` - Update QC status (admin/uploader only)
-- `PUT /api/samples/{sample_id}/comment` - Update comments (admin/uploader only)
-- `PUT /api/samples/{sample_id}/species-flags` - Update species flags (contaminants and/or top hits)
+- `PUT /api/samples/{sample_id}/qc` - Update QC status (authentication required)
+- `PUT /api/samples/{sample_id}/comment` - Update comments (authentication required)
+- `PUT /api/samples/{sample_id}/species-flags` - Update species flags (authentication required)
 
-### Trends Endpoints
+### Trends Endpoints (Authentication required)
 - `GET /api/trends/data` - Get trends analysis data with filtering and grouping options
 
 ### Admin Endpoints (Admin access required)
@@ -145,6 +145,26 @@ eyrie/
 
 ### Health Check
 - `GET /health` - Application health status
+
+## Security
+
+### Authentication Architecture
+- **Server-Side Authentication**: All routes protected with Flask decorators (`@login_required`, `@admin_required_view`)
+- **Session-Based**: Uses secure HTTP-only cookies for session management
+- **API Protection**: All API endpoints require valid authentication before processing
+- **Role-Based Access Control**: Admin, uploader, and user roles with appropriate permissions
+
+### Security Features
+- **Server-Side Template Rendering**: Admin buttons and UI elements conditionally rendered based on user role
+- **Cannot Be Bypassed**: Authentication happens server-side before page load
+- **API Endpoint Protection**: All sample and trends data requires authentication
+- **Clean URL Structure**: Consistent routing without trailing slash ambiguity
+
+### View Protection
+- **Samples & Trends**: `@login_required` - authenticated users only
+- **Admin Dashboard**: `@admin_required_view` - admin users only
+- **Sample Details**: `@login_required` - authenticated users only
+- **Login Page**: Public access for authentication
 
 ## Database Schema
 

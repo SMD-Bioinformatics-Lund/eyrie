@@ -68,7 +68,6 @@
                     {% block user_loaded %}{% endblock %}
                 } else {
                     {% block auth_failed %}
-                    // Default behavior for auth failure
                     document.getElementById('currentUsername').textContent = 'Unknown';
                     {% endblock %}
                 }
