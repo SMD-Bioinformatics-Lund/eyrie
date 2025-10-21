@@ -23,9 +23,11 @@
                     <a href="/trends" class="btn btn-light me-3">
                         <i class="bi bi-graph-up me-2"></i>Trends
                     </a>
-                    <a href="/admin" class="btn btn-outline-light me-3" id="adminButton">
+                    {% if current_user and current_user.role == 'admin' %}
+                    <a href="/admin" class="btn btn-outline-light me-3">
                         <i class="bi bi-gear me-2"></i>Admin
                     </a>
+                    {% endif %}
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
@@ -163,7 +165,7 @@
 
         // Initialize shared functionality
         document.addEventListener('DOMContentLoaded', function() {
-            requireAuthentication();
+            loadCurrentUser();
         });
     </script>
 

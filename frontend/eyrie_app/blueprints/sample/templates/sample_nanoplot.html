@@ -10,7 +10,7 @@
 </head>
 <body>
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'nanoplot') }}
+    {{ sample_navbar(sample_id, 'nanoplot', current_user) }}
 
     <!-- Main Content -->
     <div class="container-fluid mt-4">
@@ -210,7 +210,7 @@
         
         // Page initialization
         document.addEventListener('DOMContentLoaded', function() {
-            requireAuthentication();
+            loadCurrentUser();
             initializeNanoplotView(SAMPLE_ID);
         });
     </script>
