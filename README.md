@@ -5,18 +5,16 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 ## Features
 
 - **Sample Management**: View, search, and manage sequencing samples with detailed metadata
-- **Server-Side Authentication**: Flask decorator-based authentication with role-based access control (admin, uploader, user)
-- **Trends Analysis**: Interactive data visualization with Plotly charts for sample metrics over time
-- **Contamination Flagging**: Interactive flagging system for taxonomic species with persistent storage
-- **Three-Tab Sample View**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
-- **NanoStats Integration**: Display all 8 processed NanoStats from sequencing quality analysis
-- **QC Management**: Update sample QC status (passed/failed/unprocessed) with comments
-- **Modern UI**: Clean Bootstrap-based interface with responsive design and server-side rendering
-- **Admin Dashboard**: User management and administrative functions with role-based visibility
-- **Sample Processing Tool**: eyrie-popup CLI tool for processing and uploading sample data
-- **Docker Deployment**: Full containerized deployment with Docker Compose
-- **Multi-architecture Support**: Built for both AMD64 and ARM64 platforms
-- **Security-First Design**: Server-side authentication, API protection, and secure template rendering
+- **Sample processing tool**: eyrie-popup CLI tool for processing and uploading sample data
+- **Sample QC curation**: Update sample QC status (`passed`/`failed`/`unprocessed`) with comments
+- **Sample contamination flagging**: Interactive flagging system for flagging contaminant hits
+- **Sample top hit flagging**: Interactive flagging system for flagging top hits
+- **Multi-tabbed sample view**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
+- **Trends analysis**: Interactive data visualization with Plotly charts for sample metrics over time
+- **Simple UI**: Clean Bootstrap-based interface with responsive design and server-side rendering
+- **Server-side authentication**: Flask decorator-based authentication with role-based access control (admin, uploader, user)
+- **Admin dashboard**: User management and administrative functions with role-based visibility
+- **Docker deployment**: Full containerized deployment with Docker Compose
 
 ## Architecture
 
@@ -32,7 +30,7 @@ The application consists of three main components:
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/SMD-Bioinformatics-Lund/eyrie
    cd eyrie
    ```
 
@@ -57,18 +55,53 @@ The application consists of three main components:
 
 ### Using Docker Hub Images
 
-You can also use the pre-built images from Docker Hub:
+You can also use the pre-built images from Docker Hub (replace `latest` with version number in the `x.x.x` format for the specific version):
 
 ```bash
-# Pull the images
 docker pull clinicalgenomicslund/eyrie-frontend:latest
 docker pull clinicalgenomicslund/eyrie-backend:latest
 docker pull clinicalgenomicslund/eyrie-popup:latest
+```
 
-# Or use specific version
-docker pull clinicalgenomicslund/eyrie-frontend:0.2.1
-docker pull clinicalgenomicslund/eyrie-backend:0.2.1
-docker pull clinicalgenomicslund/eyrie-popup:0.2.1
+## Uploading samples
+
+### Data files
+
+Place/mount your pipeline output files in the `data/` directory:
+- `data/test/krona/` - Krona taxonomic plots (HTML)
+- `data/test/fastqc/` - FastQC quality reports (HTML)
+- `data/test/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
+- `data/test/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
+- `data/test/results/` - Pipeline results and TSV abundance files
+
+### Sample processing & uploading with eyrie-popup
+
+Conda installation of eyrie-popup
+
+```bash
+cd tools/eyrie-popup
+conda create -n eyrie-popup
+conda activate eyrie-popup
+pip install -e .
+```
+
+The eyrie-popup tool processes sample data and uploads it to the Eyrie system:
+
+```bash
+# Change directory back to eyrie
+cd ../..
+
+# Using conda environment
+conda run -n eyrie-popup popup upload --sample data/test/barcode01_config.yaml --api http://localhost:8000/api --username admin --password admin #Once you have created other admin users - REMOVE admin/admin
+
+# Test connection if upload doesn't work
+conda run -n eyrie-popup popup test-connection --username admin --password admin --api http://localhost:8000/api
+```
+
+Yaml files can be created by running:
+
+```bash
+conda run -n eyrie-popup popup generate-config --help
 ```
 
 ## Project Structure
@@ -149,22 +182,21 @@ eyrie/
 ## Security
 
 ### Authentication Architecture
-- **Server-Side Authentication**: All routes protected with Flask decorators (`@login_required`, `@admin_required_view`)
-- **Session-Based**: Uses secure HTTP-only cookies for session management
-- **API Protection**: All API endpoints require valid authentication before processing
-- **Role-Based Access Control**: Admin, uploader, and user roles with appropriate permissions
+- **Server-side authentication**: All routes protected with Flask decorators (`@login_required`, `@admin_required_view`)
+- **Session-based**: Uses secure HTTP-only cookies for session management
+- **API protection**: All API endpoints require valid authentication before processing
+- **Role-based access control**: Admin, uploader, and user roles with appropriate permissions
 
 ### Security Features
-- **Server-Side Template Rendering**: Admin buttons and UI elements conditionally rendered based on user role
-- **Cannot Be Bypassed**: Authentication happens server-side before page load
-- **API Endpoint Protection**: All sample and trends data requires authentication
-- **Clean URL Structure**: Consistent routing without trailing slash ambiguity
+- **Server-side template rendering**: Admin buttons and UI elements conditionally rendered based on user role
+- **Cannot be bypassed**: Authentication happens server-side before page load
+- **API endpoint protection**: All sample and trends data requires authentication
 
 ### View Protection
 - **Samples & Trends**: `@login_required` - authenticated users only
-- **Admin Dashboard**: `@admin_required_view` - admin users only
-- **Sample Details**: `@login_required` - authenticated users only
-- **Login Page**: Public access for authentication
+- **Admin dashboard**: `@admin_required_view` - admin users only
+- **Sample details**: `@login_required` - authenticated users only
+- **Login page**: Public access for authentication
 
 ## Database Schema
 
@@ -197,16 +229,16 @@ eyrie/
 
 ## Development
 
-### Local Development Setup
+### Local development setup
 
-1. **Backend Development**:
+1. **Backend development**:
    ```bash
    cd backend
    pip install -e .[development]
-   uvicorn eyrie_api.main:app --reload --host 0.0.0.0 --port 5000
+   uvicorn eyrie_api.main:app --reload --host 0.0.0.0 --port 8000
    ```
 
-2. **Frontend Development**:
+2. **Frontend development**:
    ```bash
    cd frontend
    pip install -e .[development]
@@ -216,42 +248,18 @@ eyrie/
 3. **MongoDB**:
    Use Docker or local MongoDB instance on port 27017
 
-4. **Eyrie-popup Tool**:
+4. **Eyrie-popup tool**:
    ```bash
    cd tools/eyrie-popup
    pip install -e .
-   eyrie-popup --help
+   popup --help
    ```
 
-### Environment Variables
+### Environment variables
 
 - `MONGO_URI`: MongoDB connection string
 - `ENVIRONMENT`: Application environment (development/production)
 - `BACKEND_URL`: Backend API URL for frontend
-
-## Data Files
-
-Place your pipeline output files in the `data/` directory:
-- `data/test/krona/` - Krona taxonomic plots (HTML)
-- `data/test/fastqc/` - FastQC quality reports (HTML)
-- `data/test/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
-- `data/test/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
-- `data/test/results/` - Pipeline results and TSV abundance files
-
-## Sample Processing with eyrie-popup
-
-The eyrie-popup tool processes sample data and uploads it to the Eyrie system:
-
-```bash
-# Using conda environment
-conda run -n eyrie-popup eyrie-popup upload --sample sample_config.yaml --api-url http://localhost:3000/api --username admin --pasword admin #Once you have created other admin users - REMOVE admin/admin
-
-# Using Docker
-docker run -v $(pwd):/data clinicalgenomicslund/eyrie-popup:latest upload --config /data/sample_config.yaml --api-url http://host.docker.internal:3000
-
-# Test connection
-eyrie-popup test-connection --api-url http://localhost:3000
-```
 
 ## Contributing
 
@@ -263,7 +271,7 @@ eyrie-popup test-connection --api-url http://localhost:3000
 
 ## License
 
-No license as of yet
+This project is licensed under the ![License](https://img.shields.io/github/license/SMD-Bioinformatics-Lund/eyrie) - see the [LICENSE](LICENSE) file for details.
 
 ## Support
 
@@ -271,7 +279,7 @@ Ryan Kennedy (ryan.kennedy@skane.se)
 
 ## Version
 
-Current version: 0.2.1
+Current version: ![Version](https://img.shields.io/github/v/release/SMD-Bioinformatics-Lund/eyrie)
 
 ## Docker Hub
 
