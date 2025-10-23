@@ -26,7 +26,7 @@ The application consists of three main components:
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Using Docker
 
 1. **Clone the repository**:
    ```bash
@@ -36,12 +36,12 @@ The application consists of three main components:
 
 2. **Start the application**:
    ```bash
-   docker-compose up -d
+   docker-compose -f docker-compose.dev.yml --env-file environment.dev up -d --build
    ```
 
 3. **Access the application**:
    - Web Interface: http://localhost:3000
-   - Backend API: http://localhost:8000
+   - Backend API: http://localhost:8000/api
    - MongoDB: localhost:27017
 
 4. **Login with default credentials**:
@@ -50,18 +50,32 @@ The application consists of three main components:
 
 5. **Stop the application**:
    ```bash
-   docker-compose down
+   docker-compose -f docker-compose.dev.yml down
    ```
 
-### Using Docker Hub Images
+### Production Deployment with Apache Proxy
 
-You can also use the pre-built images from Docker Hub (replace `latest` with version number in the `x.x.x` format for the specific version):
+For production deployment behind an Apache reverse proxy:
 
-```bash
-docker pull clinicalgenomicslund/eyrie-frontend:latest
-docker pull clinicalgenomicslund/eyrie-backend:latest
-docker pull clinicalgenomicslund/eyrie-popup:latest
-```
+1. **Configure Apache**:
+   ```bash
+   # Enable required modules
+   sudo a2enmod proxy proxy_http headers
+   
+   # Include the proxy configuration in your virtual host
+   Include /path/to/eyrie/apache-proxy.conf
+   ```
+
+2. **Start the application in production**:
+   ```bash
+   docker-compose -f docker-compose.yml --env-file environment.prod up -d
+   ```
+
+3. **Access the application**:
+   - Application: http://your-domain.com/eyrie
+   - API: http://your-domain.com/eyrie/api
+
+The application will be available at `/eyrie` on your domain with the backend API at `/eyrie/api`.
 
 ## Uploading samples
 
@@ -85,7 +99,7 @@ conda activate eyrie-popup
 pip install -e .
 ```
 
-The eyrie-popup tool processes sample data and uploads it to the Eyrie system:
+The eyrie-popup tool processes sample data and uploads it to the Eyrie system (**replace the api url if in production**):
 
 ```bash
 # Change directory back to eyrie
@@ -146,6 +160,10 @@ eyrie/
 │       └── requirements.txt    # Tool dependencies
 ├── data/                       # Sample data files
 ├── docker-compose.yml          # Multi-container deployment
+├── docker-compose.dev.yml      # Multi-container deployment (dev mode)
+├── environment.prod            # Production environment template
+├── environment.dev             # Dev environment template
+├── apache-proxy.conf           # Apache reverse proxy configuration
 ├── init-mongo.js               # MongoDB initialization
 └── .github/workflows/          # CI/CD workflows
 ```
@@ -255,11 +273,28 @@ eyrie/
    popup --help
    ```
 
-### Environment variables
+### Environment Variables
 
+The application supports environment-based configuration through the `environment.prod` file:
+
+**Version Management:**
+- `EYRIE_VERSION`: Application version
+- `MONGODB_VERSION`: MongoDB image version
+
+**Host Ports (Apache Proxy):**
+- `FRONTEND_HOST_PORT`: Frontend container port
+- `BACKEND_HOST_PORT`: Backend container port
+- `MONGO_HOST_PORT`: MongoDB container port
+
+**URL Configuration:**
+- `EXTERNAL_BASE_PATH`: Base path served by Apache (/eyrie)
+- `EXTERNAL_API_URL`: External API URL through Apache proxy
+- `INTERNAL_BACKEND_URL`: Internal container-to-container backend URL
+- `BACKEND_BASE_PATH`: Backend API base path (/eyrie/api)
+
+**Database:**
 - `MONGO_URI`: MongoDB connection string
-- `ENVIRONMENT`: Application environment (development/production)
-- `BACKEND_URL`: Backend API URL for frontend
+- `ENVIRONMENT`: Application environment (production)
 
 ## Contributing
 

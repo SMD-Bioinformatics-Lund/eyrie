@@ -9,6 +9,13 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added MIT license
  - README uses shields to fetch license and version number
 
+**Apache Proxy Deployment Configuration**
+ - Added `environment.prod` file with dual URL configuration for Apache reverse proxy
+ - Added `apache-proxy.conf` with complete Apache proxy configuration
+ - Created environment-based deployment system with version management
+ - Added support for external vs internal URL routing
+ - Configured host port mapping for production deployment
+
 **Server-side authentication system**
  - Created Flask authentication decorators (`@login_required`, `@admin_required_view`, `@role_required`)
  - Implemented server-side route protection that cannot be bypassed client-side
@@ -110,6 +117,12 @@ All notable changes to the Eyrie sample management system will be documented in 
 **Code organization**
  - Improved code structure with logical separation of concerns
  - Created shared JavaScript directory and reorganized utilities
+
+**Deployment Configuration**
+ - Updated `docker-compose.yml` to use environment variables with fallback defaults
+ - Added version management for all Docker images including MongoDB
+ - Configured dual URL system for Apache proxy deployment
+ - Updated README with production deployment instructions
 
 ## [0.2.1]
 
