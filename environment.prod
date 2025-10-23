@@ -31,7 +31,7 @@ EXTERNAL_API_URL=http://your-domain.com/eyrie/api
 # Internal URLs (container-to-container communication)
 # =====================================================
 # Internal backend URL for Flask to proxy API calls
-INTERNAL_BACKEND_URL=http://eyrie_backend:8000
+INTERNAL_BACKEND_URL=http://eyrie_backend:5000
 
 # Base path that backend expects to receive from Apache
 BACKEND_BASE_PATH=/eyrie/api
