@@ -13,12 +13,15 @@ services:
       - mongodb_data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
   eyrie-backend:
-    image: clinicalgenomicslund/eyrie-backend:${BACKEND_VERSION:-latest}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      network: host
     container_name: eyrie_backend
     restart: unless-stopped
     environment:
       MONGO_URI: ${MONGO_URI:-mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
       BACKEND_BASE_PATH: ${BACKEND_BASE_PATH:-/api}
     ports:
       - "${BACKEND_HOST_PORT:-8000}:5000"
@@ -28,14 +31,17 @@ services:
       - ./data:/app/data:ro
 
   eyrie-frontend:
-    image: clinicalgenomicslund/eyrie-frontend:${FRONTEND_VERSION:-latest}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      network: host
     container_name: eyrie_frontend
     restart: unless-stopped
     environment:
       INTERNAL_BACKEND_URL: ${INTERNAL_BACKEND_URL:-http://eyrie_backend:5000}
       EXTERNAL_BASE_PATH: ${EXTERNAL_BASE_PATH:-}
       EXTERNAL_API_URL: ${EXTERNAL_API_URL:-http://localhost:8000/api}
-      ENVIRONMENT: ${ENVIRONMENT:-production}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
     ports:
       - "${FRONTEND_HOST_PORT:-3000}:5000"
     depends_on:

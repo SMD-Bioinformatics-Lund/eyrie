@@ -1,0 +1,46 @@
+# Eyrie Environment Configuration - Development
+# This file configures the application for local development
+
+# =====================================================
+# Version Management
+# =====================================================
+EYRIE_VERSION=latest
+FRONTEND_VERSION=${EYRIE_VERSION}
+BACKEND_VERSION=${EYRIE_VERSION}
+POPUP_VERSION=${EYRIE_VERSION}
+MONGODB_VERSION=5.0
+
+# =====================================================
+# Host Ports (local development)
+# =====================================================
+FRONTEND_HOST_PORT=3000
+BACKEND_HOST_PORT=8000
+MONGO_HOST_PORT=27018
+
+# =====================================================
+# External URLs (local development)
+# =====================================================
+EXTERNAL_BASE_PATH=
+EXTERNAL_API_URL=http://localhost:8000/api
+
+# =====================================================
+# Internal URLs (container-to-container communication)
+# =====================================================
+INTERNAL_BACKEND_URL=http://eyrie_backend_dev:5000
+BACKEND_BASE_PATH=/api
+
+# =====================================================
+# Database Configuration
+# =====================================================
+MONGO_URI=mongodb://admin:admin@eyrie_mongodb_dev:27017/eyrie?authSource=eyrie
+
+# =====================================================
+# Application Environment
+# =====================================================
+ENVIRONMENT=development
+
+# =====================================================
+# Optional: Logging and Debug
+# =====================================================
+LOG_LEVEL=DEBUG
+DEBUG=true
