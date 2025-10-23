@@ -26,13 +26,13 @@ EXTERNAL_API_URL=http://localhost:8000/api
 # =====================================================
 # Internal URLs (container-to-container communication)
 # =====================================================
-INTERNAL_BACKEND_URL=http://eyrie_backend_dev:5000
+INTERNAL_BACKEND_URL=http://eyrie_backend:5000
 BACKEND_BASE_PATH=/api
 
 # =====================================================
 # Database Configuration
 # =====================================================
-MONGO_URI=mongodb://admin:admin@eyrie_mongodb_dev:27017/eyrie?authSource=eyrie
+MONGO_URI=mongodb://admin:admin@eyrie_mongodb:27017/eyrie?authSource=eyrie
 
 # =====================================================
 # Application Environment
