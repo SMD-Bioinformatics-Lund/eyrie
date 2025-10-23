@@ -1,0 +1,53 @@
+# Eyrie Environment Configuration
+# This file configures the application for Apache proxy deployment
+
+# =====================================================
+# Version Management
+# =====================================================
+EYRIE_VERSION=0.2.1
+FRONTEND_VERSION=${EYRIE_VERSION}
+BACKEND_VERSION=${EYRIE_VERSION}
+POPUP_VERSION=${EYRIE_VERSION}
+MONGODB_VERSION=5.0
+
+# =====================================================
+# Host Ports (mapped to Apache proxy)
+# =====================================================
+BACKEND_HOST_PORT=5809
+FRONTEND_HOST_PORT=5810
+MONGO_HOST_PORT=27017
+
+# =====================================================
+# External URLs (Apache proxy paths)
+# =====================================================
+# Base path where the application is served by Apache
+EXTERNAL_BASE_PATH=/eyrie
+
+# External API URL that browsers will call (through Apache)
+# Replace 'your-domain.com' with your actual domain
+EXTERNAL_API_URL=http://your-domain.com/eyrie/api
+
+# =====================================================
+# Internal URLs (container-to-container communication)
+# =====================================================
+# Internal backend URL for Flask to proxy API calls
+INTERNAL_BACKEND_URL=http://eyrie_backend:8000
+
+# Base path that backend expects to receive from Apache
+BACKEND_BASE_PATH=/eyrie/api
+
+# =====================================================
+# Database Configuration
+# =====================================================
+MONGO_URI=mongodb://mongodb:27017/eyrie
+
+# =====================================================
+# Application Environment
+# =====================================================
+ENVIRONMENT=production
+
+# =====================================================
+# Optional: Logging and Debug
+# =====================================================
+LOG_LEVEL=INFO
+DEBUG=false
