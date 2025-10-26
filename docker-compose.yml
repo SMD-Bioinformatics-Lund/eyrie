@@ -12,6 +12,9 @@ services:
     volumes:
       - mongodb_data:/data/db
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    networks:
+      - eyrie-network
+      
   eyrie-backend:
     image: clinicalgenomicslund/eyrie-backend:${BACKEND_VERSION:-latest}
     container_name: eyrie_backend
@@ -26,6 +29,8 @@ services:
       - mongodb
     volumes:
       - ./data:/app/data:ro
+    networks:
+      - eyrie-network
 
   eyrie-frontend:
     image: clinicalgenomicslund/eyrie-frontend:${FRONTEND_VERSION:-latest}
@@ -42,6 +47,13 @@ services:
       - eyrie-backend
     volumes:
       - ./data:/app/data:ro
+    networks:
+      - eyrie-network
 
 volumes:
   mongodb_data:
+
+networks:
+  eyrie-network:
+    driver: bridge
+    name: eyrie-network
