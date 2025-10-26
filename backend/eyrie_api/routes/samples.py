@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
-from eyrie_api.database.sample_operations import (
+from eyrie_api.database.async_sample_operations import (
     get_all_samples, find_sample, update_sample_qc, update_sample_comment,
     create_sample, update_sample, upsert_sample, update_sample_species_flags
 )
@@ -13,7 +13,7 @@ router = APIRouter(prefix="/api/samples", tags=["samples"])
 @router.get("")
 async def get_samples():
     try:
-        samples = get_all_samples()
+        samples = await get_all_samples()
         return json.loads(JSONEncoder().encode(samples))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -21,7 +21,7 @@ async def get_samples():
 @router.get("/{sample_id}")
 async def get_sample(sample_id: str):
     try:
-        sample = find_sample(sample_id)
+        sample = await find_sample(sample_id)
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
         return json.loads(JSONEncoder().encode(sample))
@@ -38,7 +38,7 @@ async def create_new_sample(
     """Create a new sample (requires admin or uploader role)"""
     try:
         sample_dict = sample_data.dict()
-        sample_id = create_sample(sample_dict)
+        sample_id = await create_sample(sample_dict)
         return {
             "message": f"Sample '{sample_data.sample_id}' created successfully",
             "sample_id": sample_data.sample_id,
@@ -65,7 +65,7 @@ async def upsert_sample_endpoint(
             )
 
         sample_dict = sample_data.dict()
-        db_id, was_created = upsert_sample(sample_dict)
+        db_id, was_created = await upsert_sample(sample_dict)
 
         action = "created" if was_created else "updated"
         return {
@@ -89,7 +89,7 @@ async def partial_update_sample(
         if not update_dict:
             raise HTTPException(status_code=400, detail="No data provided for update")
 
-        success = update_sample(sample_id, update_dict)
+        success = await update_sample(sample_id, update_dict)
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
@@ -113,7 +113,7 @@ async def update_qc(
         if qc_data.qc not in ['passed', 'failed', 'unprocessed']:
             raise HTTPException(status_code=400, detail="Invalid QC status")
 
-        success = update_sample_qc(sample_id, qc_data.qc, qc_data.comments)
+        success = await update_sample_qc(sample_id, qc_data.qc, qc_data.comments)
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
@@ -131,7 +131,7 @@ async def update_comment(
 ):
     """Update sample comment (requires admin or uploader role)"""
     try:
-        success = update_sample_comment(sample_id, comment_data.comments)
+        success = await update_sample_comment(sample_id, comment_data.comments)
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
@@ -149,7 +149,7 @@ async def update_species_flags(
 ):
     """Update sample species flags (contaminants and/or top hits)"""
     try:
-        success = update_sample_species_flags(
+        success = await update_sample_species_flags(
             sample_id,
             species_flags_data.flagged_contaminants,
             species_flags_data.flagged_top_hits
