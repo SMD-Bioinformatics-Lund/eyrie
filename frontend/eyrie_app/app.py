@@ -1,27 +1,22 @@
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
-from pymongo import MongoClient
-from bson import ObjectId
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
 from functools import wraps
 from typing import Callable, Any
 import os
 import json
+import urllib.request
+import urllib.parse
+import requests
 
-# Global variables that will be set in create_app()
-db = None
-USE_MONGO = False
+# Global variables for sessions (frontend only handles sessions, all data from API)
 sessions = {}
-users_db = {}
-samples_db = []
+backend_url = None
 
-# Custom JSON encoder for MongoDB ObjectId and datetime
+# Custom JSON encoder for datetime
 class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
-        if isinstance(obj, ObjectId):
-            return str(obj)
         if isinstance(obj, datetime):
             return obj.isoformat()
         return super().default(obj)
@@ -33,144 +28,37 @@ class TokenObject:
         self.token = token
         self.type = type
 
-# Pydantic-like models (simple classes for Flask)
-class LoginRequest:
-    def __init__(self, data):
-        self.username = data.get('username')
-        self.password = data.get('password')
 
-class UserCreate:
-    def __init__(self, data):
-        self.username = data.get('username')
-        self.email = data.get('email')
-        self.password = data.get('password')
-        self.role = data.get('role', 'user')
 
-class UserUpdate:
-    def __init__(self, data):
-        self.email = data.get('email')
-        self.password = data.get('password')
-        self.role = data.get('role')
-        self.is_active = data.get('is_active')
-
-class QCUpdate:
-    def __init__(self, data):
-        self.qc = data.get('qc')
-        self.comments = data.get('comments', '')
-
-class CommentUpdate:
-    def __init__(self, data):
-        self.comments = data.get('comments')
-
-# Database helper functions
-def init_default_user():
-    """Initialize default admin user"""
-    global db, USE_MONGO, users_db, samples_db
-
-    if USE_MONGO:
-        if db.users.count_documents({}) == 0:
-            admin_user = {
-                'username': 'admin',
-                'email': 'admin@example.com',
-                'password_hash': generate_password_hash('admin'),
-                'role': 'admin',
-                'created_date': datetime.now(),
-                'is_active': True
-            }
-            db.users.insert_one(admin_user)
-            print("Default admin user created: admin/admin")
-    else:
-        if 'admin' not in users_db:
-            users_db['admin'] = {
-                '_id': 'admin_id',
-                'username': 'admin',
-                'email': 'admin@example.com',
-                'password_hash': generate_password_hash('admin'),
-                'role': 'admin',
-                'created_date': datetime.now(),
-                'is_active': True
-            }
-            # Add sample data for demo
-            samples_db.extend([
-                {
-                    'sample_id': 'S001',
-                    'sample_name': 'Test Sample 1',
-                    'sequencing_run_id': 'RUN001',
-                    'lims_id': 'LIMS001',
-                    'classification': '16S',
-                    'qc': 'passed',
-                    'comments': 'Test sample',
-                    'created_date': datetime.now(),
-                    'updated_date': datetime.now(),
-                    'krona_file': None,
-                    'quality_plot': None,
-                    'pipeline_files': [],
-                    'statistics': {
-                        'total_reads': 10000,
-                        'quality_passed': 8500,
-                        'avg_length': 150,
-                        'avg_quality': 35.2
-                    }
-                },
-                {
-                    'sample_id': 'S002',
-                    'sample_name': 'Test Sample 2',
-                    'sequencing_run_id': 'RUN002',
-                    'lims_id': 'LIMS002',
-                    'classification': 'ITS',
-                    'qc': 'unprocessed',
-                    'comments': '',
-                    'created_date': datetime.now(),
-                    'updated_date': datetime.now(),
-                    'krona_file': None,
-                    'quality_plot': None,
-                    'pipeline_files': [],
-                    'statistics': {
-                        'total_reads': 12000,
-                        'quality_passed': 9600,
-                        'avg_length': 145,
-                        'avg_quality': 33.8
-                    }
-                }
-            ])
-            print("Default admin user and sample data created: admin/admin")
-
-def find_user(query):
-    """Find user by query"""
-    global db, USE_MONGO, users_db
-
-    if USE_MONGO:
-        return db.users.find_one(query)
-    else:
-        username = query.get('username')
-        if username and username in users_db:
-            user = users_db[username]
-            if query.get('is_active', True) and user.get('is_active', True):
-                return user
-        return None
-
-def find_user_by_id(user_id):
-    """Find user by ID"""
-    global db, USE_MONGO, users_db
-
-    if USE_MONGO:
-        return db.users.find_one({'_id': ObjectId(user_id)})
-    else:
-        for user in users_db.values():
-            if user['_id'] == user_id:
-                return user
-        return None
 
 # Authentication helper functions
 def get_current_user():
-    global sessions
+    """Get current user info from backend API"""
+    global sessions, backend_url
     session_id = request.cookies.get("session_id")
     if not session_id or session_id not in sessions:
         return None
 
-    user_id = sessions[session_id].get("user_id")
-    user = find_user_by_id(user_id)
-    return user
+    session_data = sessions[session_id]
+    backend_token = session_data.get('backend_token')
+    
+    if not backend_token:
+        return None
+    
+    try:
+        # Get user info from backend API
+        response = requests.get(
+            f"{backend_url}/api/auth/me",
+            headers={'Authorization': f'Bearer {backend_token}'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+    except requests.RequestException:
+        return None
 
 def get_admin_user():
     user = get_current_user()
@@ -246,31 +134,54 @@ def register_blueprints(app):
 
 def create_app():
     """Create and configure Flask application"""
-    global db, USE_MONGO, sessions
+    global sessions
 
     app = Flask(__name__)
 
     # CORS configuration
     CORS(app, origins=["*"], supports_credentials=True)
 
-    # MongoDB connection with fallback to in-memory storage
-    try:
-        mongo_uri = os.getenv('MONGO_URI', 'mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie')
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
-        # Test connection
-        client.server_info()
-        db = client.eyrie
-        print("✓ Connected to MongoDB")
-        USE_MONGO = True
-    except Exception as e:
-        print(f"⚠️  MongoDB not available ({e}), using in-memory storage")
-        USE_MONGO = False
-
-    # Initialize session storage
+    # Configure backend API connection with fallback URLs
+    global backend_url, sessions
+    
+    # Primary backend URL from environment
+    primary_backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie_backend:5000')
+    
+    # Fallback URLs to try in production environments
+    fallback_urls = [
+        primary_backend_url,
+        'http://eyrie-backend:5000',  # Different naming convention
+        'http://localhost:8000',      # Local fallback
+        'http://127.0.0.1:8000',      # IP fallback
+    ]
+    
+    backend_url = None
+    
+    # Initialize session storage (frontend only handles sessions)
     sessions = {}
-
-    # Initialize default user on startup
-    init_default_user()
+    
+    print(f"🔍 Testing backend connectivity...")
+    print(f"   Primary URL: {primary_backend_url}")
+    
+    # Test backend connectivity and find working URL
+    import requests
+    for test_url in fallback_urls:
+        try:
+            print(f"   Testing: {test_url}")
+            response = requests.get(f"{test_url}/health", timeout=3)
+            if response.status_code == 200:
+                backend_url = test_url
+                print(f"✓ Backend connectivity successful: {backend_url} (status: {response.status_code})")
+                break
+        except Exception as e:
+            print(f"   Failed: {test_url} - {e}")
+    
+    if not backend_url:
+        backend_url = primary_backend_url  # Use primary as fallback
+        print(f"⚠️  No backend connectivity established. Using primary URL: {backend_url}")
+        print(f"   This may cause issues during operation")
+    
+    print("ℹ️  Frontend will handle sessions only, all data comes from backend API")
 
     # Register blueprints
     register_blueprints(app)
@@ -278,35 +189,45 @@ def create_app():
     # Authentication endpoints
     @app.route("/api/auth/login", methods=['POST'])
     def login():
-        global sessions, USE_MONGO
+        """Authenticate with backend API and store session locally"""
+        global sessions
         try:
             data = request.get_json()
-            login_data = LoginRequest(data)
-
-            user = find_user({'username': login_data.username, 'is_active': True})
-
-            if user and check_password_hash(user['password_hash'], login_data.password):
-                # Create session
-                session_id = str(ObjectId()) if USE_MONGO else f"session_{len(sessions)}"
+            
+            # Forward login request to backend API
+            backend_login_url = f"{backend_url}/api/auth/login"
+            
+            response = requests.post(
+                backend_login_url,
+                json=data,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                backend_data = response.json()
+                backend_token = backend_data.get('access_token')
+                user_data = backend_data.get('user', {})
+                
+                # Create frontend session
+                session_id = f"session_{len(sessions)}_{datetime.now().timestamp()}"
                 sessions[session_id] = {
-                    'user_id': str(user['_id']),
-                    'username': user['username'],
-                    'role': user['role']
+                    'user_id': user_data.get('id'),  # Store user ID for compatibility
+                    'username': user_data.get('username'),
+                    'role': user_data.get('role'),
+                    'backend_token': backend_token
                 }
 
-                response = jsonify({
+                response_data = jsonify({
                     'success': True,
-                    'user': {
-                        'username': user['username'],
-                        'email': user['email'],
-                        'role': user['role']
-                    }
+                    'user': user_data
                 })
-                response.set_cookie(key="session_id", value=session_id, httponly=True)
-                return response
+                response_data.set_cookie(key="session_id", value=session_id, httponly=True)
+                return response_data
             else:
-                return jsonify({'error': 'Invalid credentials'}), 401
+                return jsonify({'error': 'Invalid credentials'}), response.status_code
 
+        except requests.RequestException as e:
+            return jsonify({'error': f'Backend connection failed: {str(e)}'}), 500
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -324,7 +245,9 @@ def create_app():
     @app.route("/api/auth/current-user", methods=['GET'])
     @api_authentication
     def current_user(current_user=None):
+        """Get current user info from backend API"""
         try:
+            # current_user is already fetched from backend API in get_current_user()
             return jsonify({
                 'username': current_user['username'],
                 'email': current_user['email'],
@@ -337,105 +260,106 @@ def create_app():
     @app.route("/api/admin/users", methods=['GET'])
     @admin_required
     def get_users(current_user=None):
-        global db
+        """Proxy admin users request to backend API"""
         try:
-            users = list(db.users.find({}, {'password_hash': 0}))  # Exclude password hash
-            return json.loads(JSONEncoder().encode(users))
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
+            response = requests.get(
+                f"{backend_url}/api/admin/users",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/admin/users", methods=['POST'])
     @admin_required
     def create_user(current_user=None):
-        global db
+        """Proxy admin create user request to backend API"""
         try:
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
             data = request.get_json()
-            user_data = UserCreate(data)
-
-            # Validate input
-            if not user_data.username or not user_data.email or not user_data.password:
-                return jsonify({'error': 'Username, email, and password are required'}), 400
-
-            if user_data.role not in ['user', 'admin', 'uploader']:
-                return jsonify({'error': 'Invalid role'}), 400
-
-            # Check if user already exists
-            if db.users.find_one({'username': user_data.username}):
-                return jsonify({'error': 'Username already exists'}), 400
-
-            if db.users.find_one({'email': user_data.email}):
-                return jsonify({'error': 'Email already exists'}), 400
-
-            # Create user
-            user = {
-                'username': user_data.username,
-                'email': user_data.email,
-                'password_hash': generate_password_hash(user_data.password),
-                'role': user_data.role,
-                'created_date': datetime.now(),
-                'is_active': True
-            }
-
-            result = db.users.insert_one(user)
-            user['_id'] = str(result.inserted_id)
-            del user['password_hash']  # Don't return password hash
-
-            return jsonify({'success': True, 'user': user})
-
+            
+            response = requests.post(
+                f"{backend_url}/api/admin/users",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                json=data,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/admin/users/<user_id>", methods=['PUT'])
     @admin_required
     def update_user(user_id, current_user=None):
-        global db
+        """Proxy admin update user request to backend API"""
         try:
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
             data = request.get_json()
-            user_data = UserUpdate(data)
-
-            update_data = {}
-            if user_data.email is not None:
-                update_data['email'] = user_data.email
-            if user_data.role is not None:
-                if user_data.role not in ['user', 'admin', 'uploader']:
-                    return jsonify({'error': 'Invalid role'}), 400
-                update_data['role'] = user_data.role
-            if user_data.is_active is not None:
-                update_data['is_active'] = user_data.is_active
-            if user_data.password:
-                update_data['password_hash'] = generate_password_hash(user_data.password)
-
-            update_data['updated_date'] = datetime.now()
-
-            result = db.users.update_one(
-                {'_id': ObjectId(user_id)},
-                {'$set': update_data}
+            
+            response = requests.put(
+                f"{backend_url}/api/admin/users/{user_id}",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                json=data,
+                timeout=10
             )
-
-            if result.matched_count == 0:
-                return jsonify({'error': 'User not found'}), 404
-
-            return jsonify({'success': True})
-
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/admin/users/<user_id>", methods=['DELETE'])
     @admin_required
     def delete_user(user_id, current_user=None):
-        global db
+        """Proxy admin delete user request to backend API"""
         try:
-            # Prevent deleting the current user
-            if str(current_user['_id']) == user_id:
-                return jsonify({'error': 'Cannot delete your own account'}), 400
-
-            result = db.users.delete_one({'_id': ObjectId(user_id)})
-
-            if result.deleted_count == 0:
-                return jsonify({'error': 'User not found'}), 404
-
-            return jsonify({'success': True})
-
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
+            response = requests.delete(
+                f"{backend_url}/api/admin/users/{user_id}",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -443,116 +367,134 @@ def create_app():
     @app.route("/api/samples", methods=['GET'])
     @api_authentication
     def get_samples(current_user=None):
-        global db, USE_MONGO, samples_db
+        """Proxy samples request to backend API"""
         try:
-            if USE_MONGO:
-                samples = list(db.samples.find())
-                return json.loads(JSONEncoder().encode(samples))
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
+            response = requests.get(
+                f"{backend_url}/api/samples",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
             else:
-                return json.loads(JSONEncoder().encode(samples_db))
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>", methods=['GET'])
     @api_authentication
     def get_sample(sample_id, current_user=None):
-        global db, USE_MONGO, samples_db
+        """Proxy sample request to backend API"""
         try:
-            if USE_MONGO:
-                sample = db.samples.find_one({'sample_id': sample_id})
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
+            response = requests.get(
+                f"{backend_url}/api/samples/{sample_id}",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
             else:
-                sample = next((s for s in samples_db if s['sample_id'] == sample_id), None)
-
-            if not sample:
-                return jsonify({'error': 'Sample not found'}), 404
-            return json.loads(JSONEncoder().encode(sample))
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>/qc", methods=['PUT'])
     @api_authentication
     def update_qc(sample_id, current_user=None):
-        global db
+        """Proxy QC update request to backend API"""
         try:
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
             data = request.get_json()
-            qc_data = QCUpdate(data)
-
-            if qc_data.qc not in ['passed', 'failed', 'unprocessed']:
-                return jsonify({'error': 'Invalid QC status'}), 400
-
-            result = db.samples.update_one(
-                {'sample_id': sample_id},
-                {
-                    '$set': {
-                        'qc': qc_data.qc,
-                        'comments': qc_data.comments,
-                        'updated_date': datetime.now()
-                    }
-                }
+            
+            response = requests.put(
+                f"{backend_url}/api/samples/{sample_id}/qc",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                json=data,
+                timeout=10
             )
-
-            if result.matched_count == 0:
-                return jsonify({'error': 'Sample not found'}), 404
-
-            return jsonify({'success': True})
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>/comment", methods=['PUT'])
     @api_authentication
     def update_comment(sample_id, current_user=None):
-        global db
+        """Proxy comment update request to backend API"""
         try:
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
             data = request.get_json()
-            comment_data = CommentUpdate(data)
-
-            result = db.samples.update_one(
-                {'sample_id': sample_id},
-                {
-                    '$set': {
-                        'comments': comment_data.comments,
-                        'updated_date': datetime.now()
-                    }
-                }
+            
+            response = requests.put(
+                f"{backend_url}/api/samples/{sample_id}/comment",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                json=data,
+                timeout=10
             )
-
-            if result.matched_count == 0:
-                return jsonify({'error': 'Sample not found'}), 404
-
-            return jsonify({'success': True})
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
+            else:
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
     @app.route("/api/samples/<sample_id>/species-flags", methods=['PUT'])
     @api_authentication
     def update_species_flags(sample_id, current_user=None):
-        global db, USE_MONGO, samples_db
+        """Proxy species flags update request to backend API"""
         try:
+            session_id = request.cookies.get("session_id")
+            backend_token = sessions[session_id].get('backend_token') if session_id in sessions else None
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
+            
             data = request.get_json()
-            flagged_contaminants = data.get('flagged_contaminants', [])
-            flagged_top_hits = data.get('flagged_top_hits', [])
-
-            update_data = {
-                'flagged_contaminants': flagged_contaminants,
-                'flagged_top_hits': flagged_top_hits,
-                'updated_date': datetime.now()
-            }
-
-            if USE_MONGO:
-                result = db.samples.update_one(
-                    {'sample_id': sample_id},
-                    {'$set': update_data}
-                )
-                if result.matched_count == 0:
-                    return jsonify({'error': 'Sample not found'}), 404
+            
+            response = requests.put(
+                f"{backend_url}/api/samples/{sample_id}/species-flags",
+                headers={'Authorization': f'Bearer {backend_token}'},
+                json=data,
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return jsonify(response.json())
             else:
-                # Update in-memory samples_db
-                sample = next((s for s in samples_db if s['sample_id'] == sample_id), None)
-                if not sample:
-                    return jsonify({'error': 'Sample not found'}), 404
-                sample.update(update_data)
-
-            return jsonify({'success': True})
+                return jsonify({'error': 'Backend request failed'}), response.status_code
+                
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
@@ -584,18 +526,31 @@ def create_app():
     def trends_data_proxy(current_user=None):
         """Proxy trends data requests to FastAPI backend"""
         try:
-            import urllib.request
-            import urllib.parse
+            # Get the backend token from the current session
+            session_id = request.cookies.get("session_id")
+            backend_token = None
+            
+            if session_id and session_id in sessions:
+                backend_token = sessions[session_id].get('backend_token')
+            
+            if not backend_token:
+                return jsonify({'error': 'Backend authentication required'}), 401
             
             # Get query parameters from the request
             query_params = request.args.to_dict()
             query_string = urllib.parse.urlencode(query_params)
             
-            # Forward request to FastAPI backend
-            backend_url = os.getenv('BACKEND_URL', 'http://localhost:8000')
+            # Forward request to FastAPI backend with authentication
+            backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie_backend:5000')
             full_url = f"{backend_url}/api/trends/data?{query_string}"
             
-            with urllib.request.urlopen(full_url) as response:
+            # Create request with Authorization header
+            req = urllib.request.Request(
+                full_url,
+                headers={'Authorization': f'Bearer {backend_token}'}
+            )
+            
+            with urllib.request.urlopen(req) as response:
                 if response.status == 200:
                     data = json.loads(response.read().decode('utf-8'))
                     return jsonify(data)
@@ -608,12 +563,33 @@ def create_app():
     # Health check
     @app.route("/health", methods=['GET'])
     def health_check():
-        global db
+        """Health check endpoint with backend connectivity details"""
         try:
-            db.samples.count_documents({})
-            return jsonify({'status': 'healthy'})
+            import os
+            # Check if backend is reachable
+            response = requests.get(f"{backend_url}/health", timeout=5)
+            if response.status_code == 200:
+                return jsonify({
+                    'status': 'healthy', 
+                    'backend': 'connected',
+                    'backend_url': backend_url,
+                    'container_name': os.getenv('HOSTNAME', 'unknown'),
+                    'environment': os.getenv('ENVIRONMENT', 'unknown')
+                })
+            else:
+                return jsonify({
+                    'status': 'unhealthy', 
+                    'backend': 'unreachable',
+                    'backend_url': backend_url,
+                    'backend_status': response.status_code
+                }), 500
         except Exception as e:
-            return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+            return jsonify({
+                'status': 'unhealthy', 
+                'error': str(e),
+                'backend_url': backend_url,
+                'container_name': os.getenv('HOSTNAME', 'unknown')
+            }), 500
 
     return app
 
