@@ -7,17 +7,35 @@ from typing import Callable, Any, List
 
 
 def get_current_user():
-    """Get current user from session"""
+    """Get current user from backend API"""
     # Import here to avoid circular imports
-    from ..app import sessions, find_user_by_id
+    from ..app import sessions, backend_url
+    import requests
     
     session_id = request.cookies.get("session_id")
     if not session_id or session_id not in sessions:
         return None
 
-    user_id = sessions[session_id].get("user_id")
-    user = find_user_by_id(user_id)
-    return user
+    session_data = sessions[session_id]
+    backend_token = session_data.get('backend_token')
+    
+    if not backend_token:
+        return None
+    
+    try:
+        # Get user info from backend API
+        response = requests.get(
+            f"{backend_url}/api/auth/me",
+            headers={'Authorization': f'Bearer {backend_token}'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return None
+    except requests.RequestException:
+        return None
 
 
 def login_required(func: Callable[..., Any]) -> Callable[..., Any]:
