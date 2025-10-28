@@ -28,7 +28,9 @@ function loadClassificationData(sample = currentSample) {
     if (sample.krona_file) {
         const frame = document.getElementById('classificationKronaFrame');
         if (frame) {
-            frame.src = `/data/${sample.krona_file}`;
+            // Use base path aware URL construction
+            const basePath = getBasePath();
+            frame.src = `${basePath}/data/${sample.krona_file}`;
             frame.style.width = '100%';
             frame.style.height = '600px';
             frame.style.border = 'none';
@@ -268,15 +270,17 @@ async function saveSpeciesFlags() {
         return;
     }
     
-    const apiBase = window.API_BASE || '/api';
+    const apiBase = window.API_BASE;
     const url = `${apiBase}/samples/${currentSample.sample_id}/species-flags`;
     const payload = {
         flagged_contaminants: Array.from(flaggedContaminants),
         flagged_top_hits: Array.from(flaggedTopHits)
     };
     
-    console.log('Saving species flags:', payload);
-    console.log('API URL:', url);
+    console.log('🔍 Species flags API_BASE:', apiBase);
+    console.log('🔍 Species flags URL:', url);
+    console.log('🔍 Species flags payload:', payload);
+    console.log('🔍 Document cookies:', document.cookie);
     
     try {
         const response = await fetch(url, {
@@ -407,7 +411,9 @@ function refreshKronaPlot() {
  */
 function downloadKronaPlot() {
     if (currentSample && currentSample.krona_file) {
-        window.open(`/data/${currentSample.krona_file}`, '_blank');
+        // Use base path aware URL construction
+        const basePath = getBasePath();
+        window.open(`${basePath}/data/${currentSample.krona_file}`, '_blank');
     } else {
         alert('No Krona plot available for download');
     }
