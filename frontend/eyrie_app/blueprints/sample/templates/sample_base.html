@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Eyrie Sample Manager{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('main.serve_shared_static', filename='css/styles.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sample views have their own navbar, no main navbar here -->
+    {% block content %}{% endblock %}
+
+    <script>
+        // API base URL - properly construct from samples endpoint
+        window.API_BASE = '{{ url_for("main.get_samples").replace("/api/samples", "/api") }}';
+        console.log('🔍 API_BASE set to:', window.API_BASE);
+        console.log('🔍 Original get_samples URL:', '{{ url_for("main.get_samples") }}');
+
+        // Shared authentication functions
+        async function loadCurrentUser() {
+            try {
+                const response = await fetch('{{ url_for("main.current_user_api") }}', {
+                    credentials: 'include'
+                });
+                if (response.ok) {
+                    const user = await response.json();
+                    const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
+                    usernameElements.forEach(el => el.textContent = user.username);
+
+                    {% block user_loaded %}{% endblock %}
+                } else {
+                    {% block auth_failed %}
+                    const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
+                    usernameElements.forEach(el => el.textContent = 'Unknown');
+                    {% endblock %}
+                }
+            } catch (error) {
+                console.error('Failed to load user:', error);
+                const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
+                usernameElements.forEach(el => el.textContent = 'Unknown');
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('{{ url_for("login.logout") }}', { method: 'POST' });
+                window.location.href = '{{ url_for("login.login") }}';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '{{ url_for("login.login") }}';
+            }
+        }
+
+        // Initialize shared functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentUser();
+            {% block dom_ready %}{% endblock %}
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('main.serve_shared_static', filename='js/shared.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
