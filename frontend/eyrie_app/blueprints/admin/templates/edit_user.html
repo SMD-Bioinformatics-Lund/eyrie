@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - Eyrie Sample Manager{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{% if category == 'error' %}danger{% else %}{{ category }}{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="d-flex align-items-center mb-4">
+                    <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary me-3">
+                        <i class="bi bi-arrow-left"></i>
+                    </a>
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-person-gear me-2"></i>Edit User: {{ user.username }}
+                    </h1>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <form method="POST" action="{{ url_for('admin.edit_user', user_id=user._id) }}">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="username" 
+                                       value="{{ user.username }}"
+                                       disabled
+                                       readonly>
+                                <div class="form-text">Username cannot be changed</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{{ user.email }}"
+                                       required 
+                                       autofocus>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="password" class="form-label">New Password</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       placeholder="Leave blank to keep current password">
+                                <div class="form-text">Only enter a password if you want to change it</div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+                                    <option value="uploader" {% if user.role == 'uploader' %}selected{% endif %}>Uploader</option>
+                                    <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                </select>
+                                <div class="form-text">
+                                    <strong>User:</strong> View samples only<br>
+                                    <strong>Uploader:</strong> View and upload samples<br>
+                                    <strong>Admin:</strong> Full system access
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           id="is_active" 
+                                           name="is_active" 
+                                           {% if user.is_active %}checked{% endif %}>
+                                    <label class="form-check-label" for="is_active">
+                                        Active Account
+                                    </label>
+                                    <div class="form-text">Inactive users cannot log in</div>
+                                </div>
+                            </div>
+
+                            {% if user.created_date %}
+                            <div class="mb-3">
+                                <label class="form-label">Account Created</label>
+                                <div class="form-control-plaintext">{{ user.created_date }}</div>
+                            </div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between">
+                                <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle me-2"></i>Cancel
+                                </a>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle me-2"></i>Update User
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block dom_ready %}
+// Edit user page specific initialization
+document.getElementById('email').focus();
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Eyrie Sample Manager{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="row">
+                    <div class="col-12">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{% if category == 'error' %}danger{% else %}{{ category }}{% endif %} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1 class="h3 mb-0">
+                        <i class="bi bi-people me-2"></i>User Management
+                    </h1>
+                    <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+                        <i class="bi bi-person-plus me-2"></i>Add New User
+                    </a>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        {% if users %}
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Username</th>
+                                            <th>Email</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Created</th>
+                                            <th width="120">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>
+                                                <strong>{{ user.username }}</strong>
+                                            </td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                <span class="badge {% if user.role == 'admin' %}bg-danger{% elif user.role == 'uploader' %}bg-warning text-dark{% else %}bg-info{% endif %}">
+                                                    {{ user.role.upper() }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {% if user.created_date %}
+                                                    {{ user.created_date[:10] }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{{ url_for('admin.edit_user', user_id=user._id) }}" 
+                                                       class="btn btn-outline-primary" 
+                                                       title="Edit User">
+                                                        <i class="bi bi-pencil"></i>
+                                                    </a>
+                                                    <form method="POST" 
+                                                          action="{{ url_for('admin.delete_user', user_id=user._id) }}" 
+                                                          style="display: inline;"
+                                                          onsubmit="return confirm('Are you sure you want to delete user {{ user.username }}?')">
+                                                        <button type="submit" 
+                                                                class="btn btn-outline-danger" 
+                                                                title="Delete User">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-people display-1 text-muted"></i>
+                                <h5 class="text-muted mt-3">No users found</h5>
+                                <p class="text-muted">Get started by creating your first user.</p>
+                                <a href="{{ url_for('admin.create_user') }}" class="btn btn-primary">
+                                    <i class="bi bi-person-plus me-2"></i>Add New User
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block dom_ready %}
+// Users page specific initialization
+console.log('Users page loaded with {{ users|length }} users');
+{% endblock %}

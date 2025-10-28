@@ -1,0 +1,32 @@
+{% macro navbar(current_user) %}
+<nav class="navbar navbar-dark bg-dark border-0">
+    <div class="container-fluid">
+        <div class="d-flex align-items-center justify-content-between w-100">
+            <div class="d-flex align-items-center">
+                <span class="navbar-brand mb-0 h1 me-4">
+                    <i class="bi bi-dna me-2"></i>Eyrie Sample Manager
+                </span>
+                <a href="{{ url_for('samples.samples_page') }}" class="btn {% if request.endpoint == 'samples.samples_page' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                    <i class="bi bi-table me-2"></i>Samples
+                </a>
+                <a href="{{ url_for('trends.index') }}" class="btn {% if request.endpoint == 'trends.index' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                    <i class="bi bi-graph-up me-2"></i>Trends
+                </a>
+                <a href="{{ url_for('admin.dashboard') }}" class="btn {% if request.endpoint == 'admin.dashboard' %}btn-light{% else %}btn-outline-light{% endif %} me-3" id="adminButton">
+                    <i class="bi bi-gear me-2"></i>Admin
+                </a>
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle me-2"></i><span id="currentUsername">{% if current_user %}{{ current_user.username }}{% else %}Loading...{% endif %}</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button class="dropdown-item" onclick="logout()">
+                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                    </button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endmacro %}
