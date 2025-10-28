@@ -71,6 +71,11 @@ async def health_check():
         logger.error(f"Health check failed: {e}")
         return {"status": "unhealthy", "error": str(e)}
 
+@app.get("/simple-test")
+async def simple_test():
+    """Ultra simple test endpoint"""
+    return {"message": "Backend is alive", "status": "ok"}
+
 @app.get("/debug")
 async def debug_info():
     """Debug information for troubleshooting"""
