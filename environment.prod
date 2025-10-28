@@ -15,7 +15,7 @@ MONGODB_VERSION=5.0
 # =====================================================
 BACKEND_HOST_PORT=5809
 FRONTEND_HOST_PORT=5810
-MONGO_HOST_PORT=27017
+MONGO_HOST_PORT=5811
 
 # =====================================================
 # External URLs (Apache proxy paths)
@@ -25,7 +25,7 @@ EXTERNAL_BASE_PATH=/eyrie
 
 # External API URL that browsers will call (through Apache)
 # Replace 'your-domain.com' with your actual domain
-EXTERNAL_API_URL=http://127.0.0.1:${BACKEND_HOST_PORT}/api
+EXTERNAL_API_URL=http://your-domain.com:${BACKEND_HOST_PORT}/api
 
 # =====================================================
 # Internal URLs (container-to-container communication)
@@ -33,8 +33,8 @@ EXTERNAL_API_URL=http://127.0.0.1:${BACKEND_HOST_PORT}/api
 # Internal backend URL for Flask to proxy API calls
 INTERNAL_BACKEND_URL=http://eyrie_backend:5000
 
-# Base path that backend expects to receive from Apache
-BACKEND_BASE_PATH=/eyrie/api
+# Base path that backend expects to receive from Apache (Apache strips /eyrie prefix)
+BACKEND_BASE_PATH=/api
 
 # =====================================================
 # Database Configuration
@@ -51,3 +51,8 @@ ENVIRONMENT=production
 # =====================================================
 LOG_LEVEL=INFO
 DEBUG=false
+
+# =====================================================
+# Security
+# =====================================================
+SECRET_KEY=prod-secret-key-change-this-in-production

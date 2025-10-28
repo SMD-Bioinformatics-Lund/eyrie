@@ -1,7 +1,7 @@
 """Views for trends analysis."""
 
 from flask import Blueprint, render_template
-from ...auth.decorators import login_required
+from flask_login import login_required
 
 trends_bp = Blueprint('trends', __name__, 
                      template_folder='templates',
@@ -11,6 +11,6 @@ trends_bp = Blueprint('trends', __name__,
 
 @trends_bp.route('/trends')
 @login_required
-def index(current_user=None):
+def index():
     """Display trends dashboard."""
-    return render_template('trends.html', current_user=current_user)
+    return render_template('trends.html')

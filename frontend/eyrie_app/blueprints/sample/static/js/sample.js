@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
         qcFailModal = new bootstrap.Modal(qcModalElement);
     }
     
-    // Load user and sample data
-    loadCurrentUser();
+    // Load user and sample data (use shared template function)
+    // Don't call loadCurrentUser here - it's called by template
     
     // Extract sample ID from URL path: /sample/S001
     const pathParts = window.location.pathname.split('/');
@@ -88,7 +88,9 @@ function renderSampleDetail(sample) {
     const kronaFrame = document.getElementById('kronaFrame');
     if (kronaFrame) {
         if (sample.krona_file) {
-            kronaFrame.src = `/data/${sample.krona_file}`;
+            // Use base path aware URL construction
+            const basePath = getBasePath();
+            kronaFrame.src = `${basePath}/data/${sample.krona_file}`;
         } else {
             kronaFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
         }
@@ -109,7 +111,9 @@ function renderSampleDetail(sample) {
         }
         
         if (qualityPlotPath) {
-            qualityFrame.src = `/data/${qualityPlotPath}`;
+            // Use base path aware URL construction
+            const basePath = getBasePath();
+            qualityFrame.src = `${basePath}/data/${qualityPlotPath}`;
         } else {
             qualityFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No quality plot available</i></div>';
         }

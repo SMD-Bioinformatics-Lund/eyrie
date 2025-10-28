@@ -2,6 +2,12 @@
  * Nanoplot-specific functionality
  */
 
+// Helper function to generate data URLs with proper base path
+function getDataUrl(filePath) {
+    const basePath = getBasePath();
+    return `${basePath}/data/${filePath}`;
+}
+
 // Global variables for nanoplot
 let currentPlotType = null;
 
@@ -136,12 +142,12 @@ function loadPlot(processingType, plotType) {
  */
 async function checkAndDisplayFile(container, filePath, title, processingType) {
     try {
-        const response = await fetch(`/data/${filePath}`, { method: 'HEAD' });
+        const response = await fetch(getDataUrl(filePath), { method: 'HEAD' });
         
         if (response.ok) {
             if (filePath.endsWith('.html')) {
                 container.innerHTML = `
-                    <iframe src="/data/${filePath}" 
+                    <iframe src="${getDataUrl(filePath)}" 
                             class="w-100 h-100" 
                             style="min-height: 500px; border: none;">
                     </iframe>
@@ -149,7 +155,7 @@ async function checkAndDisplayFile(container, filePath, title, processingType) {
             } else if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
                 container.innerHTML = `
                     <div class="text-center p-3">
-                        <img src="/data/${filePath}" 
+                        <img src="${getDataUrl(filePath)}" 
                              class="img-fluid" 
                              alt="${title}"
                              style="max-height: 500px; max-width: 100%;">
@@ -161,7 +167,7 @@ async function checkAndDisplayFile(container, filePath, title, processingType) {
                         <div class="text-center">
                             <i class="bi bi-file-earmark text-info" style="font-size: 4rem;"></i>
                             <p class="text-muted mt-3">${title}</p>
-                            <a href="/data/${filePath}" class="btn btn-primary" target="_blank">
+                            <a href="${getDataUrl(filePath)}" class="btn btn-primary" target="_blank">
                                 <i class="bi bi-download me-2"></i>Download File
                             </a>
                         </div>
@@ -350,7 +356,7 @@ function downloadPlot(processingType) {
     }
     
     if (filePath) {
-        window.open(`/data/${filePath}`, '_blank');
+        window.open(getDataUrl(filePath), '_blank');
     } else {
         alert(`No ${processingType} ${currentPlotType} data available for download`);
     }

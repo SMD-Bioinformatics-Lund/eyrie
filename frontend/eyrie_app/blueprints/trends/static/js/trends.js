@@ -48,7 +48,7 @@ async function updateTrends() {
         });
 
         // Fetch trends data using backend API (routed through Flask frontend)
-        const trendsApiUrl = '/api/trends/data';
+        const trendsApiUrl = `${window.API_BASE}/trends/data`;
         debugLog('Fetching trends data from:', `${trendsApiUrl}?${params}`);
         const response = await fetch(`${trendsApiUrl}?${params}`);
         

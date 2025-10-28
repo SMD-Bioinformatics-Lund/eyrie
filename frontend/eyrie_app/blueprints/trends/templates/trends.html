@@ -1,47 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Trends Analysis - Eyrie Sample Manager</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="/shared/static/css/styles.css" rel="stylesheet">
+{% extends "base.html" %}
+
+{% block title %}Trends Analysis - Eyrie Sample Manager{% endblock %}
+
+{% block extra_css %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-</head>
-<body>
-    <nav class="navbar navbar-dark bg-dark border-0">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center justify-content-between w-100">
-                <div class="d-flex align-items-center">
-                    <span class="navbar-brand mb-0 h1 me-4">
-                        <i class="bi bi-dna me-2"></i>Eyrie Sample Manager
-                    </span>
-                    <a href="/samples" class="btn btn-outline-light me-3">
-                        <i class="bi bi-table me-2"></i>Samples
-                    </a>
-                    <a href="/trends" class="btn btn-light me-3">
-                        <i class="bi bi-graph-up me-2"></i>Trends
-                    </a>
-                    {% if current_user and current_user.role == 'admin' %}
-                    <a href="/admin" class="btn btn-outline-light me-3">
-                        <i class="bi bi-gear me-2"></i>Admin
-                    </a>
-                    {% endif %}
-                </div>
-                <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-2"></i><span id="currentUsername">Loading...</span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li><button class="dropdown-item" onclick="logout()">
-                            <i class="bi bi-box-arrow-right me-2"></i>Logout
-                        </button></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </nav>
+{% endblock %}
+
+{% block content %}
 
     <div class="container-fluid mt-4">
         <div class="row">
@@ -157,18 +122,12 @@
         </div>
     </div>
 
-    <script>
-        // API base URL
-        window.API_BASE = '/api';
+{% endblock %}
 
-        // Initialize shared functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
-        });
-    </script>
+{% block dom_ready %}
+// Trends page specific initialization
+{% endblock %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/shared/static/js/shared.js"></script>
-    <script src="/blueprints/trends/static/js/trends.js"></script>
-</body>
-</html>
+{% block extra_js %}
+    <script src="{{ url_for('main.serve_blueprint_static', blueprint='trends', filename='static/js/trends.js') }}"></script>
+{% endblock %}

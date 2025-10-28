@@ -32,9 +32,9 @@ function renderSamplesTable(samples) {
     tbody.innerHTML = samples.map(sample => `
         <tr>
             <td>
-                <button class="btn btn-primary btn-sm" onclick="openSample('${sample.sample_id}')">
+                <a href="${getSampleUrl(sample.sample_id)}" class="btn btn-primary btn-sm">
                     <i class="bi bi-eye"></i>
-                </button>
+                </a>
             </td>
             <td>${sample.sample_name}</td>
             <td>${sample.sample_id}</td>
@@ -94,8 +94,14 @@ function getQCBadgeClass(qc) {
 }
 
 
-function openSample(sampleId) {
-    window.location.href = `/sample/${sampleId}`;
+function getSampleUrl(sampleId) {
+    // Use Flask URL template provided by the template
+    if (window.SAMPLE_URL_TEMPLATE) {
+        return window.SAMPLE_URL_TEMPLATE.replace('__SAMPLE_ID__', sampleId);
+    }
+    // Fallback to manual construction if template not available
+    const basePath = window.API_BASE.replace('/api', '');
+    return `${basePath}/sample/${sampleId}`;
 }
 
 

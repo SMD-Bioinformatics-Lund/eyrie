@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nanoplot - {{ sample_id }} | Eyrie</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="/shared/static/css/styles.css" rel="stylesheet">
-</head>
-<body>
+{% extends "sample_base.html" %}
+
+{% block title %}Nanoplot - {{ sample_id }} | Eyrie{% endblock %}
+
+{% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
     {{ sample_navbar(sample_id, 'nanoplot', current_user) }}
 
@@ -199,20 +193,15 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/shared/static/js/shared.js"></script>
-    <script src="/blueprints/sample/static/js/sample_core.js"></script>
-    <script src="/blueprints/sample/static/js/sample_nanoplot.js"></script>
-    <script>
-        // Constants
-        const API_BASE = '/api';
-        const SAMPLE_ID = '{{ sample_id }}';
-        
-        // Page initialization
-        document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
-            initializeNanoplotView(SAMPLE_ID);
-        });
-    </script>
-</body>
-</html>
+{% endblock %}
+
+{% block dom_ready %}
+// Nanoplot page specific initialization
+const SAMPLE_ID = '{{ sample_id }}';
+initializeNanoplotView(SAMPLE_ID);
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
+    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_nanoplot.js') }}"></script>
+{% endblock %}
