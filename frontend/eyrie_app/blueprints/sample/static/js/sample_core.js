@@ -2,11 +2,17 @@
  * Core utilities shared across sample views
  */
 
-// Constants
-window.API_BASE = window.API_BASE || '/api';
+// Constants - don't override if already set by template
+// This should normally be set by the template using Flask's url_for()
+if (typeof window.API_BASE === 'undefined') {
+    console.warn('API_BASE not set by template, using fallback');
+    window.API_BASE = '/api';
+}
 
 // Global variables
 let currentSample = null;
+
+// getBasePath function is now defined in shared.js
 
 /**
  * Load sample data from API
@@ -31,9 +37,9 @@ async function loadSample(sampleId) {
 }
 
 /**
- * Load current user information
+ * Load current user information for sample views
  */
-async function loadCurrentUser() {
+async function loadSampleCurrentUser() {
     try {
         const response = await fetch(`${window.API_BASE}/auth/current-user`, {
             credentials: 'include'
@@ -43,17 +49,23 @@ async function loadCurrentUser() {
             const user = await response.json();
             document.getElementById('currentUsername').textContent = user.username;
             
-            // Show/hide admin button based on role
-            const adminButton = document.querySelector('a[href="/admin"]');
-            if (adminButton && user.role !== 'admin') {
-                adminButton.style.display = 'none';
-            }
+            // Show/hide admin button based on role (find by text content instead of href)
+            const adminButtons = document.querySelectorAll('a');
+            adminButtons.forEach(button => {
+                if (button.textContent.includes('Admin') && user.role !== 'admin') {
+                    button.style.display = 'none';
+                }
+            });
             return user;
         } else {
-            window.location.href = '/login';
+            console.log('Authentication check failed, but not redirecting from sample view');
+            document.getElementById('currentUsername').textContent = 'Unknown';
+            return null;
         }
     } catch (error) {
-        window.location.href = '/login';
+        console.error('Failed to load user in sample view:', error);
+        document.getElementById('currentUsername').textContent = 'Unknown';
+        return null;
     }
 }
 
