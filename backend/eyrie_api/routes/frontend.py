@@ -13,30 +13,19 @@ async def serve_data_file(file_path: str):
 
 @router.get("/health")
 async def health_check():
-    try:
-        from eyrie_api.database.utils import get_db_connection
-        async with get_db_connection() as db:
-            await db.samples.count_documents({})
-        return {'status': 'healthy'}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail={'status': 'unhealthy', 'error': str(e)})
+    return {
+        'status': 'healthy',
+        'service': 'eyrie-backend',
+        'environment': os.getenv('ENVIRONMENT', 'development'),
+        'database_required': False  # Health check doesn't require DB connection
+    }
 
-@router.get("/", response_class=HTMLResponse)
+@router.get("/")
 async def root():
-    return FileResponse('frontend/blueprints/samples/templates/index.html')
-
-@router.get("/samples", response_class=HTMLResponse)
-async def samples_page():
-    return FileResponse('frontend/blueprints/samples/templates/index.html')
-
-@router.get("/sample/{sample_id}", response_class=HTMLResponse)
-async def sample_detail(sample_id: str):
-    return FileResponse('frontend/blueprints/sample/templates/detail.html')
-
-@router.get("/admin", response_class=HTMLResponse)
-async def admin_page():
-    return FileResponse('frontend/blueprints/admin/templates/dashboard.html')
-
-@router.get("/login", response_class=HTMLResponse)
-async def login_page():
-    return FileResponse('frontend/blueprints/login/templates/index.html')
+    """Backend API root - redirect to docs"""
+    return {
+        "message": "Eyrie Sample Manager API",
+        "version": "0.2.1",
+        "documentation": "/docs",
+        "health": "/health"
+    }
