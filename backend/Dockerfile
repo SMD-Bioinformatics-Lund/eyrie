@@ -1,5 +1,5 @@
 # Use more recent Python version with better ARM64 support
-FROM python:3.11-slim
+FROM python:3.12.0-slim
 
 # Add a cache-busting layer
 ARG CACHE_BUST=1
