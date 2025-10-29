@@ -25,7 +25,7 @@ EXTERNAL_BASE_PATH=/eyrie
 
 # External API URL that browsers will call (through Apache)
 # Replace 'your-domain.com' with your actual domain
-EXTERNAL_API_URL=http://your-domain.com:${BACKEND_HOST_PORT}/api
+EXTERNAL_API_URL=http://your-domain.com/api
 
 # =====================================================
 # Internal URLs (container-to-container communication)
