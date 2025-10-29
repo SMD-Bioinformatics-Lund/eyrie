@@ -14,14 +14,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (qcModalElement) {
         qcFailModal = new bootstrap.Modal(qcModalElement);
     }
-    
+
     // Load user and sample data (use shared template function)
     // Don't call loadCurrentUser here - it's called by template
-    
+
     // Extract sample ID from URL path: /sample/S001
     const pathParts = window.location.pathname.split('/');
     const sampleId = pathParts[pathParts.length - 1]; // Get last part
-    
+
     if (sampleId) {
         loadSample(sampleId).then(sample => {
             if (sample) {
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function setupNavigationLinks(sampleId) {
     const classificationLink = document.getElementById('classificationLink');
     const nanoplotLink = document.getElementById('nanoplotLink');
-    
+
     if (classificationLink) {
         classificationLink.href = `/sample/${sampleId}/classification`;
     }
@@ -55,13 +55,13 @@ function setupNavigationLinks(sampleId) {
 function renderSampleDetail(sample) {
     // Update title
     updateSampleTitle(sample);
-    
+
     // Update general information
     updateElement('infoSampleName', sample.sample_name);
     updateElement('infoSampleId', sample.sample_id);
     updateElement('infoSequencingRun', sample.sequencing_run_id);
     updateElement('infoLimsId', sample.lims_id);
-    
+
     // Update classification badge
     const classificationElement = document.getElementById('infoClassification');
     if (classificationElement && sample.classification) {
@@ -70,20 +70,20 @@ function renderSampleDetail(sample) {
     } else if (classificationElement) {
         classificationElement.textContent = '--';
     }
-    
+
     // Update dates
     updateElement('infoCreatedDate', formatDate(sample.created_date));
     updateElement('infoUpdatedDate', formatDate(sample.updated_date));
-    
+
     // Update QC status
     const qcStatus = document.getElementById('currentQCStatus');
     if (qcStatus) {
         qcStatus.innerHTML = `<span class="badge ${getQCBadgeClass(sample.qc)}">${sample.qc.toUpperCase()}</span>`;
     }
-    
+
     // Update comments
     updateElement('generalComments', sample.comments, 'value');
-    
+
     // Update Krona frame
     const kronaFrame = document.getElementById('kronaFrame');
     if (kronaFrame) {
@@ -95,7 +95,7 @@ function renderSampleDetail(sample) {
             kronaFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
         }
     }
-    
+
     // Set quality frame to show length vs quality scatter plot
     const qualityFrame = document.getElementById('qualityFrame');
     if (qualityFrame) {
@@ -109,7 +109,7 @@ function renderSampleDetail(sample) {
             // Fallback to quality_plot if nanoplot data not available
             qualityPlotPath = sample.quality_plot;
         }
-        
+
         if (qualityPlotPath) {
             // Use base path aware URL construction
             const basePath = getBasePath();
@@ -118,10 +118,10 @@ function renderSampleDetail(sample) {
             qualityFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No quality plot available</i></div>';
         }
     }
-    
+
     // Render statistics
     renderStatistics(sample.statistics || {});
-    
+
     // Render classification summary
     renderOverviewClassificationSummary();
 }
@@ -146,7 +146,7 @@ function updateElement(elementId, value, property = 'textContent') {
 function renderStatistics(stats) {
     // Use processed NanoStats data for Summary Statistics (prioritize processed over unprocessed)
     const nanoStats = currentSample?.nano_stats_processed || currentSample?.nano_stats_unprocessed || {};
-    
+
     // Update statistics elements
     updateElement('statNumberReads', nanoStats.number_of_reads ? formatNumber(nanoStats.number_of_reads) : '--');
     updateElement('statMeanLength', nanoStats.mean_read_length ? `${formatNumber(Math.round(nanoStats.mean_read_length))} bp` : '--');
@@ -155,7 +155,7 @@ function renderStatistics(stats) {
     updateElement('statMedianQuality', nanoStats.median_read_quality ? `Q${nanoStats.median_read_quality.toFixed(1)}` : '--');
     updateElement('statReadN50', nanoStats.read_length_n50 ? `${formatNumber(Math.round(nanoStats.read_length_n50))} bp` : '--');
     updateElement('statStdevLength', nanoStats.stdev_read_length ? `${formatNumber(Math.round(nanoStats.stdev_read_length))} bp` : '--');
-    
+
     // Format total bases with appropriate unit
     if (nanoStats.total_bases) {
         updateElement('statTotalBases', formatBases(nanoStats.total_bases));
@@ -169,7 +169,7 @@ function renderStatistics(stats) {
  */
 async function updateQC(status, comments = '') {
     if (!currentSample) return;
-    
+
     try {
         const response = await fetch(`${window.API_BASE}/samples/${currentSample.sample_id}/qc`, {
             method: 'PUT',
@@ -181,21 +181,21 @@ async function updateQC(status, comments = '') {
                 comments: comments
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             currentSample.qc = status;
             if (comments) {
                 currentSample.comments = comments;
                 updateElement('generalComments', comments, 'value');
             }
-            
+
             const qcStatus = document.getElementById('currentQCStatus');
             if (qcStatus) {
                 qcStatus.innerHTML = `<span class="badge ${getQCBadgeClass(status)}">${status.toUpperCase()}</span>`;
             }
-            
+
             showSuccess(`QC status updated to ${status.toUpperCase()}`);
         } else {
             showError('Failed to update QC: ' + result.error);
@@ -224,12 +224,12 @@ function showFailModal() {
 function confirmFailQC() {
     const failureComments = document.getElementById('failureComments');
     const comments = failureComments ? failureComments.value.trim() : '';
-    
+
     if (!comments) {
         alert('Please provide a reason for the QC failure.');
         return;
     }
-    
+
     if (qcFailModal) {
         qcFailModal.hide();
     }
@@ -241,10 +241,10 @@ function confirmFailQC() {
  */
 async function saveComments() {
     if (!currentSample) return;
-    
+
     const commentsElement = document.getElementById('generalComments');
     const comments = commentsElement ? commentsElement.value : '';
-    
+
     try {
         const response = await fetch(`${window.API_BASE}/samples/${currentSample.sample_id}/comment`, {
             method: 'PUT',
@@ -255,9 +255,9 @@ async function saveComments() {
                 comments: comments
             })
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             currentSample.comments = comments;
             showSuccess('Comments saved successfully');
@@ -278,7 +278,7 @@ function renderOverviewClassificationSummary() {
         updateElement('overviewDominantSpecies', '-');
         updateElement('overviewFlaggedContaminants', '0');
         updateElement('overviewFlaggedTopHits', '0');
-        
+
         const topHitsList = document.getElementById('overviewTopHitsList');
         const contaminantsList = document.getElementById('overviewContaminantsList');
         if (topHitsList) topHitsList.style.display = 'none';
@@ -289,28 +289,28 @@ function renderOverviewClassificationSummary() {
     const data = currentSample.taxonomic_data;
     const flaggedContaminants = currentSample.flagged_contaminants || [];
     const flaggedTopHits = currentSample.flagged_top_hits || [];
-    
+
     // Update total species
     updateElement('overviewTotalSpecies', data.total_species || (data.hits ? data.hits.length : 0));
-    
+
     // Update dominant species
     if (data.hits && data.hits.length > 0) {
-        const dominant = data.hits.reduce((prev, current) => 
+        const dominant = data.hits.reduce((prev, current) =>
             (prev.abundance > current.abundance) ? prev : current
         );
         updateElement('overviewDominantSpecies', dominant.species);
     } else {
         updateElement('overviewDominantSpecies', '-');
     }
-    
+
     // Update flagged counts
     updateElement('overviewFlaggedContaminants', flaggedContaminants.length);
     updateElement('overviewFlaggedTopHits', flaggedTopHits.length);
-    
+
     // Show/hide top hits list with abundance data
     const topHitsList = document.getElementById('overviewTopHitsList');
     const topHitsDiv = document.getElementById('overviewTopHitsSpecies');
-    
+
     if (flaggedTopHits.length > 0) {
         if (topHitsList) topHitsList.style.display = 'block';
         if (topHitsDiv) {
@@ -325,11 +325,11 @@ function renderOverviewClassificationSummary() {
     } else {
         if (topHitsList) topHitsList.style.display = 'none';
     }
-    
+
     // Show/hide contaminants list with abundance data
     const contaminantsList = document.getElementById('overviewContaminantsList');
     const contaminantsDiv = document.getElementById('overviewContaminantsSpecies');
-    
+
     if (flaggedContaminants.length > 0) {
         if (contaminantsList) contaminantsList.style.display = 'block';
         if (contaminantsDiv) {
@@ -344,11 +344,11 @@ function renderOverviewClassificationSummary() {
     } else {
         if (contaminantsList) contaminantsList.style.display = 'none';
     }
-    
+
     // Show/hide spike with abundance data
     const spikeList = document.getElementById('overviewSpikeList');
     const spikeDiv = document.getElementById('overviewSpike');
-    
+
     if (currentSample.spike) {
         if (spikeList) spikeList.style.display = 'block';
         if (spikeDiv) {
@@ -366,18 +366,18 @@ function renderOverviewClassificationSummary() {
  */
 function showView(viewName) {
     currentView = viewName;
-    
+
     // Hide all views
     document.querySelectorAll('.view-content').forEach(view => {
         view.style.display = 'none';
     });
-    
+
     // Show selected view
     const targetView = document.getElementById(`${viewName}View`);
     if (targetView) {
         targetView.style.display = 'block';
     }
-    
+
     // Update navbar active state
     document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
         link.classList.remove('active');
@@ -386,7 +386,7 @@ function showView(viewName) {
     if (activeLink) {
         activeLink.classList.add('active');
     }
-    
+
     // Load view-specific data
     if (viewName === 'classification') {
         loadClassificationData();

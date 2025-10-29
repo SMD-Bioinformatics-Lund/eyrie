@@ -51,7 +51,7 @@ async function updateTrends() {
         const trendsApiUrl = `${window.API_BASE}/trends/data`;
         debugLog('Fetching trends data from:', `${trendsApiUrl}?${params}`);
         const response = await fetch(`${trendsApiUrl}?${params}`);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -65,7 +65,7 @@ async function updateTrends() {
 
         chartStatus.textContent = 'Updated';
         chartStatus.className = 'badge bg-success text-white';
-        
+
         // Reset status after 3 seconds
         setTimeout(() => {
             chartStatus.textContent = 'Ready';
@@ -85,10 +85,10 @@ async function updateTrends() {
  */
 function renderTrendsChart(data, category, metric, groupBy) {
     const chartDiv = document.getElementById('trendsChart');
-    
+
     // Clear any existing content (including placeholder)
     chartDiv.innerHTML = '';
-    
+
     if (!data || !data.series || data.series.length === 0) {
         showEmptyChart();
         return;
@@ -227,7 +227,7 @@ function resetFilters() {
     document.getElementById('timeRangeSelect').value = '30';
     document.getElementById('groupBySelect').value = 'week';
     document.getElementById('classificationFilter').value = 'all';
-    
+
     updateTrends();
 }
 

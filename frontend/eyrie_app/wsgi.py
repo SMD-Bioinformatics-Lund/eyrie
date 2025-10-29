@@ -3,11 +3,11 @@
 import logging
 import os
 import threading
+import traceback
 
 # Debug threading issues
 original_Thread = threading.Thread
 def debug_thread_creation(*args, **kwargs):
-    import traceback
     print("=== THREAD CREATION DETECTED ===")
     print("Stack trace:")
     traceback.print_stack()
@@ -34,8 +34,8 @@ if __name__ == "__main__":
     # Development server fallback (not used in production containers)
     debug_mode = os.environ.get('ENVIRONMENT', 'production') != 'production'
     app.run(
-        host="0.0.0.0", 
-        port=5000, 
-        debug=debug_mode, 
+        host="0.0.0.0",
+        port=5000,
+        debug=debug_mode,
         use_reloader=False
     )

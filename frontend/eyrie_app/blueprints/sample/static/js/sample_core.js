@@ -22,7 +22,7 @@ async function loadSample(sampleId) {
         const apiUrl = `${window.API_BASE}/samples/${sampleId}`;
         const response = await fetch(apiUrl);
         const sample = await response.json();
-        
+
         if (response.ok) {
             currentSample = sample;
             return sample;
@@ -44,11 +44,11 @@ async function loadSampleCurrentUser() {
         const response = await fetch(`${window.API_BASE}/auth/current-user`, {
             credentials: 'include'
         });
-        
+
         if (response.ok) {
             const user = await response.json();
             document.getElementById('currentUsername').textContent = user.username;
-            
+
             // Show/hide admin button based on role (find by text content instead of href)
             const adminButtons = document.querySelectorAll('a');
             adminButtons.forEach(button => {
@@ -140,7 +140,7 @@ function showError(message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     document.body.appendChild(alert);
-    
+
     setTimeout(() => {
         if (alert.parentNode) {
             alert.remove();
@@ -160,7 +160,7 @@ function showSuccess(message) {
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
     document.body.appendChild(alert);
-    
+
     setTimeout(() => {
         if (alert.parentNode) {
             alert.remove();

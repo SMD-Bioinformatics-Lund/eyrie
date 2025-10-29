@@ -23,7 +23,7 @@ function initializeClassificationView(sampleId) {
  */
 function loadClassificationData(sample = currentSample) {
     if (!sample) return;
-    
+
     // Load Krona plot in classification view
     if (sample.krona_file) {
         const frame = document.getElementById('classificationKronaFrame');
@@ -41,7 +41,7 @@ function loadClassificationData(sample = currentSample) {
             frame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
         }
     }
-    
+
     // Load abundance table and classification summary
     displaySampleAbundanceTable();
     updateSampleClassificationSummary();
@@ -53,7 +53,7 @@ function loadClassificationData(sample = currentSample) {
 function displaySampleAbundanceTable() {
     const tbody = document.getElementById('contaminationTableBody');
     if (!tbody) return;
-    
+
     if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.hits) {
         tbody.innerHTML = `
             <tr>
@@ -71,38 +71,38 @@ function displaySampleAbundanceTable() {
     // Load saved flags from database
     flaggedContaminants.clear();
     flaggedTopHits.clear();
-    
+
     if (currentSample.flagged_contaminants) {
         currentSample.flagged_contaminants.forEach(species => {
             flaggedContaminants.add(species);
         });
     }
-    
+
     if (currentSample.flagged_top_hits) {
         currentSample.flagged_top_hits.forEach(species => {
             flaggedTopHits.add(species);
         });
     }
-    
+
     const species = currentSample.taxonomic_data.hits.sort((a, b) => b.abundance - a.abundance);
-    
+
     tbody.innerHTML = '';
     species.forEach((organism, index) => {
         const row = document.createElement('tr');
         row.className = 'contamination-row';
         row.dataset.species = organism.species;
-        
+
         // Check if this species is flagged
         const isTopHit = flaggedTopHits.has(organism.species);
         const isContaminant = flaggedContaminants.has(organism.species);
-        
+
         // Check if this species is the detected spike species
         const isSpike = currentSample.spike && currentSample.spike === organism.species;
         if (isSpike) {
             row.classList.add('spike-row');
             row.title = `Spike Species: ${organism.species} (${organism.abundance.toFixed(2)}%)`;
         }
-        
+
         row.innerHTML = `
             <td>
                 <div class="d-flex align-items-center">
@@ -129,24 +129,24 @@ function displaySampleAbundanceTable() {
                 </span>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm ${isTopHit ? 'btn-success' : 'btn-outline-success'} top-hit-btn" 
-                        data-species="${organism.species}" 
+                <button class="btn btn-sm ${isTopHit ? 'btn-success' : 'btn-outline-success'} top-hit-btn"
+                        data-species="${organism.species}"
                         data-flag-type="top-hit">
                     <i class="bi ${isTopHit ? 'bi-star-fill' : 'bi-star'}"></i>
                 </button>
             </td>
             <td class="text-center">
-                <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-danger'} contaminant-btn" 
-                        data-species="${organism.species}" 
+                <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-danger'} contaminant-btn"
+                        data-species="${organism.species}"
                         data-flag-type="contaminant">
                     <i class="bi ${isContaminant ? 'bi-flag-fill' : 'bi-flag'}"></i>
                 </button>
             </td>
         `;
-        
+
         tbody.appendChild(row);
     });
-    
+
     // Set up event delegation for flag buttons
     setupFlagButtonEventListeners();
 }
@@ -157,10 +157,10 @@ function displaySampleAbundanceTable() {
 function setupFlagButtonEventListeners() {
     const tbody = document.getElementById('contaminationTableBody');
     if (!tbody) return;
-    
+
     // Remove existing listeners first
     tbody.removeEventListener('click', handleFlagButtonClick);
-    
+
     // Add new listener
     tbody.addEventListener('click', handleFlagButtonClick);
 }
@@ -171,15 +171,15 @@ function setupFlagButtonEventListeners() {
 function handleFlagButtonClick(event) {
     const button = event.target.closest('button[data-flag-type]');
     if (!button) return;
-    
+
     event.preventDefault();
     event.stopPropagation();
-    
+
     const species = button.dataset.species;
     const flagType = button.dataset.flagType;
-    
+
     console.log('Flag button clicked:', { species, flagType });
-    
+
     if (flagType === 'top-hit') {
         toggleTopHitFlag(species, button);
     } else if (flagType === 'contaminant') {
@@ -214,15 +214,15 @@ function toggleTopHitFlag(species, button) {
         console.log('Added to flaggedTopHits:', species);
     }
     console.log('Current flaggedTopHits:', Array.from(flaggedTopHits));
-    
+
     // Update the current sample object to reflect changes
     if (currentSample) {
         currentSample.flagged_top_hits = Array.from(flaggedTopHits);
     }
-    
+
     updateSampleClassificationSummary();
     saveSpeciesFlags();
-    
+
     // Update overview classification summary if function exists
     if (typeof renderOverviewClassificationSummary === 'function') {
         renderOverviewClassificationSummary();
@@ -246,15 +246,15 @@ function toggleContaminantFlag(species, button) {
         console.log('Added to flaggedContaminants:', species);
     }
     console.log('Current flaggedContaminants:', Array.from(flaggedContaminants));
-    
+
     // Update the current sample object to reflect changes
     if (currentSample) {
         currentSample.flagged_contaminants = Array.from(flaggedContaminants);
     }
-    
+
     updateSampleClassificationSummary();
     saveSpeciesFlags();
-    
+
     // Update overview classification summary if function exists
     if (typeof renderOverviewClassificationSummary === 'function') {
         renderOverviewClassificationSummary();
@@ -269,19 +269,19 @@ async function saveSpeciesFlags() {
         console.error('No current sample available for saving flags');
         return;
     }
-    
+
     const apiBase = window.API_BASE;
     const url = `${apiBase}/samples/${currentSample.sample_id}/species-flags`;
     const payload = {
         flagged_contaminants: Array.from(flaggedContaminants),
         flagged_top_hits: Array.from(flaggedTopHits)
     };
-    
+
     console.log('🔍 Species flags API_BASE:', apiBase);
     console.log('🔍 Species flags URL:', url);
     console.log('🔍 Species flags payload:', payload);
     console.log('🔍 Document cookies:', document.cookie);
-    
+
     try {
         const response = await fetch(url, {
             method: 'PUT',
@@ -291,7 +291,7 @@ async function saveSpeciesFlags() {
             credentials: 'include',
             body: JSON.stringify(payload)
         });
-        
+
         if (response.ok) {
             const result = await response.json();
             console.log('Flags saved successfully:', result);
@@ -317,7 +317,7 @@ function updateSampleClassificationSummary() {
         const dominantSpeciesEl = document.getElementById('dominantSpecies');
         const flaggedContaminantsEl = document.getElementById('flaggedContaminants');
         const diversityIndexEl = document.getElementById('diversityIndex');
-        
+
         if (totalSpeciesEl) totalSpeciesEl.textContent = '0';
         if (dominantSpeciesEl) dominantSpeciesEl.textContent = '-';
         if (flaggedContaminantsEl) flaggedContaminantsEl.textContent = '0';
@@ -326,14 +326,14 @@ function updateSampleClassificationSummary() {
     }
 
     const data = currentSample.taxonomic_data;
-    
+
     const totalSpeciesEl = document.getElementById('totalSpecies');
     if (totalSpeciesEl) {
         totalSpeciesEl.textContent = data.total_species || 0;
     }
-    
+
     if (data.hits && data.hits.length > 0) {
-        const dominant = data.hits.reduce((prev, current) => 
+        const dominant = data.hits.reduce((prev, current) =>
             (prev.abundance > current.abundance) ? prev : current
         );
         const dominantSpeciesEl = document.getElementById('dominantSpecies');
@@ -346,23 +346,23 @@ function updateSampleClassificationSummary() {
             dominantSpeciesEl.textContent = '-';
         }
     }
-    
+
     const flaggedContaminantsEl = document.getElementById('flaggedContaminants');
     if (flaggedContaminantsEl) {
         flaggedContaminantsEl.textContent = flaggedContaminants.size;
     }
-    
+
     const flaggedTopHitsEl = document.getElementById('flaggedTopHits');
     if (flaggedTopHitsEl) {
         flaggedTopHitsEl.textContent = flaggedTopHits.size;
     }
-    
+
     const diversity = calculateShannonDiversity(data.hits || []);
     const diversityIndexEl = document.getElementById('diversityIndex');
     if (diversityIndexEl) {
         diversityIndexEl.textContent = diversity.toFixed(2);
     }
-    
+
     // Update spike species
     const spikeEl = document.getElementById('spike');
     if (spikeEl) {
@@ -379,10 +379,10 @@ function updateSampleClassificationSummary() {
  */
 function calculateShannonDiversity(species) {
     if (!species || species.length === 0) return 0;
-    
+
     const total = species.reduce((sum, sp) => sum + sp.abundance, 0);
     if (total === 0) return 0;
-    
+
     let diversity = 0;
     species.forEach(sp => {
         if (sp.abundance > 0) {
@@ -390,7 +390,7 @@ function calculateShannonDiversity(species) {
             diversity -= proportion * Math.log(proportion);
         }
     });
-    
+
     return diversity;
 }
 
@@ -429,9 +429,9 @@ function exportContaminationData() {
     }
 
     const data = currentSample.taxonomic_data.hits || [];
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
         + "Species,Genus,Family,Abundance,Flagged\\n"
-        + data.map(sp => 
+        + data.map(sp =>
             `"${sp.species}","${sp.genus || 'N/A'}","${sp.family || 'N/A'}",${sp.abundance},${flaggedContaminants.has(sp.species) ? 'Yes' : 'No'}`
         ).join("\\n");
 

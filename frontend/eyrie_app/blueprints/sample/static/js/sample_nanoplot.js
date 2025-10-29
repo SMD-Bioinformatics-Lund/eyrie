@@ -28,7 +28,7 @@ function initializeNanoplotView(sampleId) {
  */
 function loadNanoplotView(plotType) {
     currentPlotType = plotType;
-    
+
     if (!currentSample) {
         alert('No sample loaded');
         return;
@@ -77,7 +77,7 @@ function showSummaryStats() {
 function loadPlot(processingType, plotType) {
     const container = document.getElementById(`${processingType}PlotContainer`);
     if (!container) return;
-    
+
     const plotTypeMap = {
         'length-quality-scatter': {
             unprocessed: 'LengthvsQualityScatterPlot_dot.html',
@@ -109,10 +109,10 @@ function loadPlot(processingType, plotType) {
 
     // Use structured nanoplot data
     let filePath = null;
-    
+
     if (currentSample.nanoplot && currentSample.nanoplot[processingType]) {
         const plotData = currentSample.nanoplot[processingType];
-        
+
         // Map plot types to structured data fields
         switch (plotType) {
             case 'length-quality-scatter':
@@ -129,7 +129,7 @@ function loadPlot(processingType, plotType) {
                 break;
         }
     }
-    
+
     if (filePath) {
         checkAndDisplayFile(container, filePath, plotInfo.title, processingType);
     } else {
@@ -143,20 +143,20 @@ function loadPlot(processingType, plotType) {
 async function checkAndDisplayFile(container, filePath, title, processingType) {
     try {
         const response = await fetch(getDataUrl(filePath), { method: 'HEAD' });
-        
+
         if (response.ok) {
             if (filePath.endsWith('.html')) {
                 container.innerHTML = `
-                    <iframe src="${getDataUrl(filePath)}" 
-                            class="w-100 h-100" 
+                    <iframe src="${getDataUrl(filePath)}"
+                            class="w-100 h-100"
                             style="min-height: 500px; border: none;">
                     </iframe>
                 `;
             } else if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.jpeg')) {
                 container.innerHTML = `
                     <div class="text-center p-3">
-                        <img src="${getDataUrl(filePath)}" 
-                             class="img-fluid" 
+                        <img src="${getDataUrl(filePath)}"
+                             class="img-fluid"
                              alt="${title}"
                              style="max-height: 500px; max-width: 100%;">
                     </div>
@@ -203,8 +203,8 @@ function displayDetailedStats(processingType) {
     const container = document.getElementById(`${processingType}PlotContainer`);
     if (!container) return;
 
-    const stats = processingType === 'unprocessed' ? 
-        currentSample.nano_stats_unprocessed : 
+    const stats = processingType === 'unprocessed' ?
+        currentSample.nano_stats_unprocessed :
         currentSample.nano_stats_processed;
 
     if (!stats) {
@@ -334,10 +334,10 @@ function downloadPlot(processingType) {
 
     // Use structured nanoplot data to get the file path
     let filePath = null;
-    
+
     if (currentSample.nanoplot && currentSample.nanoplot[processingType]) {
         const plotData = currentSample.nanoplot[processingType];
-        
+
         // Map plot types to structured data fields
         switch (currentPlotType) {
             case 'length-quality-scatter':
@@ -354,7 +354,7 @@ function downloadPlot(processingType) {
                 break;
         }
     }
-    
+
     if (filePath) {
         window.open(getDataUrl(filePath), '_blank');
     } else {
