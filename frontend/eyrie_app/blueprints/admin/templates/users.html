@@ -72,17 +72,17 @@
                                             </td>
                                             <td>
                                                 <div class="btn-group btn-group-sm" role="group">
-                                                    <a href="{{ url_for('admin.edit_user', user_id=user._id) }}" 
-                                                       class="btn btn-outline-primary" 
+                                                    <a href="{{ url_for('admin.edit_user', user_id=user._id) }}"
+                                                       class="btn btn-outline-primary"
                                                        title="Edit User">
                                                         <i class="bi bi-pencil"></i>
                                                     </a>
-                                                    <form method="POST" 
-                                                          action="{{ url_for('admin.delete_user', user_id=user._id) }}" 
+                                                    <form method="POST"
+                                                          action="{{ url_for('admin.delete_user', user_id=user._id) }}"
                                                           style="display: inline;"
                                                           onsubmit="return confirm('Are you sure you want to delete user {{ user.username }}?')">
-                                                        <button type="submit" 
-                                                                class="btn btn-outline-danger" 
+                                                        <button type="submit"
+                                                                class="btn btn-outline-danger"
                                                                 title="Delete User">
                                                             <i class="bi bi-trash"></i>
                                                         </button>

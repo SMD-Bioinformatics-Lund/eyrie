@@ -25,6 +25,6 @@ document.getElementById('exportCsvBtn').addEventListener('click', function() {
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
 {% endblock %}

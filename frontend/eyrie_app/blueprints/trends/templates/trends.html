@@ -129,5 +129,5 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='trends', filename='static/js/trends.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='trends', filename='static/js/trends.js') }}"></script>
 {% endblock %}

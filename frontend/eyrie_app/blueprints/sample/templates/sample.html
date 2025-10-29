@@ -90,7 +90,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div class="krona-container" style="height: 85vh;">
-                                <iframe id="kronaFrame" 
+                                <iframe id="kronaFrame"
                                         style="width: 100%; height: 100%; border: none;"
                                         src="about:blank">
                                 </iframe>
@@ -223,7 +223,7 @@
                         </div>
                         <div class="card-body p-0">
                             <div style="height: 300px;">
-                                <iframe id="qualityFrame" 
+                                <iframe id="qualityFrame"
                                         style="width: 100%; height: 100%; border: none;"
                                         src="about:blank">
                                 </iframe>
@@ -265,18 +265,18 @@
         window.BASE_URL = (() => {
             const path = window.location.pathname;
             const pathParts = path.split('/').filter(part => part);
-            
+
             // Find where our app starts (look for known routes)
             const appRoutes = ['samples', 'sample', 'admin', 'login'];
             let baseIndex = -1;
-            
+
             for (let i = 0; i < pathParts.length; i++) {
                 if (appRoutes.includes(pathParts[i])) {
                     baseIndex = i;
                     break;
                 }
             }
-            
+
             if (baseIndex > 0) {
                 // We're in a subdirectory
                 return '/' + pathParts.slice(0, baseIndex).join('/') + '/';
@@ -285,7 +285,7 @@
                 return '/';
             }
         })();
-        
+
         // Helper function to resolve relative URLs
         window.resolveUrl = (path) => {
             if (path.startsWith('/')) {
@@ -293,7 +293,7 @@
             }
             return path;
         };
-        
+
 {% endblock %}
 
 {% block dom_ready %}
@@ -311,8 +311,8 @@ loadSample(SAMPLE_ID).then(sample => {
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_nanoplot.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_nanoplot.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample.js') }}"></script>
 {% endblock %}

@@ -4,10 +4,10 @@
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
-    {% from 'macros/sample_cards.html' import 
+    {% from 'macros/sample_cards.html' import
         general_info_card, qc_card, comments_card, krona_plot_card,
         classification_summary_card, summary_statistics_card, quality_plot_card, qc_fail_modal %}
-    
+
     {{ sample_navbar(sample_id, 'overview', current_user) }}
 
     <div class="container-fluid sample-detail-container mt-4">
@@ -57,8 +57,8 @@ loadSample(SAMPLE_ID).then(sample => {
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_nanoplot.js') }}"></script>
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='sample', filename='static/js/sample_overview.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_core.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_classification.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_nanoplot.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='sample', filename='static/js/sample_overview.js') }}"></script>
 {% endblock %}
