@@ -36,31 +36,31 @@
                         <form method="POST" action="{{ url_for('admin.create_user') }}">
                             <div class="mb-3">
                                 <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                                <input type="text" 
-                                       class="form-control" 
-                                       id="username" 
-                                       name="username" 
+                                <input type="text"
+                                       class="form-control"
+                                       id="username"
+                                       name="username"
                                        value="{{ form_data.username if form_data else '' }}"
-                                       required 
+                                       required
                                        autofocus>
                             </div>
 
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                <input type="email" 
-                                       class="form-control" 
-                                       id="email" 
-                                       name="email" 
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       name="email"
                                        value="{{ form_data.email if form_data else '' }}"
                                        required>
                             </div>
 
                             <div class="mb-3">
                                 <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" 
-                                       class="form-control" 
-                                       id="password" 
-                                       name="password" 
+                                <input type="password"
+                                       class="form-control"
+                                       id="password"
+                                       name="password"
                                        required>
                             </div>
 

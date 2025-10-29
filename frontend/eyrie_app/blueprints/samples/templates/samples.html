@@ -64,5 +64,5 @@ window.SAMPLE_URL_TEMPLATE = '{{ url_for("sample.sample_overview", sample_id="__
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{{ url_for('main.serve_blueprint_static', blueprint='samples', filename='static/js/samples.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/js/samples.js') }}"></script>
 {% endblock %}
