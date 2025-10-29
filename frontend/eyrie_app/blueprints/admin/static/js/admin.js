@@ -4,7 +4,7 @@ let editUserModal = null;
 document.addEventListener('DOMContentLoaded', function() {
     createUserModal = new bootstrap.Modal(document.getElementById('createUserModal'));
     editUserModal = new bootstrap.Modal(document.getElementById('editUserModal'));
-    
+
     // Load users
     loadUsers();
 });
@@ -15,7 +15,7 @@ async function loadUsers() {
         const response = await fetch(`${window.API_BASE}/admin/users`, {
             credentials: 'include'
         });
-        
+
         if (response.ok) {
             const users = await response.json();
             renderUsersTable(users);
@@ -30,12 +30,12 @@ async function loadUsers() {
 
 function renderUsersTable(users) {
     const tbody = document.getElementById('usersTableBody');
-    
+
     if (users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No users found</td></tr>';
         return;
     }
-    
+
     tbody.innerHTML = users.map(user => `
         <tr>
             <td>${user.username}</td>
@@ -80,12 +80,12 @@ async function createUser() {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     const role = document.getElementById('role').value;
-    
+
     if (!username || !email || !password) {
         showMessage('createUserMessage', 'Please fill in all required fields.', 'danger');
         return;
     }
-    
+
     try {
         const response = await fetch(`${window.API_BASE}/admin/users`, {
             method: 'POST',
@@ -100,9 +100,9 @@ async function createUser() {
             }),
             credentials: 'include'
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             createUserModal.hide();
             showSuccess('User created successfully');
@@ -121,11 +121,11 @@ async function editUser(userId) {
         const response = await fetch(`${window.API_BASE}/admin/users`, {
             credentials: 'include'
         });
-        
+
         if (response.ok) {
             const users = await response.json();
             const user = users.find(u => u._id === userId);
-            
+
             if (user) {
                 document.getElementById('editUserId').value = user._id;
                 document.getElementById('editUsername').value = user.username;
@@ -134,7 +134,7 @@ async function editUser(userId) {
                 document.getElementById('editRole').value = user.role;
                 document.getElementById('editIsActive').checked = user.is_active;
                 document.getElementById('editUserMessage').innerHTML = '';
-                
+
                 editUserModal.show();
             }
         }
@@ -149,17 +149,17 @@ async function updateUser() {
     const password = document.getElementById('editPassword').value;
     const role = document.getElementById('editRole').value;
     const isActive = document.getElementById('editIsActive').checked;
-    
+
     const updateData = {
         email: email,
         role: role,
         is_active: isActive
     };
-    
+
     if (password) {
         updateData.password = password;
     }
-    
+
     try {
         const response = await fetch(`${window.API_BASE}/admin/users/${userId}`, {
             method: 'PUT',
@@ -169,9 +169,9 @@ async function updateUser() {
             body: JSON.stringify(updateData),
             credentials: 'include'
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             editUserModal.hide();
             showSuccess('User updated successfully');
@@ -188,15 +188,15 @@ async function deleteUser(userId, username) {
     if (!confirm(`Are you sure you want to delete user "${username}"?`)) {
         return;
     }
-    
+
     try {
         const response = await fetch(`${window.API_BASE}/admin/users/${userId}`, {
             method: 'DELETE',
             credentials: 'include'
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             showSuccess('User deleted successfully');
             loadUsers(); // Reload the users table
