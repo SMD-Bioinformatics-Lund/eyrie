@@ -9,13 +9,15 @@ from flask import (
     Blueprint,
     Response,
     flash,
+    jsonify,
     redirect,
     render_template,
     request,
     session,
     url_for,
 )
-from flask_login import UserMixin, login_required, login_user, logout_user
+from flask_login import UserMixin, login_required, login_user, logout_user, current_user
+from ...eyrie import get_current_user_api, serve_data_file, serve_shared_static, serve_blueprint_static
 
 LOG = logging.getLogger(__name__)
 
@@ -74,7 +76,7 @@ def get_auth_token(username: str, password: str):
             json={'username': username, 'password': password},
             timeout=10
         )
-        
+
         if response.status_code == 200:
             data = response.json()
             return {
@@ -83,10 +85,40 @@ def get_auth_token(username: str, password: str):
             }
         else:
             return None
-            
+
     except requests.RequestException as e:
         LOG.error(f"Authentication failed: {str(e)}")
         return None
+
+
+def unauthorized_handler():
+    """Handle unauthorized access with proper URL generation"""
+    # Always use Flask's url_for which respects APPLICATION_ROOT and base_path
+    return redirect(url_for('login.login', next=request.url))
+
+
+def load_user(user_id):
+    """Load user from session data"""
+    try:
+        print(f"User loader called with user_id: {user_id}")
+        # user_id should be a string (session ID), not token dict
+        print(f"Session data: {dict(session)}")
+        if user_id and session.get('username'):
+            # Reconstruct user from session data
+            user_data = {
+                'username': session.get('username', ''),
+                'email': session.get('email', ''),
+                'role': session.get('role', '')
+            }
+            # Create a dummy token (actual token stored in session during API calls)
+            token_data = TokenObject(user_id, 'Bearer')
+            user = LoginUser(user_data, token_data)
+            print(f"User loaded successfully: {user_data}")
+            return user
+    except Exception as e:
+        print(f"User loader error: {e}")
+    print("User loader returning None")
+    return None
 
 
 
@@ -123,36 +155,36 @@ def login():
 
         try:
             auth_data = get_auth_token(username, password)
-            
+
             if auth_data:
                 user_data = auth_data['user']
                 token_data = auth_data['token']
-                
+
                 # Create user object
                 user = LoginUser(user_data, token_data)
-                
+
                 # Login user
                 login_user(user)
-                
+
                 # Store additional session data
                 session["email"] = user_data.get("email", "")
                 session["username"] = user_data.get("username", "")
                 session["role"] = user_data.get("role", "")
                 session["backend_token"] = token_data.token
-                
+
                 LOG.info(f"User {username} logged in successfully")
-                
+
                 # Redirect to next URL or samples page
                 next_url = session.pop("next_url", None)
                 if next_url:
                     return redirect(next_url)
                 else:
                     return redirect(url_for('samples.samples_page'))
-                    
+
             else:
                 flash("Invalid username or password", "error")
                 return redirect(url_for("login.login"))
-                
+
         except Exception as e:
             LOG.error(f"Login error: {str(e)}")
             flash("Login failed. Please try again.", "error")
@@ -160,3 +192,36 @@ def login():
 
     # GET request - show login page
     return render_template("login.html", title="Login")
+
+
+# API Endpoints
+@bp.route("/api/auth/current-user", methods=['GET'])
+@login_required
+def current_user_api():
+    """Get current user info from Flask-Login session"""
+    try:
+        user_data = get_current_user_api()
+        return jsonify(user_data)
+    except ValueError as e:
+        return jsonify({'error': 'Not authenticated'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Static file serving endpoints
+@bp.route("/data/<path:file_path>", methods=['GET'])
+def serve_data_file_endpoint(file_path):
+    """Serve data files from /app/data directory"""
+    return serve_data_file(file_path)
+
+
+@bp.route("/shared/static/<path:filename>", methods=['GET'])
+def serve_shared_static_endpoint(filename):
+    """Serve shared static assets"""
+    return serve_shared_static(filename)
+
+
+@bp.route("/blueprints/<blueprint>/<path:filename>", methods=['GET'])
+def serve_blueprint_static_endpoint(blueprint, filename):
+    """Serve blueprint-specific static assets"""
+    return serve_blueprint_static(blueprint, filename)
