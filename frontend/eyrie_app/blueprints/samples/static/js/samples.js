@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 async function loadSamples() {
     try {
-        const response = await fetch(`${window.API_BASE}/samples`);
+        const samplesUrl = window.SAMPLES_URL || `${window.API_BASE}/samples`;
+        const response = await fetch(samplesUrl);
         const samples = await response.json();
 
         if (response.ok) {

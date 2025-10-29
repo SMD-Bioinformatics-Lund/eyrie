@@ -32,7 +32,7 @@ window.EyrieShared = {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.body.appendChild(alert);
-        
+
         setTimeout(() => {
             if (alert.parentNode) {
                 alert.remove();
@@ -52,7 +52,7 @@ window.EyrieShared = {
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.body.appendChild(alert);
-        
+
         setTimeout(() => {
             if (alert.parentNode) {
                 alert.remove();
@@ -91,13 +91,15 @@ window.EyrieShared = {
      */
     loadCurrentUser: async function() {
         try {
-            const response = await fetch(`${window.API_BASE}/auth/current-user`, {
+            // Use the same endpoint as templates - this ensures proper base path handling
+            const currentUserUrl = window.CURRENT_USER_URL || `${window.API_BASE}/auth/current-user`;
+            const response = await fetch(currentUserUrl, {
                 credentials: 'include'
             });
             if (response.ok) {
                 const user = await response.json();
                 document.getElementById('currentUsername').textContent = user.username;
-                
+
                 // Show admin menu if user is admin
                 if (user.role === 'admin') {
                     const adminNav = document.getElementById('navAdmin');
@@ -105,7 +107,7 @@ window.EyrieShared = {
                         adminNav.style.display = 'inline-block';
                     }
                 }
-                
+
                 return user;
             } else {
                 document.getElementById('currentUsername').textContent = 'Unknown';
