@@ -16,56 +16,8 @@
     {% block content %}{% endblock %}
 
     <script>
-        // API base URL
-        window.API_BASE = '{{ url_for("samples.get_samples_api").replace("/api/samples", "") }}';
-
-        // Current user endpoint URL - use Flask url_for for proper base path handling
-        window.CURRENT_USER_URL = '{{ url_for("login.current_user_api") }}';
-
-        // Samples endpoint URL - use Flask url_for for proper base path handling
-        window.SAMPLES_URL = '{{ url_for("samples.get_samples_api") }}';
-
-        // Shared authentication functions
-        async function loadCurrentUser() {
-            try {
-                const response = await fetch('{{ url_for("login.current_user_api") }}', {
-                    credentials: 'include'
-                });
-                if (response.ok) {
-                    const user = await response.json();
-                    document.getElementById('currentUsername').textContent = user.username;
-
-                    // Show/hide admin button based on role
-                    const adminButton = document.getElementById('adminButton');
-                    if (user.role !== 'admin') {
-                        adminButton.style.display = 'none';
-                    }
-
-                    {% block user_loaded %}{% endblock %}
-                } else {
-                    {% block auth_failed %}
-                    document.getElementById('currentUsername').textContent = 'Unknown';
-                    {% endblock %}
-                }
-            } catch (error) {
-                console.error('Failed to load user:', error);
-                document.getElementById('currentUsername').textContent = 'Unknown';
-            }
-        }
-
-        async function logout() {
-            try {
-                await fetch('{{ url_for("login.logout") }}', { method: 'POST' });
-                window.location.href = '{{ url_for("login.login") }}';
-            } catch (error) {
-                console.error('Logout error:', error);
-                window.location.href = '{{ url_for("login.login") }}';
-            }
-        }
-
         // Initialize shared functionality
         document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
             {% block dom_ready %}{% endblock %}
         });
     </script>
