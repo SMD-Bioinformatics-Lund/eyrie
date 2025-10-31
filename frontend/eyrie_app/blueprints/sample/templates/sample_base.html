@@ -14,52 +14,39 @@
     {% block content %}{% endblock %}
 
     <script>
-        // API base URL - properly construct from samples endpoint
-        window.API_BASE = '{{ url_for("samples.get_samples_api").replace("/api/samples", "/api") }}';
-        console.log('🔍 API_BASE set to:', window.API_BASE);
-        console.log('🔍 Original get_samples URL:', '{{ url_for("samples.get_samples_api") }}');
+        // Sample API URL templates - use Flask url_for for proper base path handling
+        window.SAMPLE_API_TEMPLATES = {
+            get: '{{ url_for("sample.get_sample_api", sample_id="__SAMPLE_ID__") }}',
+            qc: '{{ url_for("sample.update_qc_api", sample_id="__SAMPLE_ID__") }}',
+            comment: '{{ url_for("sample.update_comment_api", sample_id="__SAMPLE_ID__") }}',
+            speciesFlags: '{{ url_for("sample.update_species_flags_api", sample_id="__SAMPLE_ID__") }}'
+        };
 
-        // Current user endpoint URL - use Flask url_for for proper base path handling
-        window.CURRENT_USER_URL = '{{ url_for("login.current_user_api") }}';
+        // Data file URL template - for serving HTML reports like Krona plots and Nanoplot files
+        window.DATA_URL_TEMPLATE = '{{ url_for("sample.serve_data_files", file_path="__FILE_PATH__") }}';
 
-        // Shared authentication functions
-        async function loadCurrentUser() {
-            try {
-                const response = await fetch('{{ url_for("login.current_user_api") }}', {
-                    credentials: 'include'
-                });
-                if (response.ok) {
-                    const user = await response.json();
-                    const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
-                    usernameElements.forEach(el => el.textContent = user.username);
+        // Helper function to build data file URLs
+        window.getDataFileUrl = function(filePath) {
+            return window.DATA_URL_TEMPLATE.replace('__FILE_PATH__', filePath);
+        };
 
-                    {% block user_loaded %}{% endblock %}
-                } else {
-                    {% block auth_failed %}
-                    const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
-                    usernameElements.forEach(el => el.textContent = 'Unknown');
-                    {% endblock %}
-                }
-            } catch (error) {
-                console.error('Failed to load user:', error);
-                const usernameElements = document.querySelectorAll('#currentUsername, .currentUsername');
-                usernameElements.forEach(el => el.textContent = 'Unknown');
+        // Backward compatibility for legacy code
+        window.getBasePath = function() {
+            return '';
+        };
+
+        // Helper function to build URLs for specific samples
+        window.getSampleApiUrl = function(operation, sampleId) {
+            const template = window.SAMPLE_API_TEMPLATES[operation];
+            if (!template) {
+                console.error('Unknown API operation:', operation);
+                return null;
             }
-        }
-
-        async function logout() {
-            try {
-                await fetch('{{ url_for("login.logout") }}', { method: 'POST' });
-                window.location.href = '{{ url_for("login.login") }}';
-            } catch (error) {
-                console.error('Logout error:', error);
-                window.location.href = '{{ url_for("login.login") }}';
-            }
-        }
+            return template.replace('__SAMPLE_ID__', sampleId);
+        };
 
         // Initialize shared functionality
         document.addEventListener('DOMContentLoaded', function() {
-            loadCurrentUser();
             {% block dom_ready %}{% endblock %}
         });
     </script>

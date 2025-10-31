@@ -2,10 +2,9 @@
  * Nanoplot-specific functionality
  */
 
-// Helper function to generate data URLs with proper base path
+// Helper function to generate data URLs using Flask data file serving
 function getDataUrl(filePath) {
-    const basePath = getBasePath();
-    return `${basePath}/data/${filePath}`;
+    return getDataFileUrl(filePath);
 }
 
 // Global variables for nanoplot

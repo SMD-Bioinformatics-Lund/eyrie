@@ -5,7 +5,6 @@
 
 // View-specific global variables
 let qcFailModal = null;
-let currentView = 'overview';
 
 // Page initialization function called by template
 function initializeSampleOverview() {
@@ -23,13 +22,12 @@ function setupNavigationLinks(sampleId) {
     const classificationLink = document.getElementById('classificationLink');
     const nanoplotLink = document.getElementById('nanoplotLink');
 
-    const basePath = getBasePath();
-
+    // Use Flask url_for patterns for navigation
     if (classificationLink) {
-        classificationLink.href = `${basePath}/sample/${sampleId}/classification`;
+        classificationLink.href = `/sample/${sampleId}/classification`;
     }
     if (nanoplotLink) {
-        nanoplotLink.href = `${basePath}/sample/${sampleId}/nanoplot`;
+        nanoplotLink.href = `/sample/${sampleId}/nanoplot`;
     }
 }
 
@@ -72,9 +70,8 @@ function renderSampleDetail(sample) {
     const kronaFrame = document.getElementById('kronaFrame');
     if (kronaFrame) {
         if (sample.krona_file) {
-            // Use base path aware URL construction
-            const basePath = getBasePath();
-            kronaFrame.src = `${basePath}/data/${sample.krona_file}`;
+            // Use Flask data file serving route
+            kronaFrame.src = getDataFileUrl(sample.krona_file);
         } else {
             kronaFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
         }
@@ -95,9 +92,8 @@ function renderSampleDetail(sample) {
         }
 
         if (qualityPlotPath) {
-            // Use base path aware URL construction
-            const basePath = getBasePath();
-            qualityFrame.src = `${basePath}/data/${qualityPlotPath}`;
+            // Use Flask data file serving route
+            qualityFrame.src = getDataFileUrl(qualityPlotPath);
         } else {
             qualityFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No quality plot available</i></div>';
         }
@@ -154,7 +150,11 @@ function renderStatistics(stats) {
 async function updateQC(status, comments = '') {
     if (!currentSample) return;
 
-    const url = `${window.API_BASE}/samples/${currentSample.sample_id}/qc`;
+    const url = getSampleApiUrl('qc', currentSample.sample_id);
+    if (!url) {
+        showError('QC API URL not available');
+        return;
+    }
     console.log('🔍 QC Update URL:', url);
     console.log('🔍 Document cookies:', document.cookie);
 
@@ -234,7 +234,11 @@ async function saveComments() {
     const commentsElement = document.getElementById('generalComments');
     const comments = commentsElement ? commentsElement.value : '';
 
-    const url = `${window.API_BASE}/samples/${currentSample.sample_id}/comment`;
+    const url = getSampleApiUrl('comment', currentSample.sample_id);
+    if (!url) {
+        showError('Comment API URL not available');
+        return;
+    }
     console.log('🔍 Comments Update URL:', url);
     console.log('🔍 Document cookies:', document.cookie);
 
@@ -352,39 +356,5 @@ function renderOverviewClassificationSummary() {
         }
     } else {
         if (spikeList) spikeList.style.display = 'none';
-    }
-}
-
-/**
- * View switching functionality
- */
-function showView(viewName) {
-    currentView = viewName;
-
-    // Hide all views
-    document.querySelectorAll('.view-content').forEach(view => {
-        view.style.display = 'none';
-    });
-
-    // Show selected view
-    const targetView = document.getElementById(`${viewName}View`);
-    if (targetView) {
-        targetView.style.display = 'block';
-    }
-
-    // Update navbar active state
-    document.querySelectorAll('.navbar-nav .nav-link').forEach(link => {
-        link.classList.remove('active');
-    });
-    const activeLink = document.getElementById(`${viewName}Link`);
-    if (activeLink) {
-        activeLink.classList.add('active');
-    }
-
-    // Load view-specific data
-    if (viewName === 'classification') {
-        loadClassificationData();
-    } else if (viewName === 'nanoplot') {
-        updateNanoStats();
     }
 }
