@@ -39,13 +39,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="samplesTableBody">
-                                    <tr>
-                                        <td colspan="12" class="text-center py-4">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    {{ samples_table_rows(samples, error) }}
                                 </tbody>
                             </table>
                         </div>
@@ -59,9 +53,9 @@
 
 {% block dom_ready %}
 // Samples page specific initialization
-// Provide Flask URL pattern for sample detail pages
-window.SAMPLE_URL_TEMPLATE = '{{ url_for("sample.sample_overview", sample_id="__SAMPLE_ID__") }}';
 {% endblock %}
+
+{% from 'macros/samples_table.html' import samples_table_rows %}
 
 {% block extra_js %}
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/js/samples.js') }}"></script>

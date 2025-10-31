@@ -1,18 +1,30 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, session
 from flask_login import login_required
-from ...eyrie import get_samples_from_backend, get_sample_from_backend, update_sample_qc, update_sample_comment, update_sample_species_flags
+from ...eyrie import get_samples_from_backend, get_sample_from_backend, update_sample_qc, update_sample_comment, update_sample_species_flags, create_sample
 
 bp = Blueprint('samples', __name__, url_prefix='', template_folder='templates')
 
 @bp.route("/")
 @login_required
 def root():
-    return render_template('samples.html')
+    """Redirect to samples page"""
+    try:
+        samples = get_samples_from_backend()
+        return render_template('samples.html', samples=samples)
+    except Exception as e:
+        # If backend is unavailable, show page with error message
+        return render_template('samples.html', samples=[], error=str(e))
 
 @bp.route("/samples")
 @login_required
 def samples_page():
-    return render_template('samples.html')
+    """Display samples page"""
+    try:
+        samples = get_samples_from_backend()
+        return render_template('samples.html', samples=samples)
+    except Exception as e:
+        # If backend is unavailable, show page with error message
+        return render_template('samples.html', samples=[], error=str(e))
 
 
 # API Endpoints
@@ -23,6 +35,22 @@ def get_samples_api():
     try:
         data = get_samples_from_backend()
         return jsonify(data)
+    except ValueError as e:
+        return jsonify({'error': 'Backend authentication required'}), 401
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@bp.route("/api/samples", methods=['POST'])
+@login_required
+def create_sample_api():
+    """Create a new sample"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        result = create_sample(data)
+        return jsonify(result)
     except ValueError as e:
         return jsonify({'error': 'Backend authentication required'}), 401
     except Exception as e:
