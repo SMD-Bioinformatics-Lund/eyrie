@@ -2,24 +2,20 @@
  * Core utilities shared across sample views
  */
 
-// Constants - don't override if already set by template
-// This should normally be set by the template using Flask's url_for()
-if (typeof window.API_BASE === 'undefined') {
-    console.warn('API_BASE not set by template, using fallback');
-    window.API_BASE = '/api';
-}
-
 // Global variables
 let currentSample = null;
-
-// getBasePath function is now defined in shared.js
 
 /**
  * Load sample data from API
  */
 async function loadSample(sampleId) {
     try {
-        const apiUrl = `${window.API_BASE}/samples/${sampleId}`;
+        const apiUrl = getSampleApiUrl('get', sampleId);
+        if (!apiUrl) {
+            showError('Sample API URL not available');
+            return null;
+        }
+
         const response = await fetch(apiUrl);
         const sample = await response.json();
 
@@ -32,39 +28,6 @@ async function loadSample(sampleId) {
         }
     } catch (error) {
         showError('Network error: ' + error.message);
-        return null;
-    }
-}
-
-/**
- * Load current user information for sample views
- */
-async function loadSampleCurrentUser() {
-    try {
-        const response = await fetch(`${window.API_BASE}/auth/current-user`, {
-            credentials: 'include'
-        });
-
-        if (response.ok) {
-            const user = await response.json();
-            document.getElementById('currentUsername').textContent = user.username;
-
-            // Show/hide admin button based on role (find by text content instead of href)
-            const adminButtons = document.querySelectorAll('a');
-            adminButtons.forEach(button => {
-                if (button.textContent.includes('Admin') && user.role !== 'admin') {
-                    button.style.display = 'none';
-                }
-            });
-            return user;
-        } else {
-            console.log('Authentication check failed, but not redirecting from sample view');
-            document.getElementById('currentUsername').textContent = 'Unknown';
-            return null;
-        }
-    } catch (error) {
-        console.error('Failed to load user in sample view:', error);
-        document.getElementById('currentUsername').textContent = 'Unknown';
         return null;
     }
 }

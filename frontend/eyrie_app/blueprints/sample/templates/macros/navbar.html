@@ -28,7 +28,7 @@
             {% endif %}
             <div class="dropdown">
                 <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                    <i class="bi bi-person-circle me-2"></i><span id="currentUsername">Loading...</span>
+                    <i class="bi bi-person-circle me-2"></i><span id="currentUsername">{% if current_user %}{{ current_user.username }}{% else %}Loading...{% endif %}</span>
                 </button>
                 <ul class="dropdown-menu">
                     <li><a class="dropdown-item" href="{{ url_for('login.logout') }}">

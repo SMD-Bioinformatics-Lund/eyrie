@@ -193,7 +193,7 @@ def api_authentication(func):
 @api_authentication
 def get_current_user_from_backend(headers: CaseInsensitiveDict) -> Dict[str, Any]:
     """Get current user info from backend API"""
-    url = f"{backend_url}/api/auth/me"
+    url = f"{backend_url}/api/auth/current-user"
     resp = requests.get(url, headers=headers, timeout=10)
     resp.raise_for_status()
     return resp.json()
@@ -204,6 +204,15 @@ def get_samples_from_backend(headers: CaseInsensitiveDict) -> Dict[str, Any]:
     """Get samples from backend API"""
     url = f"{backend_url}/api/samples"
     resp = requests.get(url, headers=headers, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@api_authentication
+def create_sample(headers: CaseInsensitiveDict, data: Dict[str, Any]) -> Dict[str, Any]:
+    """Create a new sample"""
+    url = f"{backend_url}/api/samples"
+    resp = requests.post(url, headers=headers, json=data, timeout=10)
     resp.raise_for_status()
     return resp.json()
 
