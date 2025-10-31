@@ -263,7 +263,7 @@ async def get_trends_summary(
     try:
         # Get current user for authentication  
         current_user = get_current_user(request)
-        
+
         # Get recent samples (last 30 days)
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         async with get_db_connection() as db:

@@ -55,58 +55,27 @@ async def shutdown_event():
     except Exception as e:
         logger.error(f"Error during shutdown: {e}")
 
-# Basic health check endpoint (no database dependency)
-@app.get("/health")
-async def health_check():
-    """Basic health check without database dependency"""
-    try:
-        import os
-        return {
-            "status": "healthy",
-            "service": "eyrie-backend",
-            "environment": os.getenv('ENVIRONMENT', 'unknown'),
-            "database_required": False
-        }
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return {"status": "unhealthy", "error": str(e)}
+@app.get("/")
+async def root():
+    """Root endpoint - redirect to API documentation"""
+    return {
+        "message": "Eyrie Sample Manager Backend",
+        "version": "0.2.1",
+        "api": "/api",
+        "documentation": "/docs",
+        "health": "/api/system/health"
+    }
 
-@app.get("/simple-test")
-async def simple_test():
-    """Ultra simple test endpoint"""
-    return {"message": "Backend is alive", "status": "ok"}
-
-@app.get("/debug")
-async def debug_info():
-    """Debug information for troubleshooting"""
-    try:
-        import os
-        import sys
-        import platform
-        
-        return {
-            "status": "running",
-            "service": "eyrie-backend",
-            "python_version": sys.version,
-            "platform": platform.platform(),
-            "environment_variables": {
-                "ENVIRONMENT": os.getenv('ENVIRONMENT'),
-                "MONGO_URI": os.getenv('MONGO_URI', 'not_set')[:50] + "..." if os.getenv('MONGO_URI') else "not_set",
-                "PYTHONPATH": os.getenv('PYTHONPATH'),
-            },
-            "working_directory": os.getcwd(),
-            "app_title": APP_TITLE,
-        }
-    except Exception as e:
-        logger.error(f"Debug endpoint failed: {e}")
-        return {"status": "error", "error": str(e)}
-
-# Include routers
+# Include API routers
 app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(samples.router)
 app.include_router(trends.router)
-app.include_router(frontend.router)
+
+# Include system and file routers
+app.include_router(frontend.system_router)
+app.include_router(frontend.data_router)
+app.include_router(frontend.api_router)
 
 # Mount static file directories
 # app.mount("/shared/static", StaticFiles(directory="frontend/shared/static"), name="shared_static")

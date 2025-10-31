@@ -12,12 +12,18 @@ class EyrieAPIClient:
     """Client for interacting with Eyrie API."""
 
     def __init__(self, api_url: str, username: Optional[str] = None, password: Optional[str] = None):
-        self.api_url = api_url.rstrip('/')
+        # Normalize the API URL - if it ends with /api, use it as is, otherwise add /api
+        api_url = api_url.rstrip('/')
+        if api_url.endswith('/api'):
+            self.api_url = api_url
+        else:
+            self.api_url = f"{api_url}/api"
+        
         self.username = username
         self.password = password
         self.session = requests.Session()
         self._authenticated = False
-        
+
         # Initialize handlers
         self.upload_handler = UploadHandler(self)
         self.format_handler = FormatHandler()
@@ -71,9 +77,9 @@ class EyrieAPIClient:
     def test_connection(self) -> bool:
         """Test connection to Eyrie API."""
         try:
-            # Health endpoint is at base URL without /api prefix
-            base_url = self.api_url.replace('/api', '') if self.api_url.endswith('/api') else self.api_url
-            response = self.session.get(f"{base_url}/health")
+            # Health endpoint is now at /api/system/health
+            health_url = f"{self.api_url}/system/health"
+            response = self.session.get(health_url)
             if response.status_code == 200:
                 print("✓ Connection to Eyrie API successful")
                 return True
