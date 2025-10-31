@@ -220,7 +220,7 @@ def create_sample(headers: CaseInsensitiveDict, data: Dict[str, Any]) -> Dict[st
 @api_authentication
 def get_sample_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> Dict[str, Any]:
     """Get specific sample from backend API"""
-    url = f"{backend_url}/api/samples/{sample_id}"
+    url = f"{backend_url}/api/sample/{sample_id}"
     resp = requests.get(url, headers=headers, timeout=10)
     resp.raise_for_status()
     return resp.json()
@@ -229,7 +229,7 @@ def get_sample_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> Dic
 @api_authentication
 def update_sample_qc(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample QC status"""
-    url = f"{backend_url}/api/samples/{sample_id}/qc"
+    url = f"{backend_url}/api/sample/{sample_id}/qc"
     resp = requests.put(url, headers=headers, json=data, timeout=10)
     resp.raise_for_status()
     return resp.json()
@@ -238,7 +238,7 @@ def update_sample_qc(headers: CaseInsensitiveDict, sample_id: str, data: Dict[st
 @api_authentication
 def update_sample_comment(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample comment"""
-    url = f"{backend_url}/api/samples/{sample_id}/comment"
+    url = f"{backend_url}/api/sample/{sample_id}/comment"
     resp = requests.put(url, headers=headers, json=data, timeout=10)
     resp.raise_for_status()
     return resp.json()
@@ -247,7 +247,7 @@ def update_sample_comment(headers: CaseInsensitiveDict, sample_id: str, data: Di
 @api_authentication
 def update_sample_species_flags(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample species flags"""
-    url = f"{backend_url}/api/samples/{sample_id}/species-flags"
+    url = f"{backend_url}/api/sample/{sample_id}/species-flags"
     resp = requests.put(url, headers=headers, json=data, timeout=10)
     resp.raise_for_status()
     return resp.json()

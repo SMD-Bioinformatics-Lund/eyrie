@@ -8,7 +8,7 @@ from eyrie_api.config.settings import (
     CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS
 )
 from eyrie_api.database.utils import init_default_user, close_database
-from eyrie_api.routes import admin, samples, frontend, auth, trends
+from eyrie_api.routes import admin, samples, sample, frontend, auth, trends
 
 logger = logging.getLogger(__name__)
 
@@ -77,6 +77,7 @@ async def api_root_no_slash():
         "endpoints": {
             "auth": "/api/auth",
             "samples": "/api/samples",
+            "sample": "/api/sample",
             "admin": "/api/admin", 
             "trends": "/api/trends",
             "files": "/api/files",
@@ -89,6 +90,7 @@ async def api_root_no_slash():
 app.include_router(auth.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(samples.router, prefix="/api")
+app.include_router(sample.router, prefix="/api")
 app.include_router(trends.router, prefix="/api")
 
 # Include system and file routers

@@ -23,7 +23,7 @@ class UploadHandler:
             if existing_sample:
                 # Update existing sample
                 response = self.client.session.put(
-                    f"{self.client.api_url}/samples/{sample_data.sample_info.sample_id}",
+                    f"{self.client.api_url}/sample/{sample_data.sample_info.sample_id}",
                     json=eyrie_sample
                 )
                 action = "Updated"
@@ -50,7 +50,7 @@ class UploadHandler:
     def _get_sample(self, sample_id: str) -> Optional[Dict[str, Any]]:
         """Get existing sample from Eyrie."""
         try:
-            response = self.client.session.get(f"{self.client.api_url}/samples/{sample_id}")
+            response = self.client.session.get(f"{self.client.api_url}/sample/{sample_id}")
             if response.status_code == 200:
                 return response.json()
             return None
