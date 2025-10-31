@@ -8,7 +8,7 @@ from eyrie_api.routes.auth import require_admin_or_uploader
 from eyrie_api.utils.json_encoder import JSONEncoder
 import json
 
-router = APIRouter(prefix="/api/samples", tags=["samples"])
+router = APIRouter(prefix="/samples", tags=["samples"])
 
 @router.get("")
 async def get_samples():

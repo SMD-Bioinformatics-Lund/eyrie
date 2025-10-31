@@ -9,7 +9,7 @@ from pymongo.database import Database
 from ..database.utils import get_db_connection
 from ..auth.middleware import get_current_user
 
-router = APIRouter(prefix="/api/trends", tags=["trends"])
+router = APIRouter(prefix="/trends", tags=["trends"])
 
 
 @router.get("/data")

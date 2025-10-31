@@ -5,7 +5,7 @@ from ..auth.middleware import get_admin_user
 from ..utils.json_encoder import JSONEncoder
 import json
 
-router = APIRouter(prefix="/api/admin", tags=["admin"])
+router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/users")
 async def get_users(request: Request):

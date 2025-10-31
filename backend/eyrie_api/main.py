@@ -66,16 +66,34 @@ async def root():
         "health": "/api/system/health"
     }
 
-# Include API routers
-app.include_router(auth.router)
-app.include_router(admin.router)
-app.include_router(samples.router)
-app.include_router(trends.router)
+@app.get("/api")
+async def api_root_no_slash():
+    """API root endpoint without trailing slash"""
+    return {
+        "message": "Eyrie Sample Manager API",
+        "version": "0.2.1",
+        "documentation": "/docs",
+        "health": "/api/system/health",
+        "endpoints": {
+            "auth": "/api/auth",
+            "samples": "/api/samples",
+            "admin": "/api/admin", 
+            "trends": "/api/trends",
+            "files": "/api/files",
+            "system": "/api/system"
+        }
+    }
+
+
+# Include API routers (now they have /api prefix built into their paths due to updated prefixes)
+app.include_router(auth.router, prefix="/api")
+app.include_router(admin.router, prefix="/api")
+app.include_router(samples.router, prefix="/api")
+app.include_router(trends.router, prefix="/api")
 
 # Include system and file routers
-app.include_router(frontend.system_router)
-app.include_router(frontend.data_router)
-app.include_router(frontend.api_router)
+app.include_router(frontend.system_router, prefix="/api")
+app.include_router(frontend.data_router, prefix="/api")
 
 # Mount static file directories
 # app.mount("/shared/static", StaticFiles(directory="frontend/shared/static"), name="shared_static")

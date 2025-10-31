@@ -11,7 +11,7 @@ from ..models.auth import LoginRequest, UserCreate
 from ..database.async_user_operations import find_user, find_user_by_id
 from ..database.utils import get_db_connection
 
-router = APIRouter(prefix="/api/auth", tags=["authentication"])
+router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
 
 # JWT Secret - in production this should be a strong secret from environment
