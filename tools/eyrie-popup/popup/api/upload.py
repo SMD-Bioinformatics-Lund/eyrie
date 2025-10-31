@@ -17,9 +17,6 @@ class UploadHandler:
             # Prepare sample data for Eyrie API
             eyrie_sample = self.client.format_handler.convert_to_eyrie_format(sample_data, config)
 
-            # Debug: Print spike field to verify it's being included
-            print(f"DEBUG: Uploading spike field: {eyrie_sample.get('spike', 'NOT_FOUND')}")
-
             # Check if sample already exists
             existing_sample = self._get_sample(sample_data.sample_info.sample_id)
 
