@@ -3,7 +3,7 @@ from fastapi.responses import FileResponse
 import os
 
 # Data files router - for serving HTML reports, plots, etc.
-data_router = APIRouter(prefix="/api/files", tags=["files"])
+data_router = APIRouter(prefix="/files", tags=["files"])
 
 @data_router.get("/data/{file_path:path}")
 async def serve_data_file(file_path: str):
@@ -14,7 +14,7 @@ async def serve_data_file(file_path: str):
     raise HTTPException(status_code=404, detail="File not found")
 
 # System/health router - for health checks, system info, etc.
-system_router = APIRouter(prefix="/api/system", tags=["system"])
+system_router = APIRouter(prefix="/system", tags=["system"])
 
 @system_router.get("/health")
 async def health_check():
@@ -70,23 +70,5 @@ async def simple_test():
     """Simple test endpoint to verify backend is alive"""
     return {"message": "Backend is alive", "status": "ok"}
 
-# API root router - for the main API entry point
-api_router = APIRouter(prefix="/api", tags=["api"])
-
-@api_router.get("/")
-async def api_root():
-    """API root endpoint"""
-    return {
-        "message": "Eyrie Sample Manager API",
-        "version": "0.2.1",
-        "documentation": "/docs",
-        "health": "/api/system/health",
-        "endpoints": {
-            "auth": "/api/auth",
-            "samples": "/api/samples",
-            "admin": "/api/admin", 
-            "trends": "/api/trends",
-            "files": "/api/files",
-            "system": "/api/system"
-        }
-    }
+# API root router - no longer needed since we handle /api directly in main.py
+# api_router = APIRouter(prefix="/api", tags=["api"])
