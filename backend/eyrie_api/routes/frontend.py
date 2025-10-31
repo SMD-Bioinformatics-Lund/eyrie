@@ -36,7 +36,8 @@ async def system_info():
         "health": "/api/system/health",
         "api_endpoints": {
             "auth": "/api/auth",
-            "samples": "/api/samples", 
+            "samples": "/api/samples",
+            "sample": "/api/sample",
             "admin": "/api/admin",
             "trends": "/api/trends",
             "files": "/api/files"
