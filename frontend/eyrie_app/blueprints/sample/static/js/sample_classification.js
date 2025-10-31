@@ -28,9 +28,8 @@ function loadClassificationData(sample = currentSample) {
     if (sample.krona_file) {
         const frame = document.getElementById('classificationKronaFrame');
         if (frame) {
-            // Use base path aware URL construction
-            const basePath = getBasePath();
-            frame.src = `${basePath}/data/${sample.krona_file}`;
+            // Use Flask data file serving route
+            frame.src = getDataFileUrl(sample.krona_file);
             frame.style.width = '100%';
             frame.style.height = '600px';
             frame.style.border = 'none';
@@ -42,113 +41,33 @@ function loadClassificationData(sample = currentSample) {
         }
     }
 
-    // Load abundance table and classification summary
-    displaySampleAbundanceTable();
+    // Initialize flags from loaded sample data
+    initializeFlagsFromSample(sample);
+    // Setup flag button event listeners for server-rendered table
+    setupFlagButtonEventListeners();
+    // Update classification summary
     updateSampleClassificationSummary();
 }
 
 /**
- * Display sample abundance table
+ * Initialize flags from sample data - for server-rendered table
  */
-function displaySampleAbundanceTable() {
-    const tbody = document.getElementById('contaminationTableBody');
-    if (!tbody) return;
-
-    if (!currentSample || !currentSample.taxonomic_data || !currentSample.taxonomic_data.hits) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center py-4">
-                    <div class="text-muted">
-                        <i class="bi bi-exclamation-circle text-warning" style="font-size: 2rem;"></i>
-                        <p class="mt-2">No taxonomic data available</p>
-                    </div>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-
-    // Load saved flags from database
+function initializeFlagsFromSample(sample) {
+    // Load saved flags from sample data
     flaggedContaminants.clear();
     flaggedTopHits.clear();
 
-    if (currentSample.flagged_contaminants) {
-        currentSample.flagged_contaminants.forEach(species => {
+    if (sample && sample.flagged_contaminants) {
+        sample.flagged_contaminants.forEach(species => {
             flaggedContaminants.add(species);
         });
     }
 
-    if (currentSample.flagged_top_hits) {
-        currentSample.flagged_top_hits.forEach(species => {
+    if (sample && sample.flagged_top_hits) {
+        sample.flagged_top_hits.forEach(species => {
             flaggedTopHits.add(species);
         });
     }
-
-    const species = currentSample.taxonomic_data.hits.sort((a, b) => b.abundance - a.abundance);
-
-    tbody.innerHTML = '';
-    species.forEach((organism, index) => {
-        const row = document.createElement('tr');
-        row.className = 'contamination-row';
-        row.dataset.species = organism.species;
-
-        // Check if this species is flagged
-        const isTopHit = flaggedTopHits.has(organism.species);
-        const isContaminant = flaggedContaminants.has(organism.species);
-
-        // Check if this species is the detected spike species
-        const isSpike = currentSample.spike && currentSample.spike === organism.species;
-        if (isSpike) {
-            row.classList.add('spike-row');
-            row.title = `Spike Species: ${organism.species} (${organism.abundance.toFixed(2)}%)`;
-        }
-
-        row.innerHTML = `
-            <td>
-                <div class="d-flex align-items-center">
-                    <small class="text-muted me-2">${index + 1}.</small>
-                    <div>
-                        <div class="fw-semibold">${organism.species}</div>
-                        <small class="text-muted">${organism.genus || 'N/A'} - ${organism.family || 'N/A'}</small>
-                    </div>
-                </div>
-            </td>
-            <td class="text-center">
-                <div class="d-flex align-items-center justify-content-center">
-                    <span class="badge ${getAbundanceBadgeClass(organism.abundance)} me-2">
-                        ${organism.abundance.toFixed(2)}%
-                    </span>
-                    <div class="progress flex-grow-1" style="height: 8px;">
-                        <div class="progress-bar" style="width: ${Math.min(organism.abundance, 100)}%"></div>
-                    </div>
-                </div>
-            </td>
-            <td class="text-center">
-                <span class="fw-semibold text-muted">
-                    ${organism.estimated_counts ? formatNumber(Math.round(organism.estimated_counts)) : '--'}
-                </span>
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm ${isTopHit ? 'btn-success' : 'btn-outline-success'} top-hit-btn"
-                        data-species="${organism.species}"
-                        data-flag-type="top-hit">
-                    <i class="bi ${isTopHit ? 'bi-star-fill' : 'bi-star'}"></i>
-                </button>
-            </td>
-            <td class="text-center">
-                <button class="btn btn-sm ${isContaminant ? 'btn-danger' : 'btn-outline-danger'} contaminant-btn"
-                        data-species="${organism.species}"
-                        data-flag-type="contaminant">
-                    <i class="bi ${isContaminant ? 'bi-flag-fill' : 'bi-flag'}"></i>
-                </button>
-            </td>
-        `;
-
-        tbody.appendChild(row);
-    });
-
-    // Set up event delegation for flag buttons
-    setupFlagButtonEventListeners();
 }
 
 /**
@@ -187,15 +106,6 @@ function handleFlagButtonClick(event) {
     }
 }
 
-/**
- * Get abundance badge class for styling
- */
-function getAbundanceBadgeClass(abundance) {
-    if (abundance >= 10) return 'bg-success';
-    if (abundance >= 5) return 'bg-warning';
-    if (abundance >= 1) return 'bg-info';
-    return 'bg-secondary';
-}
 
 /**
  * Toggle top hit flag for a species
@@ -270,14 +180,17 @@ async function saveSpeciesFlags() {
         return;
     }
 
-    const apiBase = window.API_BASE;
-    const url = `${apiBase}/samples/${currentSample.sample_id}/species-flags`;
+    const url = getSampleApiUrl('speciesFlags', currentSample.sample_id);
+    if (!url) {
+        showError('Species flags API URL not available');
+        return;
+    }
+
     const payload = {
         flagged_contaminants: Array.from(flaggedContaminants),
         flagged_top_hits: Array.from(flaggedTopHits)
     };
 
-    console.log('🔍 Species flags API_BASE:', apiBase);
     console.log('🔍 Species flags URL:', url);
     console.log('🔍 Species flags payload:', payload);
     console.log('🔍 Document cookies:', document.cookie);
@@ -411,9 +324,8 @@ function refreshKronaPlot() {
  */
 function downloadKronaPlot() {
     if (currentSample && currentSample.krona_file) {
-        // Use base path aware URL construction
-        const basePath = getBasePath();
-        window.open(`${basePath}/data/${currentSample.krona_file}`, '_blank');
+        // Use Flask data file serving route
+        window.open(getDataFileUrl(currentSample.krona_file), '_blank');
     } else {
         alert('No Krona plot available for download');
     }
