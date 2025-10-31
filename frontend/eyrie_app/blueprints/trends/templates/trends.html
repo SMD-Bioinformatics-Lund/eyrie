@@ -126,6 +126,7 @@
 
 {% block dom_ready %}
 // Trends page specific initialization
+window.TRENDS_API_URL = '{{ url_for("trends.trends_data_api") }}';
 {% endblock %}
 
 {% block extra_js %}

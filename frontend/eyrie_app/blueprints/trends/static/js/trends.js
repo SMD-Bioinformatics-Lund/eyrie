@@ -47,8 +47,8 @@ async function updateTrends() {
             classification: classificationFilter
         });
 
-        // Fetch trends data using backend API (routed through Flask frontend)
-        const trendsApiUrl = `${window.API_BASE}/trends/data`;
+        // Fetch trends data using Flask route
+        const trendsApiUrl = window.TRENDS_API_URL || '/api/trends/data';
         debugLog('Fetching trends data from:', `${trendsApiUrl}?${params}`);
         const response = await fetch(`${trendsApiUrl}?${params}`);
 
