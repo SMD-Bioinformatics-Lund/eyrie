@@ -1,4 +1,4 @@
-{% macro classification_content(sample_id) %}
+{% macro classification_content(sample_id, sample=None) %}
 <div class="container-fluid mt-4">
     <div class="row">
         <!-- Krona Plot - Left Side -->
@@ -52,14 +52,7 @@
                                 </tr>
                             </thead>
                             <tbody id="contaminationTableBody">
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">
-                                        <div class="text-muted">
-                                            <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
-                                            <p class="mt-2">No abundance data available</p>
-                                        </div>
-                                    </td>
-                                </tr>
+                                {{ abundance_table_rows(sample) }}
                             </tbody>
                         </table>
                     </div>
@@ -121,4 +114,73 @@
         </div>
     </div>
 </div>
+{% endmacro %}
+
+{% macro abundance_table_rows(sample) %}
+    {% if sample and sample.taxonomic_data and sample.taxonomic_data.hits %}
+        {% set flagged_contaminants = sample.flagged_contaminants or [] %}
+        {% set flagged_top_hits = sample.flagged_top_hits or [] %}
+        {% set sorted_hits = sample.taxonomic_data.hits | sort(attribute='abundance', reverse=true) %}
+        {% for organism in sorted_hits %}
+            <tr class="contamination-row{% if sample.spike and sample.spike == organism.species %} spike-row{% endif %}"
+                data-species="{{ organism.species }}"
+                {% if sample.spike and sample.spike == organism.species %}title="Spike Species: {{ organism.species }} ({{ '%.2f'|format(organism.abundance) }}%)"{% endif %}>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <small class="text-muted me-2">{{ loop.index }}.</small>
+                        <div>
+                            <div class="fw-semibold">{{ organism.species }}</div>
+                            <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <div class="d-flex align-items-center justify-content-center">
+                        <span class="badge {{ abundance_badge_class(organism.abundance) }} me-2">
+                            {{ '%.2f'|format(organism.abundance) }}%
+                        </span>
+                        <div class="progress flex-grow-1" style="height: 8px;">
+                            <div class="progress-bar" style="width: {{ [organism.abundance, 100]|min }}%"></div>
+                        </div>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <span class="fw-semibold text-muted">
+                        {% if organism.estimated_counts %}
+                            {{ '{:,.0f}'.format(organism.estimated_counts) }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </span>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm {% if organism.species in flagged_top_hits %}btn-success{% else %}btn-outline-success{% endif %} top-hit-btn"
+                            data-species="{{ organism.species }}"
+                            data-flag-type="top-hit">
+                        <i class="bi {% if organism.species in flagged_top_hits %}bi-star-fill{% else %}bi-star{% endif %}"></i>
+                    </button>
+                </td>
+                <td class="text-center">
+                    <button class="btn btn-sm {% if organism.species in flagged_contaminants %}btn-danger{% else %}btn-outline-danger{% endif %} contaminant-btn"
+                            data-species="{{ organism.species }}"
+                            data-flag-type="contaminant">
+                        <i class="bi {% if organism.species in flagged_contaminants %}bi-flag-fill{% else %}bi-flag{% endif %}"></i>
+                    </button>
+                </td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="5" class="text-center py-4">
+                <div class="text-muted">
+                    <i class="bi bi-exclamation-circle text-warning" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No taxonomic data available</p>
+                </div>
+            </td>
+        </tr>
+    {% endif %}
+{% endmacro %}
+
+{% macro abundance_badge_class(abundance) %}
+    {% if abundance >= 10 %}bg-success{% elif abundance >= 5 %}bg-warning{% elif abundance >= 1 %}bg-info{% else %}bg-secondary{% endif %}
 {% endmacro %}
