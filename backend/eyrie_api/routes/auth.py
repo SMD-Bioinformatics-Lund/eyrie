@@ -122,7 +122,7 @@ async def login(login_data: LoginRequest):
         }
     }
 
-@router.get("/me")
+@router.get("/current-user")
 async def get_user_profile(current_user: dict = Depends(get_current_user)):
     """Get current user profile"""
     return {
