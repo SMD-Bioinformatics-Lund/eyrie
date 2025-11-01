@@ -29,7 +29,7 @@
                 <!-- Right Column - Stats and Links -->
                 <div class="col-lg-3 mb-4">
                     {{ classification_summary_card() }}
-                    {{ summary_statistics_card() }}
+                    {{ summary_statistics_card(sample) }}
                     {{ quality_plot_card() }}
                 </div>
             </div>
@@ -45,15 +45,20 @@
 const SAMPLE_ID = '{{ sample_id }}';
 // Initialize sample overview components
 initializeSampleOverview();
-// Load sample data and render the view
+// Sample data is pre-loaded from server
+{% if sample %}
+currentSample = {{ sample | tojson }};
+renderSampleDetail(currentSample);
+{% else %}
+// Fallback: load sample data via API if server-side loading failed
 loadSample(SAMPLE_ID).then(sample => {
     if (sample) {
         renderSampleDetail(sample);
-        setupNavigationLinks(SAMPLE_ID);
     } else {
         showError('Failed to load sample: ' + SAMPLE_ID);
     }
 });
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}

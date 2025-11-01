@@ -299,6 +299,35 @@ def get_trends_data(headers: CaseInsensitiveDict, query_params: Dict[str, str]) 
     return resp.json()
 
 
+@api_authentication
+def serve_data_file_from_backend(headers: CaseInsensitiveDict, file_path: str):
+    """Serve data file from backend API with authentication"""
+    try:
+        from flask import Response
+        
+        backend_url_to_use = backend_url or 'http://localhost:8000'
+        response = requests.get(
+            f"{backend_url_to_use}/api/files/data/{file_path}",
+            headers=headers,
+            timeout=30
+        )
+        
+        if response.status_code == 200:
+            # Return the file content with appropriate headers
+            return Response(
+                response.content,
+                headers={
+                    'Content-Type': response.headers.get('Content-Type', 'application/octet-stream'),
+                    'Content-Disposition': response.headers.get('Content-Disposition', ''),
+                }
+            )
+        else:
+            return f"File not found: {file_path}", 404
+            
+    except Exception as e:
+        return f"Error serving file: {str(e)}", 500
+
+
 # Additional API functions for Flask-Login user management
 def get_current_user_api() -> Dict[str, Any]:
     """Get current user info from Flask-Login session"""

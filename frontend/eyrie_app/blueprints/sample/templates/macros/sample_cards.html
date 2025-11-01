@@ -144,7 +144,7 @@
 </div>
 {% endmacro %}
 
-{% macro summary_statistics_card() %}
+{% macro summary_statistics_card(sample=None) %}
 <!-- Summary Statistics Card -->
 <div class="card stats-card mb-4">
     <div class="card-header bg-primary text-white">
@@ -154,51 +154,52 @@
     </div>
     <div class="card-body">
         <div class="row g-2">
+            {% set nano_stats = sample.nano_stats_processed if sample and sample.nano_stats_processed else (sample.nano_stats_unprocessed if sample and sample.nano_stats_unprocessed else {}) %}
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-primary mb-0" id="statNumberReads">--</div>
+                    <div class="h5 text-primary mb-0" id="statNumberReads">{{ nano_stats.number_of_reads | format_number }}</div>
                     <small class="text-muted">Number of Reads</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-success mb-0" id="statMeanLength">--</div>
+                    <div class="h5 text-success mb-0" id="statMeanLength">{{ nano_stats.mean_read_length | format_length }}</div>
                     <small class="text-muted">Mean Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-info mb-0" id="statMeanQuality">--</div>
+                    <div class="h5 text-info mb-0" id="statMeanQuality">{{ nano_stats.mean_read_quality | format_quality }}</div>
                     <small class="text-muted">Mean Read Quality</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-warning mb-0" id="statMedianLength">--</div>
+                    <div class="h5 text-warning mb-0" id="statMedianLength">{{ nano_stats.median_read_length | format_length }}</div>
                     <small class="text-muted">Median Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-secondary mb-0" id="statMedianQuality">--</div>
+                    <div class="h5 text-secondary mb-0" id="statMedianQuality">{{ nano_stats.median_read_quality | format_quality }}</div>
                     <small class="text-muted">Median Read Quality</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-danger mb-0" id="statReadN50">--</div>
+                    <div class="h5 text-danger mb-0" id="statReadN50">{{ nano_stats.read_length_n50 | format_length }}</div>
                     <small class="text-muted">Read Length N50</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-dark mb-0" id="statStdevLength">--</div>
+                    <div class="h5 text-dark mb-0" id="statStdevLength">{{ nano_stats.stdev_read_length | format_length }}</div>
                     <small class="text-muted">STDEV Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-muted mb-0" id="statTotalBases">--</div>
+                    <div class="h5 text-muted mb-0" id="statTotalBases">{{ nano_stats.total_bases | format_bases }}</div>
                     <small class="text-muted">Total Bases</small>
                 </div>
             </div>

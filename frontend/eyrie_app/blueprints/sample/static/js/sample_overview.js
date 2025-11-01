@@ -15,21 +15,6 @@ function initializeSampleOverview() {
     }
 }
 
-/**
- * Setup navigation links for sample views
- */
-function setupNavigationLinks(sampleId) {
-    const classificationLink = document.getElementById('classificationLink');
-    const nanoplotLink = document.getElementById('nanoplotLink');
-
-    // Use Flask url_for patterns for navigation
-    if (classificationLink) {
-        classificationLink.href = `/sample/${sampleId}/classification`;
-    }
-    if (nanoplotLink) {
-        nanoplotLink.href = `/sample/${sampleId}/nanoplot`;
-    }
-}
 
 /**
  * Render sample detail information

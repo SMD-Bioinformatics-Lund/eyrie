@@ -1,5 +1,6 @@
 FROM python:3.12.0-slim
 
+# Set working directory
 WORKDIR /app
 
 # Update pip and install Python dependencies
@@ -15,8 +16,17 @@ RUN python -m pip install --no-cache-dir .[production]
 # Copy frontend static files
 COPY . /app/frontend
 
-# Create data directory
-RUN mkdir -p /app/data
+# Create non-root user
+RUN groupadd --gid 1000 worker && \
+    useradd -g worker --uid 1000 --shell /usr/sbin/nologin --create-home worker
+
+# Set ownership of application directory and create data directory
+RUN chown -R worker:worker /app && \
+    mkdir -p /app/data && \
+    chown -R worker:worker /app/data
+
+# Switch to non-root user
+USER worker
 
 EXPOSE 5000
 

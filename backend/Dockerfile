@@ -4,14 +4,15 @@ FROM python:3.12.0-slim
 # Add a cache-busting layer
 ARG CACHE_BUST=1
 
-WORKDIR /app
-
 # Install system dependencies - separate steps for better ARM64 compatibility
 RUN apt-get update -qq && apt-get upgrade -y
 RUN apt-get install -y --no-install-recommends \
         gcc \
         curl
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Set working directory
+WORKDIR /app
 
 # Copy and install Python dependencies
 COPY pyproject.toml .
@@ -22,6 +23,18 @@ COPY eyrie_api/ ./eyrie_api/
 
 # Install package with production dependencies
 RUN python -m pip install --no-cache-dir .[production]
+
+# Create non-root user
+RUN groupadd --gid 1000 worker && \
+    useradd -g worker --uid 1000 --shell /usr/sbin/nologin --create-home worker
+
+# Set ownership of application directory and create data directory
+RUN chown -R worker:worker /app && \
+    mkdir -p /app/data && \
+    chown -R worker:worker /app/data
+
+# Switch to non-root user
+USER worker
 
 EXPOSE 5000
 
