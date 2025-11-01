@@ -73,7 +73,28 @@ def create_app():
     test_backend_connectivity()
     print("ℹ️  Frontend will handle sessions only, all data comes from backend API")
 
-    # Health check endpoints
+    # Register direct routes before blueprints
+    @app.route('/api/test')
+    def test_route():
+        return "Test route works!"
+
+    @app.route('/api/files/data/<path:file_path>')
+    def api_files_data(file_path):
+        """Proxy data file requests to backend API"""
+        from .eyrie import serve_data_file_from_backend
+        from flask_login import current_user
+
+        # Check if user is authenticated
+        if not current_user.is_authenticated:
+            return "Authentication required", 401
+
+        try:
+            return serve_data_file_from_backend(file_path)
+        except ValueError as e:
+            return "Authentication required", 401
+        except Exception as e:
+            return f"Error serving file: {str(e)}", 500
+
     @app.route("/health", methods=['GET'])
     def health_check_endpoint():
         """Health check endpoint with backend connectivity details"""
@@ -89,6 +110,51 @@ def create_app():
                 'error': str(e),
                 'container_name': os.getenv('HOSTNAME', 'unknown')
             }), 500
+
+    # Register Jinja template filters
+    @app.template_filter('format_number')
+    def format_number_filter(num):
+        """Format number with locale formatting"""
+        if not num:
+            return '--'
+        return f"{num:,}"
+    
+    @app.template_filter('format_bases') 
+    def format_bases_filter(bases):
+        """Format bases with appropriate unit"""
+        if not bases:
+            return '--'
+        if bases >= 1e9:
+            return f"{bases / 1e9:.1f} Gb"
+        elif bases >= 1e6:
+            return f"{bases / 1e6:.1f} Mb"
+        elif bases >= 1e3:
+            return f"{bases / 1e3:.1f} Kb"
+        return f"{bases} bp"
+    
+    @app.template_filter('format_quality')
+    def format_quality_filter(quality):
+        """Format quality score"""
+        if not quality:
+            return '--'
+        return f"Q{quality:.1f}"
+    
+    @app.template_filter('format_length')
+    def format_length_filter(length):
+        """Format length in bp"""
+        if not length:
+            return '--'
+        return f"{round(length):,} bp"
+    
+    @app.template_filter('qc_badge_class')
+    def qc_badge_class_filter(qc):
+        """Get CSS class for QC badge"""
+        qc_classes = {
+            'passed': 'bg-success',
+            'failed': 'bg-danger', 
+            'unprocessed': 'bg-secondary'
+        }
+        return qc_classes.get(qc, 'bg-secondary')
 
     # Register all blueprints
     register_blueprints(app, settings.external_base_path)

@@ -22,8 +22,7 @@
             speciesFlags: '{{ url_for("sample.update_species_flags_api", sample_id="__SAMPLE_ID__") }}'
         };
 
-        // Data file URL template - for serving HTML reports like Krona plots and Nanoplot files
-        window.DATA_URL_TEMPLATE = '{{ url_for("sample.serve_data_files", file_path="__FILE_PATH__") }}';
+        window.DATA_URL_TEMPLATE = '{{ url_for("api_files_data", file_path="__FILE_PATH__") }}';
 
         // Helper function to build data file URLs
         window.getDataFileUrl = function(filePath) {
