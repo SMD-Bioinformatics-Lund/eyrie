@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
 from flask_login import LoginManager
 from datetime import datetime
@@ -73,29 +73,15 @@ def create_app():
     test_backend_connectivity()
     print("ℹ️  Frontend will handle sessions only, all data comes from backend API")
 
-    # Register direct routes before blueprints
-    @app.route('/api/test')
+    # Register direct routes with base path
+    base_path = settings.external_base_path or ''
+    
+    @app.route(f'{base_path}/api/test')
     def test_route():
         return "Test route works!"
 
-    @app.route('/api/files/data/<path:file_path>')
-    def api_files_data(file_path):
-        """Proxy data file requests to backend API"""
-        from .eyrie import serve_data_file_from_backend
-        from flask_login import current_user
 
-        # Check if user is authenticated
-        if not current_user.is_authenticated:
-            return "Authentication required", 401
-
-        try:
-            return serve_data_file_from_backend(file_path)
-        except ValueError as e:
-            return "Authentication required", 401
-        except Exception as e:
-            return f"Error serving file: {str(e)}", 500
-
-    @app.route("/health", methods=['GET'])
+    @app.route(f'{base_path}/health', methods=['GET'])
     def health_check_endpoint():
         """Health check endpoint with backend connectivity details"""
         try:
@@ -110,6 +96,12 @@ def create_app():
                 'error': str(e),
                 'container_name': os.getenv('HOSTNAME', 'unknown')
             }), 500
+
+    # Static file serving for data files
+    @app.route(f'{base_path}/app/data/<path:filename>')
+    def serve_data_files(filename):
+        """Serve data files from mounted /app/data directory"""
+        return send_from_directory('/app/data', filename)
 
     # Register Jinja template filters
     @app.template_filter('format_number')

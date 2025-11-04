@@ -80,7 +80,6 @@ async def api_root_no_slash():
             "sample": "/api/sample",
             "admin": "/api/admin", 
             "trends": "/api/trends",
-            "files": "/api/files",
             "system": "/api/system"
         }
     }
@@ -92,14 +91,7 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(samples.router, prefix="/api")
 app.include_router(sample.router, prefix="/api")
 app.include_router(trends.router, prefix="/api")
-
-# Include system and file routers
 app.include_router(frontend.system_router, prefix="/api")
-app.include_router(frontend.data_router, prefix="/api")
-
-# Mount static file directories
-# app.mount("/shared/static", StaticFiles(directory="frontend/shared/static"), name="shared_static")
-# app.mount("/blueprints", StaticFiles(directory="frontend/blueprints"), name="blueprints")
 
 if __name__ == "__main__":
     import uvicorn
