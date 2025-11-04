@@ -1,17 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse
 import os
-
-# Data files router - for serving HTML reports, plots, etc.
-data_router = APIRouter(prefix="/files", tags=["files"])
-
-@data_router.get("/data/{file_path:path}")
-async def serve_data_file(file_path: str):
-    """Serve data files (HTML reports, plots, etc.)"""
-    file_full_path = f"/app/data/{file_path}"
-    if os.path.exists(file_full_path):
-        return FileResponse(file_full_path)
-    raise HTTPException(status_code=404, detail="File not found")
+import sys
+import platform
 
 # System/health router - for health checks, system info, etc.
 system_router = APIRouter(prefix="/system", tags=["system"])
@@ -40,7 +31,6 @@ async def system_info():
             "sample": "/api/sample",
             "admin": "/api/admin",
             "trends": "/api/trends",
-            "files": "/api/files"
         }
     }
 
@@ -48,9 +38,6 @@ async def system_info():
 async def debug_info():
     """Debug information for troubleshooting"""
     try:
-        import sys
-        import platform
-        
         return {
             "status": "running",
             "service": "eyrie-backend",
@@ -70,6 +57,3 @@ async def debug_info():
 async def simple_test():
     """Simple test endpoint to verify backend is alive"""
     return {"message": "Backend is alive", "status": "ok"}
-
-# API root router - no longer needed since we handle /api directly in main.py
-# api_router = APIRouter(prefix="/api", tags=["api"])

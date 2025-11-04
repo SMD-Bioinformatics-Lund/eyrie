@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from ...eyrie import (
     get_sample_from_backend, update_sample_qc, update_sample_comment,
-    update_sample_species_flags, serve_data_file
+    update_sample_species_flags
 )
 
 bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
@@ -90,10 +90,3 @@ def update_species_flags_api(sample_id):
         return jsonify({'error': 'Backend authentication required'}), 401
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
-# Data file serving
-@bp.route("/data/<path:file_path>")
-@login_required
-def serve_data_files(file_path):
-    """Serve data files"""
-    return serve_data_file(file_path)
