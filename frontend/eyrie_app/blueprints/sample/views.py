@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from ...eyrie import (
     get_sample_from_backend, update_sample_qc, update_sample_comment,
-    update_sample_species_flags
+    update_sample_species_flags, serve_data_file
 )
 
 bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
@@ -17,6 +17,9 @@ def sample_overview(sample_id):
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for overview: {e}")
+        print(f"Error type: {type(e).__name__}")
+        import traceback
+        print(f"Traceback: {traceback.format_exc()}")
         return render_template('sample_overview.html', sample_id=sample_id, sample=None, current_user=current_user)
 
 @bp.route("/sample/<sample_id>/classification")
@@ -34,7 +37,14 @@ def sample_classification(sample_id):
 @bp.route("/sample/<sample_id>/nanoplot")
 @login_required
 def sample_nanoplot(sample_id):
-    return render_template('sample_nanoplot.html', sample_id=sample_id, current_user=current_user)
+    try:
+        # Get sample data for server-side rendering
+        sample = get_sample_from_backend(sample_id)
+        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=sample, current_user=current_user)
+    except Exception as e:
+        # If sample data can't be loaded, still render the template but with empty sample
+        print(f"Error loading sample data for nanoplot: {e}")
+        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=None, current_user=current_user)
 
 # API Routes
 @bp.route("/api/sample/<sample_id>")
@@ -90,3 +100,10 @@ def update_species_flags_api(sample_id):
         return jsonify({'error': 'Backend authentication required'}), 401
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Data file serving endpoint
+@bp.route("/data/<path:file_path>", methods=['GET'])
+@login_required
+def serve_data_file_endpoint(file_path):
+    """Serve data files from /app/data directory with authentication"""
+    return serve_data_file(file_path)

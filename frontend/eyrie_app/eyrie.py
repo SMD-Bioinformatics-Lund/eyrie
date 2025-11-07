@@ -315,10 +315,21 @@ def get_current_user_api() -> Dict[str, Any]:
 # Static file serving functions
 def serve_data_file(file_path: str):
     """Serve data files from /app/data directory"""
-    file_full_path = f"/app/data/{file_path}"
-    if os.path.exists(file_full_path):
-        return send_file(file_full_path)
-    return jsonify({'error': 'File not found'}), 404
+    try:
+        # Ensure the path is safe and within the data directory
+        safe_path = os.path.normpath(file_path).lstrip('/')
+        file_full_path = os.path.join('/app/data', safe_path)
+
+        # Check if the file exists and is within the allowed directory
+        if not file_full_path.startswith('/app/data/'):
+            return jsonify({'error': 'Invalid file path'}), 400
+
+        if os.path.exists(file_full_path) and os.path.isfile(file_full_path):
+            return send_file(file_full_path)
+        else:
+            return jsonify({'error': 'File not found'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Error serving file: {str(e)}'}), 500
 
 
 def serve_shared_static(filename: str):
