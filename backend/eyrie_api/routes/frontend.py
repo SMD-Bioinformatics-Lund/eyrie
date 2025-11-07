@@ -1,8 +1,9 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import APIRouter
 import os
 import sys
 import platform
+
+from eyrie_api.__version__ import __version__
 
 # System/health router - for health checks, system info, etc.
 system_router = APIRouter(prefix="/system", tags=["system"])
@@ -22,7 +23,7 @@ async def system_info():
     """System information"""
     return {
         "message": "Eyrie Sample Manager API",
-        "version": "0.2.1",
+        "version": __version__,
         "documentation": "/docs",
         "health": "/api/system/health",
         "api_endpoints": {

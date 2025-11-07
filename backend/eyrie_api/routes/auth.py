@@ -4,8 +4,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime, timedelta
 import jwt
 import os
-from typing import Optional
-from bson import ObjectId
 
 from ..models.auth import LoginRequest, UserCreate
 from ..database.async_user_operations import find_user, find_user_by_id

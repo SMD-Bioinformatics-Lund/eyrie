@@ -30,8 +30,6 @@ services:
       - "${BACKEND_HOST_PORT:-8000}:5000"
     depends_on:
       - mongodb
-    volumes:
-      - ./data:/app/data:ro
     networks:
       - eyrie-network
 
