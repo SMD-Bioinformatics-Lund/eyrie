@@ -1,0 +1,9 @@
+[2025-09-30 09:48:51,220] multiqc.config                                     [INFO   ]  Loading config settings from: multiqc_config.yml
+[2025-09-30 09:48:51,329] multiqc.core.version_check                         [WARNING]  MultiQC Version v1.31 now available!
+[2025-09-30 09:48:51,329] multiqc.core.file_search                           [INFO   ]  Search path: /fs1/ryan/16s/work/e6/68f77e847218c29c94d4e4b0efd6ec
+[2025-09-30 09:48:51,404] multiqc.core.special_case_modules.custom_content   [INFO   ]  software_versions: Found 1 sample (html)
+[2025-09-30 09:48:51,404] multiqc.core.special_case_modules.custom_content   [INFO   ]  genomic-medicine-sweden-TRANA-summary: Found 1 sample (html)
+[2025-09-30 09:48:51,404] multiqc.core.special_case_modules.custom_content   [INFO   ]  genomic-medicine-sweden-trana-methods-description: Found 1 sample (html)
+[2025-09-30 09:48:51,409] multiqc.modules.nanostat.nanostat                  [INFO   ]  Found 4 reports
+[2025-09-30 09:48:51,487] multiqc.modules.fastqc.fastqc                      [INFO   ]  Found 2 reports
+[2025-09-30 09:48:51,556] multiqc.core.write_results                         [INFO   ]  Rendering plots. Export plots to formats png, svg, pdf is requested, so it might take a while. To disable plot export, set `export_plots: false` in config, or remove the `--export-plots` command line flag

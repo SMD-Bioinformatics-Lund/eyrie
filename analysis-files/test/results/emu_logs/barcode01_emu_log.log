@@ -1,0 +1,27 @@
+barcode01_filtered.fastq.gz
+[M::mm_idx_gen::1.573*1.24] collected minimizers
+[M::mm_idx_gen::1.726*2.01] sorted minimizers
+[M::main::1.730*2.00] loaded/built the index for 49243 target sequence(s)
+[M::mm_mapopt_update::1.742*2.00] mid_occ = 14113
+[M::mm_idx_stat] kmer size: 15; skip: 10; is_hpc: 0; #seq: 49243
+[M::mm_idx_stat::1.751*1.99] distinct minimizers: 462637 (45.14% are singletons); average occurrences: 28.757; average spacing: 5.572; total length: 74133434
+[M::worker_pipeline::3.354*5.77] mapped 27 sequences
+[M::main] Version: 2.28-r1209
+[M::main] CMD: minimap2 -ax map-ont -t 12 -N 50 -p .9 -K 500000000 -o ./barcode01_filtered.fastq_emu_alignments.sam /fs1/pipelines/trana/assets/databases/emu_database/species_taxid.fasta barcode01_filtered.fastq.gz
+[M::main] Real time: 3.394 sec; CPU: 19.377 sec; Peak RSS: 0.964 GB
+/usr/local/lib/python3.9/site-packages/Bio/SeqIO/FastaIO.py:203: BiopythonDeprecationWarning: Previously, the FASTA parser silently ignored comments at the beginning of the FASTA file (before the first sequence).
+
+Nowadays, the FASTA file format is usually understood not to have any such comments, and most software packages do not allow them. Therefore, the use of comments at the beginning of a FASTA file is now deprecated in Biopython.
+
+In a future Biopython release, this deprecation warning will be replaced by a ValueError. To avoid this, there are three options:
+
+(1) Modify your FASTA file to remove such comments at the beginning of the file.
+
+(2) Use SeqIO.parse with the 'fasta-pearson' format instead of 'fasta'. This format is consistent with the FASTA format defined by William Pearson's FASTA aligner software. Thie format allows for comments before the first sequence; lines starting with the ';' character anywhere in the file are also regarded as comment lines and are ignored.
+
+(3) Use the 'fasta-blast' format. This format regards any lines starting with '!', '#', or ';' as comment lines. The 'fasta-blast' format may be safer than the 'fasta-pearson' format, as it explicitly indicates which lines are comments. 
+  warnings.warn(
+Unmapped read count: 0
+Mapped read count: 27
+Number of EM iterations: 10
+Unclassified mapped read count: 0
