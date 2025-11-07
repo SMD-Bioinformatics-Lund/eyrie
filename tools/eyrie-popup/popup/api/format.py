@@ -66,22 +66,28 @@ class FormatHandler:
             ]
         }
 
-        # Determine run directory - use config run_directory or fallback to sequencing_run_id
-        run_dir = config.run_directory or sample_data.sample_info.sequencing_run_id
+        # Use run directory only if provided, no fallback to sequencing_run_id
+        run_dir = config.run_directory
 
         # Structured nanoplot files
         nanoplot_data = None
         if sample_data.nanoplot:
             nanoplot_dict = sample_data.nanoplot.dict()
-            # Prepend run_dir to all file paths in the structured nanoplot data
+            # Prepend run_dir to all file paths only if run_dir is provided
             if nanoplot_dict.get('unprocessed'):
                 for field, file_path in nanoplot_dict['unprocessed'].items():
                     if file_path:
-                        nanoplot_dict['unprocessed'][field] = f"{run_dir}/{file_path}"
+                        if run_dir:
+                            nanoplot_dict['unprocessed'][field] = f"{run_dir}/{file_path}"
+                        else:
+                            nanoplot_dict['unprocessed'][field] = file_path
             if nanoplot_dict.get('processed'):
                 for field, file_path in nanoplot_dict['processed'].items():
                     if file_path:
-                        nanoplot_dict['processed'][field] = f"{run_dir}/{file_path}"
+                        if run_dir:
+                            nanoplot_dict['processed'][field] = f"{run_dir}/{file_path}"
+                        else:
+                            nanoplot_dict['processed'][field] = file_path
             nanoplot_data = nanoplot_dict
 
         return {
@@ -94,8 +100,8 @@ class FormatHandler:
             "comments": "; ".join(comments) if comments else "",
             "created_date": datetime.now().isoformat(),
             "updated_date": datetime.now().isoformat(),
-            "krona_file": f"{run_dir}/{sample_data.krona_file}" if sample_data.krona_file else None,
-            "quality_plot": f"{run_dir}/{sample_data.fastqc_file}" if sample_data.fastqc_file else None,
+            "krona_file": f"{run_dir}/{sample_data.krona_file}" if run_dir and sample_data.krona_file else sample_data.krona_file,
+            "quality_plot": f"{run_dir}/{sample_data.fastqc_file}" if run_dir and sample_data.fastqc_file else sample_data.fastqc_file,
             "statistics": statistics,
             "taxonomic_data": taxonomic_summary,
             "nano_stats_processed": sample_data.nano_stats_processed.dict() if sample_data.nano_stats_processed else None,
