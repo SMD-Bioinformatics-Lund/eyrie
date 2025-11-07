@@ -7,7 +7,6 @@ from datetime import datetime
 
 from flask import (
     Blueprint,
-    Response,
     flash,
     jsonify,
     redirect,
@@ -16,8 +15,8 @@ from flask import (
     session,
     url_for,
 )
-from flask_login import UserMixin, login_required, login_user, logout_user, current_user
-from ...eyrie import get_current_user_api, serve_data_file, serve_shared_static, serve_blueprint_static
+from flask_login import UserMixin, login_required, login_user, logout_user
+from ...eyrie import get_current_user_api, serve_shared_static, serve_blueprint_static
 
 LOG = logging.getLogger(__name__)
 
@@ -100,9 +99,6 @@ def unauthorized_handler():
 def load_user(user_id):
     """Load user from session data"""
     try:
-        print(f"User loader called with user_id: {user_id}")
-        # user_id should be a string (session ID), not token dict
-        print(f"Session data: {dict(session)}")
         if user_id and session.get('username'):
             # Reconstruct user from session data
             user_data = {
@@ -113,11 +109,9 @@ def load_user(user_id):
             # Create a dummy token (actual token stored in session during API calls)
             token_data = TokenObject(user_id, 'Bearer')
             user = LoginUser(user_data, token_data)
-            print(f"User loaded successfully: {user_data}")
             return user
     except Exception as e:
-        print(f"User loader error: {e}")
-    print("User loader returning None")
+        LOG.error(f"User loader error: {e}")
     return None
 
 
@@ -209,12 +203,6 @@ def current_user_api():
 
 
 # Static file serving endpoints
-@bp.route("/data/<path:file_path>", methods=['GET'])
-def serve_data_file_endpoint(file_path):
-    """Serve data files from /app/data directory"""
-    return serve_data_file(file_path)
-
-
 @bp.route("/shared/static/<path:filename>", methods=['GET'])
 def serve_shared_static_endpoint(filename):
     """Serve shared static assets"""
