@@ -24,7 +24,7 @@
 
         window.DATA_URL_TEMPLATE = '{{ url_for("sample.serve_data_file_endpoint", file_path="__FILE_PATH__") }}';
 
-        // Helper function to build data file URLs  
+        // Helper function to build analysis file URLs  
         window.getDataFileUrl = function(filePath) {
             return window.DATA_URL_TEMPLATE.replace('__FILE_PATH__', filePath);
         };

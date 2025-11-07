@@ -313,15 +313,15 @@ def get_current_user_api() -> Dict[str, Any]:
 
 
 # Static file serving functions
-def serve_data_file(file_path: str):
-    """Serve data files from /app/data directory"""
+def serve_analysis_file(file_path: str):
+    """Serve analysis files from /app/analysis-files directory"""
     try:
-        # Ensure the path is safe and within the data directory
+        # Ensure the path is safe and within the analysis-files directory
         safe_path = os.path.normpath(file_path).lstrip('/')
-        file_full_path = os.path.join('/app/data', safe_path)
+        file_full_path = os.path.join('/app/analysis-files', safe_path)
 
         # Check if the file exists and is within the allowed directory
-        if not file_full_path.startswith('/app/data/'):
+        if not file_full_path.startswith('/app/analysis-files/'):
             return jsonify({'error': 'Invalid file path'}), 400
 
         if os.path.exists(file_full_path) and os.path.isfile(file_full_path):

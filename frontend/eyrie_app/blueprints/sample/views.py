@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from ...eyrie import (
     get_sample_from_backend, update_sample_qc, update_sample_comment,
-    update_sample_species_flags, serve_data_file
+    update_sample_species_flags, serve_analysis_file
 )
 
 bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
@@ -101,9 +101,9 @@ def update_species_flags_api(sample_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Data file serving endpoint
-@bp.route("/data/<path:file_path>", methods=['GET'])
+# Analysis file serving endpoint
 @login_required
+@bp.route("/analysis-files/<path:file_path>", methods=['GET'])
 def serve_data_file_endpoint(file_path):
-    """Serve data files from /app/data directory with authentication"""
-    return serve_data_file(file_path)
+    """Serve analysis files from /app/analysis-files directory with authentication"""
+    return serve_analysis_file(file_path)

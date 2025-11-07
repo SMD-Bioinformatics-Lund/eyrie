@@ -36,7 +36,7 @@ ssl/
 *.sqlite3
 data/mongodb/
 mongodb_data/
-data/
+analysis-files/
 
 # Credentials and passwords
 *password*

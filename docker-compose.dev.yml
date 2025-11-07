@@ -50,7 +50,7 @@ services:
     depends_on:
       - eyrie-backend
     volumes:
-      - ./data:/app/data:ro
+      - ./analysis-files:/app/analysis-files:ro
     networks:
       - eyrie-network
 

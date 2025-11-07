@@ -5,7 +5,7 @@
 // Helper function to generate data URLs using Flask data file serving
 function getDataUrl(filePath) {
     // Use the global function provided by sample_base.html template
-    return window.getDataFileUrl ? window.getDataFileUrl(filePath) : `/data/${filePath}`;
+    return window.getDataFileUrl ? window.getDataFileUrl(filePath) : `/analysis-files/${filePath}`;
 }
 
 // Global variables for nanoplot

@@ -1,0 +1,470 @@
+
+ N E X T F L O W   ~  version 24.04.3
+
+Launching `/fs1/pipelines/trana/main.nf` [gloomy_agnesi] DSL2 - revision: 7e876454d7
+
+WARN: Invalid config manifest attribute `contributors`
+Input/output options
+  outdir                    : /fs1/results/16s/test/
+
+Generic options
+  publish_dir_overwrite     : true
+  trace_timestamp           : 2025-09-30_09-46-56
+  tracedir                  : /fs1/results/16s/test//pipeline_info
+
+EMU
+  db                        : /fs1/pipelines/trana/assets/databases/emu_database
+
+Preprocessing long reads
+  merge_fastq_pass          : /fs1/pipelines/trana/assets/test_assets/ci/
+  save_merged_reads         : false
+
+krona options
+  krona_taxonomy_tab        : /fs1/pipelines/trana/assets/databases/krona/taxonomy/taxonomy.tab
+
+Max job request options
+  max_cpus                  : 60
+  max_memory                : 300.GB
+  max_time                  : 48.h
+
+Institutional config options
+  config_profile_name       : cmd profile
+  config_profile_description: CMD High performance profile
+
+Other parameters
+  master_template           : /fs1/pipelines/trana/assets/master_template.html
+  genomes                   : {}
+
+Core Nextflow options
+  runName                   : gloomy_agnesi
+  containerEngine           : singularity
+  launchDir                 : /fs1/ryan/16s
+  workDir                   : /fs1/ryan/16s/work
+  projectDir                : /fs1/pipelines/trana
+  userName                  : ryan
+  profile                   : singularity,cmd
+  configFiles               : 
+
+!! Only displaying parameters that differ from the pipeline defaults !!
+------------------------------------------------------
+[-        ] PIP…TIALISATION:MERGE_BARCODES -
+[-        ] PIP…TIALISATION:GENERATE_INPUT -
+
+[-        ] PIP…TIALISATION:MERGE_BARCODES -
+[-        ] PIP…TIALISATION:GENERATE_INPUT -
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+
+[-        ] PIP…TIALISATION:MERGE_BARCODES -
+[-        ] PIP…TIALISATION:GENERATE_INPUT -
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML -
+
+executor >  slurm (1)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 0 of 1
+[-        ] PIP…TIALISATION:GENERATE_INPUT -
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML -
+
+executor >  slurm (1)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[-        ] PIP…TIALISATION:GENERATE_INPUT -
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML -
+
+executor >  slurm (2)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 0 of 1
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML -
+
+executor >  slurm (2)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[-        ] GMS_TRANA:TRANA:FASTQC         -
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:FILTLONG       -
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML -
+
+executor >  slurm (3)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[a3/b52e6d] GMS…A:TRANA:FASTQC (barcode02) | 0 of 2
+[-        ] GMS…NANOPLOT_UNPROCESSED_READS | 0 of 2
+[-        ] GMS_TRANA:TRANA:FILTLONG       | 0 of 1
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[-        ] GMS…TRANA:GENERATE_MASTER_HTML | 0 of 1
+
+executor >  slurm (9)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 0 of 2
+[9c/bbff08] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 0 of 2
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 0 of 1
+
+executor >  slurm (9)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[a3/b52e6d] GMS…A:TRANA:FASTQC (barcode02) | 1 of 2
+[9c/bbff08] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[-        ] GMS…A:NANOPLOT_PROCESSED_READS -
+[-        ] GMS_TRANA:TRANA:EMU_ABUNDANCE  -
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (13)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[a3/b52e6d] GMS…A:TRANA:FASTQC (barcode02) | 1 of 2
+[9c/bbff08] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[28/7f8200] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 0 of 2
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (13)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[9c/bbff08] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[28/7f8200] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 0 of 2
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (13)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[28/7f8200] GMS…ROCESSED_READS (barcode01) | 0 of 2
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 0 of 2
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (13)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 0 of 2
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY -
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS -
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS -
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (13)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[-        ] GMS…ANA:KRONA_KTIMPORTTAXONOMY | 0 of 2
+[-        ] GMS…ANA:TRANA:TRANSLATE_TAXIDS | 0 of 2
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[-        ] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 0 of 1
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (17)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 0 of 2
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 0 of 2
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 0 of 1
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (18)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 0 of 2
+[c2/5a070f] GMS…ANSLATE_TAXIDS (barcode01) | 0 of 2
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 0 of 1
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (18)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 0 of 2
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[-        ] GMS…A:TRANA:ASSIGNMENT_HEATMAP -
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 0 of 1
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (20)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 0 of 2
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 0 of 2
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 0 of 1
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (20)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 0 of 2
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (20)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[-        ] GMS…USTOM_DUMPSOFTWAREVERSIONS -
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (21)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 0 of 1
+[-        ] GMS_TRANA:TRANA:MULTIQC        -
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (22)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 1 of 1 ✔
+[e6/68f77e] GMS_TRANA:TRANA:MULTIQC        | 0 of 1
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (22)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 1 of 1 ✔
+[e6/68f77e] GMS_TRANA:TRANA:MULTIQC        | 0 of 1
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (22)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 1 of 1 ✔
+[e6/68f77e] GMS_TRANA:TRANA:MULTIQC        | 1 of 1 ✔
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+
+executor >  slurm (22)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 1 of 1 ✔
+[e6/68f77e] GMS_TRANA:TRANA:MULTIQC        | 1 of 1 ✔
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+-[genomic-medicine-sweden/TRANA] Pipeline completed successfully-
+
+executor >  slurm (22)
+[d7/ab9c79] PIP…TIALISATION:MERGE_BARCODES | 1 of 1 ✔
+[a0/44e7e7] PIP…TIALISATION:GENERATE_INPUT | 1 of 1 ✔
+[27/fe4b5b] GMS…A:TRANA:FASTQC (barcode01) | 2 of 2 ✔
+[23/38ed52] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[d5/69d71f] GMS…TRANA:FILTLONG (barcode01) | 2 of 2 ✔
+[84/18698e] GMS…ROCESSED_READS (barcode02) | 2 of 2 ✔
+[0d/f3be21] GMS…:EMU_ABUNDANCE (barcode02) | 2 of 2 ✔
+[19/77bde9] GMS…IMPORTTAXONOMY (barcode02) | 2 of 2 ✔
+[d2/cf7ec7] GMS…ANSLATE_TAXIDS (barcode02) | 2 of 2 ✔
+[58/70d851] GMS…GNMENT_HEATMAP (barcode01) | 2 of 2 ✔
+[7b/832bf4] GMS…:TRANA:EMU_COMBINE_OUTPUTS | 1 of 1 ✔
+[93/90d342] GMS…M_DUMPSOFTWAREVERSIONS (1) | 1 of 1 ✔
+[e6/68f77e] GMS_TRANA:TRANA:MULTIQC        | 1 of 1 ✔
+[03/d83e18] GMS…TRANA:GENERATE_MASTER_HTML | 1 of 1 ✔
+-[genomic-medicine-sweden/TRANA] Pipeline completed successfully-
+Completed at: 30-Sep-2025 09:49:13
+Duration    : 2m 15s
+CPU hours   : 0.1
+Succeeded   : 22
+
+

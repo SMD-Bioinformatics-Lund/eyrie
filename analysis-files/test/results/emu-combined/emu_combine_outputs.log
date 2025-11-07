@@ -1,0 +1,4 @@
+'barcode01_filtered.fastq_rel-abundance.tsv' -> 'collected_reports_counts_dir/barcode01_filtered.fastq_rel-abundance.tsv'
+'barcode02_filtered.fastq_rel-abundance.tsv' -> 'collected_reports_counts_dir/barcode02_filtered.fastq_rel-abundance.tsv'
+Combined table generated: ./collected_reports_counts_dir/emu-combined-family-counts.tsv
+Combined table generated: ./collected_reports_dir/emu-combined-family.tsv
