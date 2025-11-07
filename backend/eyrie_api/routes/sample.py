@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, HTTPException, Depends
 from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
 from eyrie_api.database.async_sample_operations import (
@@ -6,7 +7,6 @@ from eyrie_api.database.async_sample_operations import (
 )
 from eyrie_api.routes.auth import require_admin_or_uploader
 from eyrie_api.utils.json_encoder import JSONEncoder
-import json
 
 router = APIRouter(prefix="/sample", tags=["sample"])
 
@@ -77,11 +77,10 @@ async def partial_update_sample(
 
 @router.put("/{sample_id}/qc")
 async def update_qc(
-    sample_id: str, 
-    qc_data: QCUpdate,
-    current_user: dict = Depends(require_admin_or_uploader)
+    sample_id: str,
+    qc_data: QCUpdate
 ):
-    """Update sample QC status (requires admin or uploader role)"""
+    """Update sample QC status"""
     try:
         if qc_data.qc not in ['passed', 'failed', 'unprocessed']:
             raise HTTPException(status_code=400, detail="Invalid QC status")
@@ -98,11 +97,10 @@ async def update_qc(
 
 @router.put("/{sample_id}/comment")
 async def update_comment(
-    sample_id: str, 
-    comment_data: CommentUpdate,
-    current_user: dict = Depends(require_admin_or_uploader)
+    sample_id: str,
+    comment_data: CommentUpdate
 ):
-    """Update sample comment (requires admin or uploader role)"""
+    """Update sample comment"""
     try:
         success = await update_sample_comment(sample_id, comment_data.comments)
         if not success:
@@ -134,3 +132,4 @@ async def update_species_flags(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    

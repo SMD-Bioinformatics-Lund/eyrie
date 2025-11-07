@@ -1,13 +1,13 @@
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
 import logging
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
+from eyrie_api.__version__ import __version__
 from eyrie_api.config.settings import (
     APP_TITLE, APP_HOST, APP_PORT,
     CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS
 )
-from eyrie_api.database.utils import init_default_user, close_database
+from eyrie_api.database.utils import close_database
 from eyrie_api.routes import admin, samples, sample, frontend, auth, trends
 
 logger = logging.getLogger(__name__)
@@ -30,12 +30,12 @@ async def startup_event():
         logger.info("=== BACKEND STARTUP BEGINNING ===")
         logger.info("Application startup - skipping database initialization to avoid threading issues")
         logger.info("Database initialization will be performed lazily on first request")
-        
+
         # Test basic functionality without database
         import os
         logger.info(f"Environment: {os.getenv('ENVIRONMENT', 'unknown')}")
         logger.info(f"MongoDB URI configured: {'MONGO_URI' in os.environ}")
-        
+
         logger.info("=== BACKEND STARTUP COMPLETED SUCCESSFULLY ===")
     except Exception as e:
         logger.error(f"CRITICAL: Failed to initialize application: {e}")
@@ -60,7 +60,7 @@ async def root():
     """Root endpoint - redirect to API documentation"""
     return {
         "message": "Eyrie Sample Manager Backend",
-        "version": "0.2.1",
+        "version": __version__,
         "api": "/api",
         "documentation": "/docs",
         "health": "/api/system/health"
@@ -71,7 +71,7 @@ async def api_root_no_slash():
     """API root endpoint without trailing slash"""
     return {
         "message": "Eyrie Sample Manager API",
-        "version": "0.2.1",
+        "version": __version__,
         "documentation": "/docs",
         "health": "/api/system/health",
         "endpoints": {
