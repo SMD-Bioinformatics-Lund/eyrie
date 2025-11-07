@@ -8,7 +8,7 @@
         general_info_card, qc_card, comments_card, krona_plot_card,
         classification_summary_card, summary_statistics_card, quality_plot_card, qc_fail_modal %}
 
-    {{ sample_navbar(sample_id, 'overview', current_user) }}
+    {{ sample_navbar(sample_id, 'overview', current_user, sample) }}
 
     <div class="container-fluid sample-detail-container mt-4">
         <!-- Overview View -->
@@ -16,21 +16,21 @@
             <div class="row h-100">
                 <!-- Left Column - General Info, QC and Comments -->
                 <div class="col-lg-3 mb-4">
-                    {{ general_info_card() }}
-                    {{ qc_card() }}
-                    {{ comments_card() }}
+                    {{ general_info_card(sample) }}
+                    {{ qc_card(sample) }}
+                    {{ comments_card(sample) }}
                 </div>
 
                 <!-- Center Column - Krona Plot -->
                 <div class="col-lg-6 mb-4">
-                    {{ krona_plot_card() }}
+                    {{ krona_plot_card(sample) }}
                 </div>
 
                 <!-- Right Column - Stats and Links -->
                 <div class="col-lg-3 mb-4">
-                    {{ classification_summary_card() }}
+                    {{ classification_summary_card(sample) }}
                     {{ summary_statistics_card(sample) }}
-                    {{ quality_plot_card() }}
+                    {{ quality_plot_card(sample) }}
                 </div>
             </div>
         </div>
@@ -43,21 +43,9 @@
 {% block dom_ready %}
 // Sample detail page specific initialization
 const SAMPLE_ID = '{{ sample_id }}';
-// Initialize sample overview components
 initializeSampleOverview();
-// Sample data is pre-loaded from server
 {% if sample %}
 currentSample = {{ sample | tojson }};
-renderSampleDetail(currentSample);
-{% else %}
-// Fallback: load sample data via API if server-side loading failed
-loadSample(SAMPLE_ID).then(sample => {
-    if (sample) {
-        renderSampleDetail(sample);
-    } else {
-        showError('Failed to load sample: ' + SAMPLE_ID);
-    }
-});
 {% endif %}
 {% endblock %}
 

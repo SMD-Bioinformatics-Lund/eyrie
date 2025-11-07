@@ -6,7 +6,12 @@ import os
 import json
 
 from .config import settings
-from .eyrie import test_backend_connectivity, health_check, health_check_base_path
+from .eyrie import test_backend_connectivity, health_check
+from .utils.template_filters import (
+    format_number_filter, format_bases_filter, format_quality_filter,
+    format_length_filter, qc_badge_class_filter, format_date_filter,
+    shannon_diversity_filter, dominant_species_filter
+)
 from .blueprints.login.views import unauthorized_handler, load_user, bp as login_bp
 from .blueprints.sample.views import bp as sample_bp
 from .blueprints.admin.views import bp as admin_bp
@@ -97,56 +102,16 @@ def create_app():
                 'container_name': os.getenv('HOSTNAME', 'unknown')
             }), 500
 
-    # Static file serving for data files
-    @app.route(f'{base_path}/app/data/<path:filename>')
-    def serve_data_files(filename):
-        """Serve data files from mounted /app/data directory"""
-        return send_from_directory('/app/data', filename)
 
     # Register Jinja template filters
-    @app.template_filter('format_number')
-    def format_number_filter(num):
-        """Format number with locale formatting"""
-        if not num:
-            return '--'
-        return f"{num:,}"
-    
-    @app.template_filter('format_bases') 
-    def format_bases_filter(bases):
-        """Format bases with appropriate unit"""
-        if not bases:
-            return '--'
-        if bases >= 1e9:
-            return f"{bases / 1e9:.1f} Gb"
-        elif bases >= 1e6:
-            return f"{bases / 1e6:.1f} Mb"
-        elif bases >= 1e3:
-            return f"{bases / 1e3:.1f} Kb"
-        return f"{bases} bp"
-    
-    @app.template_filter('format_quality')
-    def format_quality_filter(quality):
-        """Format quality score"""
-        if not quality:
-            return '--'
-        return f"Q{quality:.1f}"
-    
-    @app.template_filter('format_length')
-    def format_length_filter(length):
-        """Format length in bp"""
-        if not length:
-            return '--'
-        return f"{round(length):,} bp"
-    
-    @app.template_filter('qc_badge_class')
-    def qc_badge_class_filter(qc):
-        """Get CSS class for QC badge"""
-        qc_classes = {
-            'passed': 'bg-success',
-            'failed': 'bg-danger', 
-            'unprocessed': 'bg-secondary'
-        }
-        return qc_classes.get(qc, 'bg-secondary')
+    app.jinja_env.filters['format_number'] = format_number_filter
+    app.jinja_env.filters['format_bases'] = format_bases_filter
+    app.jinja_env.filters['format_quality'] = format_quality_filter
+    app.jinja_env.filters['format_length'] = format_length_filter
+    app.jinja_env.filters['qc_badge_class'] = qc_badge_class_filter
+    app.jinja_env.filters['format_date'] = format_date_filter
+    app.jinja_env.filters['shannon_diversity'] = shannon_diversity_filter
+    app.jinja_env.filters['dominant_species'] = dominant_species_filter
 
     # Register all blueprints
     register_blueprints(app, settings.external_base_path)

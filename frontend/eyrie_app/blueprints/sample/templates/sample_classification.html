@@ -4,7 +4,7 @@
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'classification', current_user) }}
+    {{ sample_navbar(sample_id, 'classification', current_user, sample) }}
 
     <!-- Main Content -->
     {% from 'macros/classification.html' import classification_content %}
@@ -16,6 +16,10 @@
 {% block dom_ready %}
 // Classification page specific initialization
 const SAMPLE_ID = '{{ sample_id }}';
+// Set current sample for interactive features
+{% if sample %}
+currentSample = {{ sample | tojson }};
+{% endif %}
 initializeClassificationView(SAMPLE_ID);
 
 // Export CSV functionality

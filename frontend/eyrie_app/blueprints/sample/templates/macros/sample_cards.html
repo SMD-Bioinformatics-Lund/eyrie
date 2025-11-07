@@ -1,4 +1,4 @@
-{% macro general_info_card() %}
+{% macro general_info_card(sample=None) %}
 <!-- General Information Card -->
 <div class="card mb-4">
     <div class="card-header bg-light text-dark">
@@ -8,21 +8,27 @@
     </div>
     <div class="card-body">
         <table class="table table-sm table-borderless mb-0">
-            <tbody id="generalInfoTable">
-                <tr><td><strong>Sample Name:</strong></td><td id="infoSampleName">--</td></tr>
-                <tr><td><strong>Sample ID:</strong></td><td id="infoSampleId">--</td></tr>
-                <tr><td><strong>Sequencing Run ID:</strong></td><td id="infoSequencingRun">--</td></tr>
-                <tr><td><strong>LIMS ID:</strong></td><td id="infoLimsId">--</td></tr>
-                <tr><td><strong>Classification:</strong></td><td id="infoClassification">--</td></tr>
-                <tr><td><strong>Created Date:</strong></td><td id="infoCreatedDate">--</td></tr>
-                <tr><td><strong>Updated Date:</strong></td><td id="infoUpdatedDate">--</td></tr>
+            <tbody>
+                <tr><td><strong>Sample Name:</strong></td><td>{{ sample.sample_name or '--' }}</td></tr>
+                <tr><td><strong>Sample ID:</strong></td><td>{{ sample.sample_id or '--' }}</td></tr>
+                <tr><td><strong>Sequencing Run ID:</strong></td><td>{{ sample.sequencing_run_id or '--' }}</td></tr>
+                <tr><td><strong>LIMS ID:</strong></td><td>{{ sample.lims_id or '--' }}</td></tr>
+                <tr><td><strong>Classification:</strong></td><td>
+                    {% if sample and sample.classification %}
+                        <span class="badge {{ 'bg-primary' if sample.classification == '16S' else 'bg-info' }}">{{ sample.classification }}</span>
+                    {% else %}
+                        --
+                    {% endif %}
+                </td></tr>
+                <tr><td><strong>Created Date:</strong></td><td>{{ sample.created_date | format_date if sample else '--' }}</td></tr>
+                <tr><td><strong>Updated Date:</strong></td><td>{{ sample.updated_date | format_date if sample else '--' }}</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 {% endmacro %}
 
-{% macro qc_card() %}
+{% macro qc_card(sample=None) %}
 <!-- QC Card -->
 <div class="card qc-card mb-4">
     <div class="card-header bg-warning text-dark">
@@ -34,17 +40,21 @@
         <div class="mb-3">
             <label class="form-label">Current Status:</label>
             <div id="currentQCStatus">
-                <span class="badge bg-secondary">Loading...</span>
+                {% if sample and sample.qc %}
+                    <span class="badge {{ sample.qc | qc_badge_class }}">{{ sample.qc.upper() }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">UNPROCESSED</span>
+                {% endif %}
             </div>
         </div>
         <div class="d-grid gap-2">
-            <button class="btn btn-success" onclick="updateQC('passed')">
+            <button class="btn btn-success qc-btn" data-qc-status="passed">
                 <i class="bi bi-check-lg me-2"></i>Pass
             </button>
-            <button class="btn btn-danger" onclick="showFailModal()">
+            <button class="btn btn-danger qc-btn" data-qc-status="failed">
                 <i class="bi bi-x-lg me-2"></i>Fail
             </button>
-            <button class="btn btn-outline-secondary" onclick="updateQC('unprocessed')">
+            <button class="btn btn-outline-secondary qc-btn" data-qc-status="unprocessed">
                 <i class="bi bi-arrow-clockwise me-2"></i>Reset
             </button>
         </div>
@@ -52,7 +62,7 @@
 </div>
 {% endmacro %}
 
-{% macro comments_card() %}
+{% macro comments_card(sample=None) %}
 <!-- General Comments Card -->
 <div class="card comment-card">
     <div class="card-header bg-info text-white">
@@ -62,16 +72,18 @@
     </div>
     <div class="card-body">
         <div class="mb-3">
-            <textarea class="form-control" id="generalComments" rows="4" placeholder="Add general comments..."></textarea>
+            <textarea class="form-control" id="generalComments" rows="4" placeholder="Add general comments...">{{ sample.comments or '' if sample else '' }}</textarea>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="saveComments()">
-            <i class="bi bi-floppy me-2"></i>Save Comments
-        </button>
+        <div class="d-grid">
+            <button type="button" class="btn btn-primary" onclick="saveComments()">
+                <i class="bi bi-save me-2"></i>Save Comments
+            </button>
+        </div>
     </div>
 </div>
 {% endmacro %}
 
-{% macro krona_plot_card() %}
+{% macro krona_plot_card(sample=None) %}
 <!-- Krona Plot Card -->
 <div class="card">
     <div class="card-header bg-success text-white">
@@ -81,16 +93,21 @@
     </div>
     <div class="card-body p-0">
         <div class="krona-container" style="height: 85vh;">
-            <iframe id="kronaFrame"
-                    style="width: 100%; height: 100%; border: none;"
-                    src="about:blank">
-            </iframe>
+            {% if sample and sample.krona_file %}
+                <iframe style="width: 100%; height: 100%; border: none;"
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.krona_file) }}">
+                </iframe>
+            {% else %}
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
+                    <i>No Krona plot available</i>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endmacro %}
 
-{% macro classification_summary_card() %}
+{% macro classification_summary_card(sample=None) %}
 <!-- Classification Summary Card -->
 <div class="card classification-summary-card mb-4">
     <div class="card-header bg-info text-white">
@@ -102,43 +119,87 @@
         <div class="row g-2">
             <div class="col-4">
                 <div class="text-center">
-                    <div class="h6 text-primary mb-0" id="overviewTotalSpecies">--</div>
+                    <div class="h6 text-primary mb-0">
+                        {% if sample and sample.taxonomic_data %}
+                            {{ sample.taxonomic_data.total_species or (sample.taxonomic_data.hits | length if sample.taxonomic_data.hits else 0) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    </div>
                     <small class="text-muted">Total Species</small>
                 </div>
             </div>
             <div class="col-4">
                 <div class="text-center">
-                    <div class="h6 text-success mb-0" id="overviewFlaggedTopHits">--</div>
+                    <div class="h6 text-success mb-0">
+                        {{ (sample.flagged_top_hits | length) if sample and sample.flagged_top_hits else 0 }}
+                    </div>
                     <small class="text-muted">Top Hits</small>
                 </div>
             </div>
             <div class="col-4">
                 <div class="text-center">
-                    <div class="h6 text-warning mb-0" id="overviewFlaggedContaminants">--</div>
+                    <div class="h6 text-warning mb-0">
+                        {{ (sample.flagged_contaminants | length) if sample and sample.flagged_contaminants else 0 }}
+                    </div>
                     <small class="text-muted">Contaminants</small>
                 </div>
             </div>
-            <div class="col-12">
+            <div class="col-6">
                 <div class="text-center">
-                    <div class="h6 text-info mb-0" id="overviewDominantSpecies">--</div>
+                    <div class="h6 text-info mb-0">
+                        {% if sample and sample.taxonomic_data and sample.taxonomic_data.hits %}
+                            {{ sample.taxonomic_data.hits | dominant_species }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
                     <small class="text-muted">Dominant Species</small>
                 </div>
             </div>
-            <div class="col-12" id="overviewTopHitsList" style="display: none;">
+            <div class="col-6">
+                <div class="text-center">
+                    <div class="h6 text-secondary mb-0">
+                        {% if sample and sample.taxonomic_data and sample.taxonomic_data.hits %}
+                            {{ sample.taxonomic_data.hits | shannon_diversity }}
+                        {% else %}
+                            --
+                        {% endif %}
+                    </div>
+                    <small class="text-muted">Shannon Diversity</small>
+                </div>
+            </div>
+            {% if sample and sample.flagged_top_hits %}
+            <div class="col-12">
                 <hr class="my-2">
                 <small class="text-muted d-block mb-1">Top Hits:</small>
-                <div id="overviewTopHitsSpecies" class="flagged-species-list"></div>
+                <div class="flagged-species-list">
+                    {% for species in sample.flagged_top_hits %}
+                        <span class="badge bg-success me-1 mb-1">{{ species }}</span>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="col-12" id="overviewContaminantsList" style="display: none;">
+            {% endif %}
+            {% if sample and sample.flagged_contaminants %}
+            <div class="col-12">
                 <hr class="my-2">
                 <small class="text-muted d-block mb-1">Contaminants:</small>
-                <div id="overviewContaminantsSpecies" class="flagged-species-list"></div>
+                <div class="flagged-species-list">
+                    {% for species in sample.flagged_contaminants %}
+                        <span class="badge bg-warning me-1 mb-1">{{ species }}</span>
+                    {% endfor %}
+                </div>
             </div>
-            <div class="col-12" id="overviewSpikeList" style="display: none;">
+            {% endif %}
+            {% if sample and sample.spike %}
+            <div class="col-12">
                 <hr class="my-2">
                 <small class="text-muted d-block mb-1">Spike Species:</small>
-                <div id="overviewSpike" class="flagged-species-list"></div>
+                <div class="flagged-species-list">
+                    <span class="badge bg-info me-1 mb-1">{{ sample.spike }}</span>
+                </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -157,49 +218,49 @@
             {% set nano_stats = sample.nano_stats_processed if sample and sample.nano_stats_processed else (sample.nano_stats_unprocessed if sample and sample.nano_stats_unprocessed else {}) %}
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-primary mb-0" id="statNumberReads">{{ nano_stats.number_of_reads | format_number }}</div>
+                    <div class="h5 text-primary mb-0">{{ nano_stats.number_of_reads | format_number }}</div>
                     <small class="text-muted">Number of Reads</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-success mb-0" id="statMeanLength">{{ nano_stats.mean_read_length | format_length }}</div>
+                    <div class="h5 text-success mb-0">{{ nano_stats.mean_read_length | format_length }}</div>
                     <small class="text-muted">Mean Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-info mb-0" id="statMeanQuality">{{ nano_stats.mean_read_quality | format_quality }}</div>
+                    <div class="h5 text-info mb-0">{{ nano_stats.mean_read_quality | format_quality }}</div>
                     <small class="text-muted">Mean Read Quality</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-warning mb-0" id="statMedianLength">{{ nano_stats.median_read_length | format_length }}</div>
+                    <div class="h5 text-warning mb-0">{{ nano_stats.median_read_length | format_length }}</div>
                     <small class="text-muted">Median Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-secondary mb-0" id="statMedianQuality">{{ nano_stats.median_read_quality | format_quality }}</div>
+                    <div class="h5 text-secondary mb-0">{{ nano_stats.median_read_quality | format_quality }}</div>
                     <small class="text-muted">Median Read Quality</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-danger mb-0" id="statReadN50">{{ nano_stats.read_length_n50 | format_length }}</div>
+                    <div class="h5 text-danger mb-0">{{ nano_stats.read_length_n50 | format_length }}</div>
                     <small class="text-muted">Read Length N50</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-dark mb-0" id="statStdevLength">{{ nano_stats.stdev_read_length | format_length }}</div>
+                    <div class="h5 text-dark mb-0">{{ nano_stats.stdev_read_length | format_length }}</div>
                     <small class="text-muted">STDEV Read Length</small>
                 </div>
             </div>
             <div class="col-6">
                 <div class="text-center">
-                    <div class="h5 text-muted mb-0" id="statTotalBases">{{ nano_stats.total_bases | format_bases }}</div>
+                    <div class="h5 text-muted mb-0">{{ nano_stats.total_bases | format_bases }}</div>
                     <small class="text-muted">Total Bases</small>
                 </div>
             </div>
@@ -208,7 +269,7 @@
 </div>
 {% endmacro %}
 
-{% macro quality_plot_card() %}
+{% macro quality_plot_card(sample=None) %}
 <!-- Read Quality Plot Card -->
 <div class="card plot-card mb-4">
     <div class="card-header bg-secondary text-white">
@@ -218,10 +279,21 @@
     </div>
     <div class="card-body p-0">
         <div style="height: 300px;">
-            <iframe id="qualityFrame"
-                    style="width: 100%; height: 100%; border: none;"
-                    src="about:blank">
-            </iframe>
+            {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.length_quality_scatter %}
+                <iframe id="qualityFrame"
+                        style="width: 100%; height: 100%; border: none;"
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.length_quality_scatter) }}">
+                </iframe>
+            {% elif sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.length_quality_scatter %}
+                <iframe id="qualityFrame"
+                        style="width: 100%; height: 100%; border: none;"
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.unprocessed.length_quality_scatter) }}">
+                </iframe>
+            {% else %}
+                <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
+                    <i>No quality plot available</i>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -246,7 +318,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="confirmFailQC()">
+                <button type="button" class="btn btn-danger" id="confirmFailQCBtn">
                     <i class="bi bi-x-lg me-2"></i>Mark as Failed
                 </button>
             </div>
