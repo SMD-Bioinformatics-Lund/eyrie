@@ -4,7 +4,8 @@
 
 // Helper function to generate data URLs using Flask data file serving
 function getDataUrl(filePath) {
-    return getDataFileUrl(filePath);
+    // Use the global function provided by sample_base.html template
+    return window.getDataFileUrl ? window.getDataFileUrl(filePath) : `/data/${filePath}`;
 }
 
 // Global variables for nanoplot
@@ -14,12 +15,9 @@ let currentPlotType = null;
  * Initialize nanoplot view
  */
 function initializeNanoplotView(sampleId) {
-    loadSample(sampleId).then(sample => {
-        if (sample) {
-            updateSampleTitle(sample);
-            updateNanoStats();
-        }
-    });
+    if (currentSample) {
+        updateNanoStats();
+    }
 }
 
 /**

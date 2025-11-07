@@ -4,7 +4,7 @@
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'nanoplot', current_user) }}
+    {{ sample_navbar(sample_id, 'nanoplot', current_user, sample) }}
 
     <!-- Main Content -->
     <div class="container-fluid mt-4">
@@ -90,12 +90,18 @@
                             </div>
                             <div class="card-body p-0">
                                 <div id="unprocessedPlotContainer" class="w-100" style="min-height: 500px;">
-                                    <div class="d-flex justify-content-center align-items-center h-100">
-                                        <div class="text-center">
-                                            <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                            <p class="text-muted mt-3">Select a plot type</p>
+                                    {% if sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.length_quality_scatter %}
+                                        <iframe style="width: 100%; height: 500px; border: none;"
+                                                src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.unprocessed.length_quality_scatter) }}">
+                                        </iframe>
+                                    {% else %}
+                                        <div class="d-flex justify-content-center align-items-center h-100">
+                                            <div class="text-center">
+                                                <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                                                <p class="text-muted mt-3">No unprocessed plot available</p>
+                                            </div>
                                         </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -114,12 +120,18 @@
                             </div>
                             <div class="card-body p-0">
                                 <div id="processedPlotContainer" class="w-100" style="min-height: 500px;">
-                                    <div class="d-flex justify-content-center align-items-center h-100">
-                                        <div class="text-center">
-                                            <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                            <p class="text-muted mt-3">Select a plot type</p>
+                                    {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.length_quality_scatter %}
+                                        <iframe style="width: 100%; height: 500px; border: none;"
+                                                src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.length_quality_scatter) }}">
+                                        </iframe>
+                                    {% else %}
+                                        <div class="d-flex justify-content-center align-items-center h-100">
+                                            <div class="text-center">
+                                                <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                                                <p class="text-muted mt-3">No processed plot available</p>
+                                            </div>
                                         </div>
-                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -141,22 +153,23 @@
                                         <h6 class="text-warning">
                                             <i class="bi bi-circle me-2"></i>Unprocessed Stats
                                         </h6>
-                                        <div class="row" id="unprocessedStats">
+                                        <div class="row">
+                                            {% set unproc_stats = sample.nano_stats_unprocessed if sample else None %}
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Reads:</small>
-                                                <div class="fw-bold" id="unproc-reads">-</div>
+                                                <div class="fw-bold">{{ unproc_stats.number_of_reads | format_number if unproc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Length:</small>
-                                                <div class="fw-bold" id="unproc-length">-</div>
+                                                <div class="fw-bold">{{ unproc_stats.mean_read_length | format_length if unproc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Quality:</small>
-                                                <div class="fw-bold" id="unproc-quality">-</div>
+                                                <div class="fw-bold">{{ unproc_stats.mean_read_quality | format_quality if unproc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Bases:</small>
-                                                <div class="fw-bold" id="unproc-bases">-</div>
+                                                <div class="fw-bold">{{ unproc_stats.total_bases | format_bases if unproc_stats else '--' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -164,22 +177,23 @@
                                         <h6 class="text-success">
                                             <i class="bi bi-check-circle me-2"></i>Processed Stats
                                         </h6>
-                                        <div class="row" id="processedStats">
+                                        <div class="row">
+                                            {% set proc_stats = sample.nano_stats_processed if sample else None %}
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Reads:</small>
-                                                <div class="fw-bold" id="proc-reads">-</div>
+                                                <div class="fw-bold">{{ proc_stats.number_of_reads | format_number if proc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Length:</small>
-                                                <div class="fw-bold" id="proc-length">-</div>
+                                                <div class="fw-bold">{{ proc_stats.mean_read_length | format_length if proc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Quality:</small>
-                                                <div class="fw-bold" id="proc-quality">-</div>
+                                                <div class="fw-bold">{{ proc_stats.mean_read_quality | format_quality if proc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Bases:</small>
-                                                <div class="fw-bold" id="proc-bases">-</div>
+                                                <div class="fw-bold">{{ proc_stats.total_bases | format_bases if proc_stats else '--' }}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -198,7 +212,16 @@
 {% block dom_ready %}
 // Nanoplot page specific initialization
 const SAMPLE_ID = '{{ sample_id }}';
+// Set current sample for interactive features
+{% if sample %}
+currentSample = {{ sample | tojson }};
+{% endif %}
+// Initialize the nanoplot view and default to length-quality-scatter
 initializeNanoplotView(SAMPLE_ID);
+if (currentSample) {
+    // Show the default length-quality-scatter plot
+    loadNanoplotView('length-quality-scatter');
+}
 {% endblock %}
 
 {% block extra_js %}

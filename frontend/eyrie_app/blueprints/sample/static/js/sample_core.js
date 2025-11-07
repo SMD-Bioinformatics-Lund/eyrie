@@ -5,82 +5,30 @@
 // Global variables
 let currentSample = null;
 
-/**
- * Load sample data from API
- */
-async function loadSample(sampleId) {
-    try {
-        const apiUrl = getSampleApiUrl('get', sampleId);
-        if (!apiUrl) {
-            showError('Sample API URL not available');
-            return null;
-        }
-
-        const response = await fetch(apiUrl);
-        const sample = await response.json();
-
-        if (response.ok) {
-            currentSample = sample;
-            return sample;
-        } else {
-            showError('Failed to load sample: ' + sample.error);
-            return null;
-        }
-    } catch (error) {
-        showError('Network error: ' + error.message);
-        return null;
-    }
-}
-
-
-/**
- * Update sample title in navbar
- */
-function updateSampleTitle(sample) {
-    const titleElement = document.getElementById('sampleTitle');
-    if (titleElement) {
-        titleElement.textContent = `${sample.sample_name} (${sample.sample_id})`;
-    }
-}
-
-/**
- * Format date string
- */
+// Simple client-side formatting functions (to be replaced by server-side pre-formatted data)
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 }
 
-/**
- * Format number with locale formatting
- */
 function formatNumber(num) {
-    if (!num) return null;
+    if (!num) return '--';
     return new Intl.NumberFormat().format(num);
 }
 
-/**
- * Format length in bp
- */
 function formatLength(length) {
-    if (!length) return null;
-    return `${Math.round(length)} bp`;
+    if (!length) return '--';
+    return `${Math.round(length).toLocaleString()} bp`;
 }
 
-/**
- * Format quality score
- */
 function formatQuality(quality) {
-    if (!quality) return null;
-    return `${quality.toFixed(1)}`;
+    if (!quality) return '--';
+    return `Q${quality.toFixed(1)}`;
 }
 
-/**
- * Format bases with appropriate unit
- */
 function formatBases(bases) {
-    if (!bases) return null;
+    if (!bases) return '--';
     if (bases >= 1e9) {
         return `${(bases / 1e9).toFixed(1)} Gb`;
     } else if (bases >= 1e6) {
@@ -140,5 +88,22 @@ function getQCBadgeClass(qc) {
         case 'failed': return 'bg-danger';
         case 'unprocessed': return 'bg-secondary';
         default: return 'bg-secondary';
+    }
+}
+
+
+/**
+ * Update DOM element with value
+ */
+function updateElement(elementId, value, property = 'textContent') {
+    const element = document.getElementById(elementId);
+    if (element) {
+        if (property === 'value') {
+            element.value = value;
+        } else if (property === 'innerHTML') {
+            element.innerHTML = value;
+        } else {
+            element.textContent = value;
+        }
     }
 }

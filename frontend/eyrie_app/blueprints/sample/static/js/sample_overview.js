@@ -13,121 +13,11 @@ function initializeSampleOverview() {
     if (qcModalElement) {
         qcFailModal = new bootstrap.Modal(qcModalElement);
     }
+    
+    // Setup modern event delegation
+    setupQCEventListeners();
 }
 
-
-/**
- * Render sample detail information
- */
-function renderSampleDetail(sample) {
-    // Update title
-    updateSampleTitle(sample);
-
-    // Update general information
-    updateElement('infoSampleName', sample.sample_name);
-    updateElement('infoSampleId', sample.sample_id);
-    updateElement('infoSequencingRun', sample.sequencing_run_id);
-    updateElement('infoLimsId', sample.lims_id);
-
-    // Update classification badge
-    const classificationElement = document.getElementById('infoClassification');
-    if (classificationElement && sample.classification) {
-        const badgeClass = sample.classification === '16S' ? 'bg-primary' : 'bg-info';
-        classificationElement.innerHTML = `<span class="badge ${badgeClass}">${sample.classification}</span>`;
-    } else if (classificationElement) {
-        classificationElement.textContent = '--';
-    }
-
-    // Update dates
-    updateElement('infoCreatedDate', formatDate(sample.created_date));
-    updateElement('infoUpdatedDate', formatDate(sample.updated_date));
-
-    // Update QC status
-    const qcStatus = document.getElementById('currentQCStatus');
-    if (qcStatus) {
-        qcStatus.innerHTML = `<span class="badge ${getQCBadgeClass(sample.qc)}">${sample.qc.toUpperCase()}</span>`;
-    }
-
-    // Update comments
-    updateElement('generalComments', sample.comments, 'value');
-
-    // Update Krona frame
-    const kronaFrame = document.getElementById('kronaFrame');
-    if (kronaFrame) {
-        if (sample.krona_file) {
-            // Use Flask data file serving route
-            kronaFrame.src = getDataFileUrl(sample.krona_file);
-        } else {
-            kronaFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
-        }
-    }
-
-    // Set quality frame to show length vs quality scatter plot
-    const qualityFrame = document.getElementById('qualityFrame');
-    if (qualityFrame) {
-        // Use length vs quality scatter plot from nanoplot data (prefer processed, fallback to unprocessed)
-        let qualityPlotPath = null;
-        if (sample.nanoplot?.processed?.length_quality_scatter) {
-            qualityPlotPath = sample.nanoplot.processed.length_quality_scatter;
-        } else if (sample.nanoplot?.unprocessed?.length_quality_scatter) {
-            qualityPlotPath = sample.nanoplot.unprocessed.length_quality_scatter;
-        } else if (sample.quality_plot) {
-            // Fallback to quality_plot if nanoplot data not available
-            qualityPlotPath = sample.quality_plot;
-        }
-
-        if (qualityPlotPath) {
-            // Use Flask data file serving route
-            qualityFrame.src = getDataFileUrl(qualityPlotPath);
-        } else {
-            qualityFrame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No quality plot available</i></div>';
-        }
-    }
-
-    // Render statistics
-    renderStatistics(sample.statistics || {});
-
-    // Render classification summary
-    renderOverviewClassificationSummary();
-}
-
-/**
- * Helper function to update element content
- */
-function updateElement(elementId, value, property = 'textContent') {
-    const element = document.getElementById(elementId);
-    if (element) {
-        if (property === 'value') {
-            element.value = value || '';
-        } else {
-            element[property] = value || '--';
-        }
-    }
-}
-
-/**
- * Render statistics section
- */
-function renderStatistics(stats) {
-    // Use processed NanoStats data for Summary Statistics (prioritize processed over unprocessed)
-    const nanoStats = currentSample?.nano_stats_processed || currentSample?.nano_stats_unprocessed || {};
-
-    // Update statistics elements
-    updateElement('statNumberReads', nanoStats.number_of_reads ? formatNumber(nanoStats.number_of_reads) : '--');
-    updateElement('statMeanLength', nanoStats.mean_read_length ? `${formatNumber(Math.round(nanoStats.mean_read_length))} bp` : '--');
-    updateElement('statMeanQuality', nanoStats.mean_read_quality ? `Q${nanoStats.mean_read_quality.toFixed(1)}` : '--');
-    updateElement('statMedianLength', nanoStats.median_read_length ? `${formatNumber(Math.round(nanoStats.median_read_length))} bp` : '--');
-    updateElement('statMedianQuality', nanoStats.median_read_quality ? `Q${nanoStats.median_read_quality.toFixed(1)}` : '--');
-    updateElement('statReadN50', nanoStats.read_length_n50 ? `${formatNumber(Math.round(nanoStats.read_length_n50))} bp` : '--');
-    updateElement('statStdevLength', nanoStats.stdev_read_length ? `${formatNumber(Math.round(nanoStats.stdev_read_length))} bp` : '--');
-
-    // Format total bases with appropriate unit
-    if (nanoStats.total_bases) {
-        updateElement('statTotalBases', formatBases(nanoStats.total_bases));
-    } else {
-        updateElement('statTotalBases', '--');
-    }
-}
 
 /**
  * Update QC status
@@ -141,7 +31,6 @@ async function updateQC(status, comments = '') {
         return;
     }
     console.log('🔍 QC Update URL:', url);
-    console.log('🔍 Document cookies:', document.cookie);
 
     try {
         const response = await fetch(url, {
@@ -152,13 +41,13 @@ async function updateQC(status, comments = '') {
             credentials: 'include',
             body: JSON.stringify({
                 qc: status,
-                comments: comments
+                comments: comments || ''
             })
         });
 
-        const result = await response.json();
-
         if (response.ok) {
+            const result = await response.json();
+            console.log('QC/comments saved successfully:', result);
             currentSample.qc = status;
             if (comments) {
                 currentSample.comments = comments;
@@ -225,7 +114,6 @@ async function saveComments() {
         return;
     }
     console.log('🔍 Comments Update URL:', url);
-    console.log('🔍 Document cookies:', document.cookie);
 
     try {
         const response = await fetch(url, {
@@ -253,93 +141,65 @@ async function saveComments() {
 }
 
 /**
- * Render classification summary for overview
+ * Setup QC event listeners using modern event delegation
  */
-function renderOverviewClassificationSummary() {
-    if (!currentSample || !currentSample.taxonomic_data) {
-        updateElement('overviewTotalSpecies', '0');
-        updateElement('overviewDominantSpecies', '-');
-        updateElement('overviewFlaggedContaminants', '0');
-        updateElement('overviewFlaggedTopHits', '0');
+function setupQCEventListeners() {
+    // QC button event delegation
+    document.addEventListener('click', function(event) {
+        const qcButton = event.target.closest('.qc-btn');
+        if (!qcButton) return;
+        
+        event.preventDefault();
+        event.stopPropagation();
+        
+        const status = qcButton.dataset.qcStatus;
+        console.log('QC button clicked:', status);
+        
+        if (status === 'failed') {
+            showFailModal();
+        } else {
+            updateQC(status);
+        }
+    });
+    
+    // QC fail modal confirm button
+    const confirmButton = document.getElementById('confirmFailQCBtn');
+    if (confirmButton) {
+        confirmButton.addEventListener('click', function() {
+            confirmFailQC();
+        });
+    }
+}
 
-        const topHitsList = document.getElementById('overviewTopHitsList');
-        const contaminantsList = document.getElementById('overviewContaminantsList');
-        if (topHitsList) topHitsList.style.display = 'none';
-        if (contaminantsList) contaminantsList.style.display = 'none';
+/**
+ * Show QC failure modal
+ */
+function showFailModal() {
+    if (qcFailModal) {
+        // Clear previous comments
+        const failureComments = document.getElementById('failureComments');
+        if (failureComments) {
+            failureComments.value = '';
+        }
+        qcFailModal.show();
+    }
+}
+
+/**
+ * Confirm QC failure with comments
+ */
+function confirmFailQC() {
+    const failureComments = document.getElementById('failureComments');
+    const comments = failureComments ? failureComments.value.trim() : '';
+    
+    if (!comments) {
+        showError('Please provide a reason for the QC failure');
         return;
     }
-
-    const data = currentSample.taxonomic_data;
-    const flaggedContaminants = currentSample.flagged_contaminants || [];
-    const flaggedTopHits = currentSample.flagged_top_hits || [];
-
-    // Update total species
-    updateElement('overviewTotalSpecies', data.total_species || (data.hits ? data.hits.length : 0));
-
-    // Update dominant species
-    if (data.hits && data.hits.length > 0) {
-        const dominant = data.hits.reduce((prev, current) =>
-            (prev.abundance > current.abundance) ? prev : current
-        );
-        updateElement('overviewDominantSpecies', dominant.species);
-    } else {
-        updateElement('overviewDominantSpecies', '-');
+    
+    // Close modal and update QC
+    if (qcFailModal) {
+        qcFailModal.hide();
     }
-
-    // Update flagged counts
-    updateElement('overviewFlaggedContaminants', flaggedContaminants.length);
-    updateElement('overviewFlaggedTopHits', flaggedTopHits.length);
-
-    // Show/hide top hits list with abundance data
-    const topHitsList = document.getElementById('overviewTopHitsList');
-    const topHitsDiv = document.getElementById('overviewTopHitsSpecies');
-
-    if (flaggedTopHits.length > 0) {
-        if (topHitsList) topHitsList.style.display = 'block';
-        if (topHitsDiv) {
-            topHitsDiv.innerHTML = flaggedTopHits
-                .map(species => {
-                    const hit = data.hits ? data.hits.find(h => h.species === species) : null;
-                    const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
-                    return `<span class="badge bg-success me-1 mb-1" title="Abundance: ${abundance}">${species} ${abundance ? '(' + abundance + ')' : ''}</span>`;
-                })
-                .join('');
-        }
-    } else {
-        if (topHitsList) topHitsList.style.display = 'none';
-    }
-
-    // Show/hide contaminants list with abundance data
-    const contaminantsList = document.getElementById('overviewContaminantsList');
-    const contaminantsDiv = document.getElementById('overviewContaminantsSpecies');
-
-    if (flaggedContaminants.length > 0) {
-        if (contaminantsList) contaminantsList.style.display = 'block';
-        if (contaminantsDiv) {
-            contaminantsDiv.innerHTML = flaggedContaminants
-                .map(species => {
-                    const hit = data.hits ? data.hits.find(h => h.species === species) : null;
-                    const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
-                    return `<span class="badge bg-warning text-dark me-1 mb-1" title="Abundance: ${abundance}">${species} ${abundance ? '(' + abundance + ')' : ''}</span>`;
-                })
-                .join('');
-        }
-    } else {
-        if (contaminantsList) contaminantsList.style.display = 'none';
-    }
-
-    // Show/hide spike with abundance data
-    const spikeList = document.getElementById('overviewSpikeList');
-    const spikeDiv = document.getElementById('overviewSpike');
-
-    if (currentSample.spike) {
-        if (spikeList) spikeList.style.display = 'block';
-        if (spikeDiv) {
-            const hit = data.hits ? data.hits.find(h => h.species === currentSample.spike) : null;
-            const abundance = hit ? hit.abundance.toFixed(2) + '%' : '';
-            spikeDiv.innerHTML = `<span class="badge bg-info me-1 mb-1" title="Abundance: ${abundance}">${currentSample.spike} ${abundance ? '(' + abundance + ')' : ''}</span>`;
-        }
-    } else {
-        if (spikeList) spikeList.style.display = 'none';
-    }
+    updateQC('failed', comments);
 }

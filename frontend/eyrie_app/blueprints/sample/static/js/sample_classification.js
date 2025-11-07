@@ -10,12 +10,9 @@ let flaggedTopHits = new Set();
  * Initialize classification view
  */
 function initializeClassificationView(sampleId) {
-    loadSample(sampleId).then(sample => {
-        if (sample) {
-            updateSampleTitle(sample);
-            loadClassificationData(sample);
-        }
-    });
+    if (currentSample) {
+        loadClassificationData(currentSample);
+    }
 }
 
 /**
@@ -23,23 +20,6 @@ function initializeClassificationView(sampleId) {
  */
 function loadClassificationData(sample = currentSample) {
     if (!sample) return;
-
-    // Load Krona plot in classification view
-    if (sample.krona_file) {
-        const frame = document.getElementById('classificationKronaFrame');
-        if (frame) {
-            // Use Flask data file serving route
-            frame.src = getDataFileUrl(sample.krona_file);
-            frame.style.width = '100%';
-            frame.style.height = '600px';
-            frame.style.border = 'none';
-        }
-    } else {
-        const frame = document.getElementById('classificationKronaFrame');
-        if (frame) {
-            frame.srcdoc = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;"><i>No Krona plot available</i></div>';
-        }
-    }
 
     // Initialize flags from loaded sample data
     initializeFlagsFromSample(sample);
@@ -193,7 +173,6 @@ async function saveSpeciesFlags() {
 
     console.log('🔍 Species flags URL:', url);
     console.log('🔍 Species flags payload:', payload);
-    console.log('🔍 Document cookies:', document.cookie);
 
     try {
         const response = await fetch(url, {
@@ -245,19 +224,17 @@ function updateSampleClassificationSummary() {
         totalSpeciesEl.textContent = data.total_species || 0;
     }
 
-    if (data.hits && data.hits.length > 0) {
-        const dominant = data.hits.reduce((prev, current) =>
-            (prev.abundance > current.abundance) ? prev : current
-        );
-        const dominantSpeciesEl = document.getElementById('dominantSpecies');
-        if (dominantSpeciesEl) {
-            dominantSpeciesEl.textContent = dominant.species;
+    // Calculate dominant species from hits data
+    const dominantSpeciesEl = document.getElementById('dominantSpecies');
+    if (dominantSpeciesEl) {
+        let dominantSpecies = '-';
+        if (data.hits && data.hits.length > 0) {
+            // Find species with highest abundance
+            const dominant = data.hits.reduce((max, hit) => 
+                hit.abundance > max.abundance ? hit : max, data.hits[0]);
+            dominantSpecies = dominant.species || '-';
         }
-    } else {
-        const dominantSpeciesEl = document.getElementById('dominantSpecies');
-        if (dominantSpeciesEl) {
-            dominantSpeciesEl.textContent = '-';
-        }
+        dominantSpeciesEl.textContent = dominantSpecies;
     }
 
     const flaggedContaminantsEl = document.getElementById('flaggedContaminants');
@@ -270,9 +247,23 @@ function updateSampleClassificationSummary() {
         flaggedTopHitsEl.textContent = flaggedTopHits.size;
     }
 
-    const diversity = calculateShannonDiversity(data.hits || []);
+    // Calculate Shannon diversity from hits data
     const diversityIndexEl = document.getElementById('diversityIndex');
     if (diversityIndexEl) {
+        let diversity = 0.0;
+        if (data.hits && data.hits.length > 0) {
+            // Calculate Shannon diversity index
+            const total = data.hits.reduce((sum, hit) => sum + hit.abundance, 0);
+            if (total > 0) {
+                diversity = data.hits.reduce((shannon, hit) => {
+                    if (hit.abundance > 0) {
+                        const proportion = hit.abundance / total;
+                        return shannon - (proportion * Math.log(proportion));
+                    }
+                    return shannon;
+                }, 0);
+            }
+        }
         diversityIndexEl.textContent = diversity.toFixed(2);
     }
 
@@ -287,25 +278,6 @@ function updateSampleClassificationSummary() {
     }
 }
 
-/**
- * Calculate Shannon diversity index
- */
-function calculateShannonDiversity(species) {
-    if (!species || species.length === 0) return 0;
-
-    const total = species.reduce((sum, sp) => sum + sp.abundance, 0);
-    if (total === 0) return 0;
-
-    let diversity = 0;
-    species.forEach(sp => {
-        if (sp.abundance > 0) {
-            const proportion = sp.abundance / total;
-            diversity -= proportion * Math.log(proportion);
-        }
-    });
-
-    return diversity;
-}
 
 /**
  * Refresh Krona plot
