@@ -5,6 +5,16 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+
+### Enhanced
+
+### Fixed
+
+### Changed
+
+## [0.3.0]
+
+### Added
 **License**
  - Added MIT license
  - README uses shields to fetch license and version number
