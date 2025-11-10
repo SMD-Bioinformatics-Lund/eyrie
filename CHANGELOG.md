@@ -56,13 +56,34 @@ All notable changes to the Eyrie sample management system will be documented in 
 **Enhanced species abundance table**
  - Added "Estimated Counts" column and CSV export functionality
 
+**Sample-specific routing architecture**
+ - Created reusable Jinja2 macros for consistent sample view rendering
+ - Added dynamic navigation with shared navbar component
+
+**Async database operations**
+ - Converted database operations from synchronous PyMongo to async Motor driver
+ - Implemented lazy database initialization for improved performance
+ - Added async support throughout the backend API for better scalability
+
+**Environment-aware deployment system**
+ - Added environment-aware URL construction to replace hardcoded base paths
+ - Implemented dynamic URL generation system for subdirectory deployments
+ - Added support for flexible base path configuration
+
+**Multi-platform Docker support**
+ - Added multi-platform Docker build support for production deployment flexibility
+ - Implemented explicit Docker networks for reliable service connectivity
+ - Enhanced Docker configuration management and stability
+
+**API version management**
+ - Replaced hardcoded API version strings with dynamic imports from `__version__.py` files
+
 **Eyrie-popup modularization**
  - Restructured eyrie-popup codebase into logical modules for improved maintainability
- - Added dynamic version management
+ - Enhanced file path handling and upload parsing flexibility
 
 ### Enhanced
 **Security architecture**
- - Replaced client-side authentication with server-side Flask decorators
  - Eliminated JavaScript-based security decisions that could be bypassed
  - Implemented robust session-based authentication with HTTP-only cookies
  - Enhanced API endpoint security with comprehensive authentication requirements
@@ -72,9 +93,11 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Enhanced table layouts and Krona plot responsiveness
  - Disabled automatic chart updates in favor of manual updates
 
-**Infrastructure and networking**
- - Fixed Docker container networking and added Flask proxy routes
- - Enhanced backend connectivity between Flask and FastAPI services
+**Frontend architecture**
+ - Converted frontend to API proxy architecture for improved service communication
+ - Replaced JavaScript table rendering with server-side Flask/Jinja template rendering
+ - Implemented server-side template rendering for better performance and security
+ - Simplified frontend code by removing unused JavaScript files and components
 
 ### Fixed
 **Critical security vulnerabilities**
@@ -91,14 +114,21 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed Docker container networking and API proxy routing
  - Fixed hardcoded API URLs to use relative paths
 
+**Session and logging issues**
+ - Removed debug print statements that exposed session data in frontend logs
+ - Moved authenticated data file serving to proper blueprint with authentication decorators
+
+**File path and serving issues**
+ - Fixed eyrie-popup file path prepending logic to only use run_directory when provided
+ - Resolved Apache compatibility issues by changing data file routes from `/data` to `/analysis-files`
+ - Fixed HTML file serving and path mismatches between database and web serving
+
 **Code quality**
  - Fixed file formatting and removed deprecated functions
 
 ### Changed
 **Authentication architecture**
  - Replaced client-side authentication with server-side Flask decorators
- - Switched from `send_file()` to `render_template()` for dynamic user context
- - Updated all view templates to receive `current_user` parameter
  - Consolidated authentication logic into centralized decorator system
  - Removed template inheritance attempt in favor of standalone templates with user context
 
@@ -118,11 +148,22 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Improved code structure with logical separation of concerns
  - Created shared JavaScript directory and reorganized utilities
 
+**Frontend architecture**
+ - Migrated frontend to API proxy architecture pattern
+ - Restructured sample view routing with unified navigation system
+ - Eliminated standalone classification and nanoplot blueprints in favor of integrated sample views
+
+**File serving and paths**
+ - Changed data file mount paths from /data to /analysis-files for Apache security compatibility
+ - Updated Docker volumes and Flask functions to use consistent /analysis-files naming
+ - Switched data file serving from direct static access to authenticated endpoint routing
+
 **Deployment Configuration**
  - Updated `docker-compose.yml` to use environment variables with fallback defaults
  - Added version management for all Docker images including MongoDB
  - Configured dual URL system for Apache proxy deployment
  - Updated README with production deployment instructions
+ - Enhanced environment configuration system and Docker setup
 
 ## [0.2.1]
 
