@@ -4,8 +4,8 @@
 # =====================================================
 # Version Management
 # =====================================================
-EYRIE_VERSION=0.2.1
-POPUP_VERSION=0.1.0
+EYRIE_VERSION=0.3.0
+POPUP_VERSION=0.2.0
 FRONTEND_VERSION=${EYRIE_VERSION}
 BACKEND_VERSION=${EYRIE_VERSION}
 MONGODB_VERSION=5.0
