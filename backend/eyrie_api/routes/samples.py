@@ -24,7 +24,7 @@ async def create_new_sample(
 ):
     """Create a new sample (requires admin or uploader role)"""
     try:
-        sample_dict = sample_data.dict()
+        sample_dict = sample_data.dict(exclude_unset=False, exclude_none=False)
         sample_id = await create_sample(sample_dict)
         return {
             "message": f"Sample '{sample_data.sample_id}' created successfully",
