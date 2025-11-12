@@ -7,7 +7,7 @@ from .config import (
 )
 
 # Data models
-from .data import NanoStats, TaxonomicAbundance, SampleData
+from .data import NanoStats, TaxonomicAbundance, SampleResults, SampleMetadata
 
 # Parsing models
 from .parsing import NanoPlotFileSet, StructuredNanoPlot, ParsedSample
@@ -17,7 +17,7 @@ __all__ = [
     'SampleInfo', 'FastQCConfig', 'KronaConfig', 'MultiQCConfig',
     'NanoPlotStageConfig', 'NanoPlotConfig', 'ResultsConfig', 'SampleConfig',
     # Data models
-    'NanoStats', 'TaxonomicAbundance', 'SampleData',
+    'NanoStats', 'TaxonomicAbundance', 'SampleResults', 'SampleMetadata',
     # Parsing models
     'NanoPlotFileSet', 'StructuredNanoPlot', 'ParsedSample'
 ]
