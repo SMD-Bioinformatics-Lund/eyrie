@@ -2,7 +2,7 @@
 
 from typing import Optional, Dict, Any
 
-from ..models import SampleData, SampleConfig
+from ..models import SampleResults, SampleConfig
 
 
 class UploadHandler:
@@ -11,7 +11,7 @@ class UploadHandler:
     def __init__(self, client):
         self.client = client
 
-    def upload_sample(self, sample_data: SampleData, config: SampleConfig) -> bool:
+    def upload_sample(self, sample_data: SampleResults, config: SampleConfig) -> bool:
         """Upload a single sample to Eyrie."""
         try:
             # Prepare sample data for Eyrie API

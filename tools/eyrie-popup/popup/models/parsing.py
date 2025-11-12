@@ -4,7 +4,7 @@ from typing import Optional
 from pydantic import BaseModel, Field
 from datetime import datetime
 
-from .data import SampleData
+from .data import SampleResults
 
 
 class NanoPlotFileSet(BaseModel):
@@ -25,6 +25,6 @@ class StructuredNanoPlot(BaseModel):
 
 class ParsedSample(BaseModel):
     """Complete parsed sample data."""
-    sample_data: SampleData
+    sample_data: SampleResults
     created_date: datetime = Field(default_factory=datetime.now)
     updated_date: datetime = Field(default_factory=datetime.now)

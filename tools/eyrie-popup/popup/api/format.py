@@ -3,13 +3,13 @@
 from typing import Dict, Any
 from datetime import datetime
 
-from ..models import SampleData, SampleConfig
+from ..models import SampleResults, SampleConfig
 
 
 class FormatHandler:
     """Handles data format conversion for Eyrie API."""
 
-    def convert_to_eyrie_format(self, sample_data: SampleData, config: SampleConfig) -> Dict[str, Any]:
+    def convert_to_eyrie_format(self, sample_data: SampleResults, config: SampleConfig) -> Dict[str, Any]:
         """Convert sample data to Eyrie database format."""
         # Determine QC status based on contamination
         qc_status = "unprocessed"
@@ -90,7 +90,8 @@ class FormatHandler:
                             nanoplot_dict['processed'][field] = file_path
             nanoplot_data = nanoplot_dict
 
-        return {
+        # Prepare base sample data
+        eyrie_data = {
             "sample_name": sample_data.sample_info.sample_name,
             "sample_id": sample_data.sample_info.sample_id,
             "sequencing_run_id": sample_data.sample_info.sequencing_run_id,
@@ -109,3 +110,10 @@ class FormatHandler:
             "nanoplot": nanoplot_data,
             "spike": sample_data.spike if hasattr(sample_data, 'spike') else None
         }
+
+        # Add metadata fields if present
+        if sample_data.metadata:
+            metadata_dict = {k: v for k, v in sample_data.metadata.dict().items() if v is not None}
+            eyrie_data.update(metadata_dict)
+
+        return eyrie_data
