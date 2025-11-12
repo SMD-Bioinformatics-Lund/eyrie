@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from ..models import SampleConfig, SampleData, ParsedSample
+from ..models import SampleConfig, SampleResults, ParsedSample
 from ..utils import get_detected_spike, find_file
 from .nanoplot import NanoPlotParser
 from .nanostats import NanoStatsParser
@@ -24,9 +24,9 @@ class SampleParser:
         sample_data = self._parse_sample_data()
         return ParsedSample(sample_data=sample_data)
 
-    def _parse_sample_data(self) -> SampleData:
+    def _parse_sample_data(self) -> SampleResults:
         """Parse data for the sample."""
-        sample_data = SampleData(sample_info=self.config.sample)
+        sample_data = SampleResults(sample_info=self.config.sample)
 
         # Parse FastQC
         if self.config.fastqc and self.config.fastqc.enabled:

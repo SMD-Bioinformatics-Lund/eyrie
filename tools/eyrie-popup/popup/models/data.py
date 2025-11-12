@@ -6,6 +6,18 @@ from pydantic import BaseModel, Field
 from .config import SampleInfo
 
 
+class SampleMetadata(BaseModel):
+    """Sample metadata information."""
+    sample_type: Optional[str] = Field(None, regex="^(validation|patient|negative|positive)$")
+    tissue: Optional[str] = None
+    dilution: Optional[str] = None
+    library_concentration: Optional[str] = None
+    multiple_finds: Optional[str] = None
+    other_comments: Optional[str] = None
+    qc_comment: Optional[str] = None
+    sanger_expected_species: Optional[str] = None
+
+
 class NanoStats(BaseModel):
     """Parsed NanoStats data."""
     mean_read_length: float
@@ -34,7 +46,7 @@ class TaxonomicAbundance(BaseModel):
     contamination: bool = False  # Will be added during parsing
 
 
-class SampleData(BaseModel):
+class SampleResults(BaseModel):
     """Complete data for a single sample."""
     sample_info: SampleInfo
     fastqc_file: Optional[str] = None
@@ -47,3 +59,4 @@ class SampleData(BaseModel):
     taxonomic_abundances: List[TaxonomicAbundance] = []
     nanoplot: Optional['StructuredNanoPlot'] = None
     spike: Optional[str] = None
+    metadata: Optional[SampleMetadata] = None
