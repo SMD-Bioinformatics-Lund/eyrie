@@ -3,7 +3,7 @@
 import requests
 from typing import Optional
 
-from ..models import ParsedSample, SampleConfig
+from ..models import ParsedSample, SampleConfig, SampleMetadata, SampleResults, SampleInfo
 from .upload import UploadHandler
 from .format import FormatHandler
 
@@ -18,7 +18,7 @@ class EyrieAPIClient:
             self.api_url = api_url
         else:
             self.api_url = f"{api_url}/api"
-        
+
         self.username = username
         self.password = password
         self.session = requests.Session()
@@ -89,3 +89,86 @@ class EyrieAPIClient:
         except requests.exceptions.RequestException as e:
             print(f"✗ Cannot connect to Eyrie API: {e}")
             return False
+
+    def upload_metadata(self, sample_id: str, metadata: SampleMetadata, create_missing: bool = False) -> tuple[bool, str]:
+        """Upload metadata for a single sample.
+
+        Returns:
+            tuple: (success: bool, action: str) where action is 'created', 'updated', or 'failed'
+        """
+        if not self._authenticated and (self.username and self.password):
+            if not self.authenticate():
+                return False, 'failed'
+
+        try:
+            # Check if sample exists
+            existing_sample = self._get_sample(sample_id)
+
+            # Convert metadata to dict, excluding None values
+            metadata_dict = {k: v for k, v in metadata.dict().items() if v is not None}
+
+            if existing_sample:
+                # Update existing sample with metadata
+                # Only include fields that are part of the SampleCreate API model
+                api_fields = [
+                    'sample_name', 'sample_id', 'sequencing_run_id', 'lims_id',
+                    'classification', 'qc', 'comments', 'krona_file', 'quality_plot',
+                    'statistics', 'taxonomic_data', 'nano_stats_processed', 
+                    'nano_stats_unprocessed', 'flagged_contaminants', 'flagged_top_hits',
+                    'nanoplot', 'spike'
+                ]
+
+                updated_sample = {k: v for k, v in existing_sample.items() if k in api_fields}
+                updated_sample['metadata'] = metadata_dict
+
+                response = self.session.put(
+                    f"{self.api_url}/sample/{sample_id}",
+                    json=updated_sample
+                )
+
+                if response.status_code in [200, 201]:
+                    return True, 'updated'
+                else:
+                    print(f"✗ Failed to update sample {sample_id}: {response.status_code} - {response.text}")
+                    return False, 'failed'
+
+            elif create_missing:
+                # Create new sample with minimal required fields + metadata
+                new_sample = {
+                    'sample_id': sample_id,
+                    'sample_name': f"Sample_{sample_id}",
+                    'lims_id': f"LIMS_{sample_id}",
+                    'sequencing_run_id': f"RUN_{sample_id}",
+                    'classification': '16S',  # Default classification type
+                    'qc': 'unprocessed',  # Default QC status
+                    'comments': '',  # Default empty comments
+                    'metadata': metadata_dict  # Add metadata under metadata key
+                }
+
+                response = self.session.post(
+                    f"{self.api_url}/samples",
+                    json=new_sample
+                )
+
+                if response.status_code in [200, 201]:
+                    return True, 'created'
+                else:
+                    print(f"✗ Failed to create sample {sample_id}: {response.status_code} - {response.text}")
+                    return False, 'failed'
+            else:
+                print(f"✗ Sample {sample_id} not found and create_missing=False")
+                return False, 'failed'
+
+        except Exception as e:
+            print(f"✗ Error processing metadata for {sample_id}: {e}")
+            return False, 'failed'
+
+    def _get_sample(self, sample_id: str) -> Optional[dict]:
+        """Get existing sample from Eyrie."""
+        try:
+            response = self.session.get(f"{self.api_url}/sample/{sample_id}")
+            if response.status_code == 200:
+                return response.json()
+            return None
+        except:
+            return None

@@ -8,6 +8,7 @@ from typing import Optional
 
 from .models import SampleConfig
 from .parser import SampleParser
+from .parser.metadata import MetadataParser, validate_metadata_file
 from .api import EyrieAPIClient
 from .__version__ import __version__
 
@@ -19,18 +20,11 @@ def cli():
     pass
 
 
-@cli.command()
-@click.option('-s', '--sample', 'sample_cnf', required=True, type=click.Path(exists=True, path_type=Path), help='YAML configuration file for the sample')
-@click.option('--api', default='http://localhost:8000/api', help='Eyrie API base URL')
-@click.option('--username', envvar='EYRIE_USER', help='Username for authentication (or set EYRIE_USER env var)')
-@click.option('--password', envvar='EYRIE_PASSWORD', help='Password for authentication (or set EYRIE_PASSWORD env var)')
-@click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
-@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-def upload(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool):
-    """Parse analysis results from YAML configuration and upload to Eyrie."""
+def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str], 
+                       dry_run: bool, verbose: bool) -> bool:
+    """Upload sample analysis data from YAML configuration."""
 
-    click.echo(f"🔬 Eyrie POPUP - Pipeline Output Processor & UPloader")
-    click.echo(f"📁 Config file: {sample_cnf}")
+    click.echo(f"📁 Sample config: {sample_cnf}")
 
     try:
         # Load configuration
@@ -42,7 +36,6 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
         if verbose:
             click.echo(f"🧬 Sample: {config.sample.sample_id}")
             click.echo(f"📂 Base path: {config.base_path}")
-            click.echo(f"🔗 API URL: {api}")
 
         # Parse the sample
         click.echo("\n🔍 Parsing analysis files...")
@@ -73,7 +66,7 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
             click.echo(f"  ✓ Taxonomic data: {total_species} species")
             if contaminants > 0:
                 click.echo(f"  ⚠️  Potential contaminants: {contaminants}")
-            
+
             # Display spike species detection
             if hasattr(sample_data, 'spike') and sample_data.spike:
                 # Find abundance for the spike species
@@ -96,37 +89,215 @@ def upload(sample_cnf: Path, api: str, username: Optional[str], password: Option
             click.echo(f"  ✗ No structured nanoplot data found")
 
         if dry_run:
-            click.echo("\n🏃 Dry run mode - skipping database upload")
-            
+            click.echo("\n🏃 Dry run mode - skipping sample data upload")
+
             # In dry run mode, show what would be uploaded
             if verbose:
                 temp_client = EyrieAPIClient(api, username, password)
                 eyrie_sample = temp_client._convert_to_eyrie_format(sample_data, config)
                 click.echo(f"\n📋 Would upload spike field: {eyrie_sample.get('spike', 'NOT_FOUND')}")
                 click.echo(f"📋 Sample data spike attr: {getattr(sample_data, 'spike', 'NO_SPIKE_ATTR')}")
-            return
+            return True
 
         # Upload to Eyrie
-        click.echo("\n📤 Uploading to Eyrie database...")
+        click.echo("\n📤 Uploading sample data to Eyrie database...")
 
         api_client = EyrieAPIClient(api, username, password)
 
         # Test connection
         if not api_client.test_connection():
             click.echo("❌ Cannot connect to Eyrie API")
-            return
+            return False
 
         # Upload the sample
         if api_client.upload_sample(parsed_sample, config):
-            click.echo("✅ Successfully uploaded sample to Eyrie!")
+            click.echo("✅ Successfully uploaded sample data to Eyrie!")
+            return True
         else:
-            click.echo("❌ Failed to upload sample")
+            click.echo("❌ Failed to upload sample data")
+            return False
 
     except Exception as e:
-        click.echo(f"❌ Error: {e}")
+        click.echo(f"❌ Error uploading sample data: {e}")
         if verbose:
             import traceback
             traceback.print_exc()
+        return False
+
+
+def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], password: Optional[str], 
+                    dry_run: bool, verbose: bool, create_missing: bool) -> bool:
+    """Upload metadata from TSV/CSV file."""
+
+    click.echo(f"📁 Metadata file: {metadata_file}")
+
+    try:
+        # Validate file format first
+        click.echo("\n🔍 Validating metadata file format...")
+        is_valid, errors = validate_metadata_file(metadata_file)
+
+        if not is_valid:
+            click.echo("❌ Metadata file validation failed:")
+            for error in errors:
+                click.echo(f"  • {error}")
+            return False
+
+        click.echo("✓ Metadata file format is valid")
+
+        # Parse metadata
+        click.echo("\n📖 Parsing metadata...")
+        parser = MetadataParser(metadata_file)
+        metadata_dict = parser.parse()
+
+        if not metadata_dict:
+            click.echo("❌ No valid metadata entries found in file")
+            return False
+
+        click.echo(f"✓ Parsed {len(metadata_dict)} metadata entries")
+
+        if verbose:
+            click.echo(f"👤 Create missing samples: {create_missing}")
+
+        # Display parsed entries
+        for sample_id, metadata in metadata_dict.items():
+            click.echo(f"  ✓ {sample_id}")
+            if verbose:
+                if metadata.sample_type:
+                    click.echo(f"    • Type: {metadata.sample_type}")
+                if metadata.tissue:
+                    click.echo(f"    • Tissue: {metadata.tissue}")
+                if metadata.sanger_expected_species:
+                    click.echo(f"    • Expected species: {metadata.sanger_expected_species}")
+
+        if dry_run:
+            click.echo("\n🏃 Dry run mode - skipping metadata upload")
+            click.echo(f"📊 Would process {len(metadata_dict)} samples")
+            return True
+
+        # Upload metadata
+        click.echo("\n📤 Uploading metadata to Eyrie...")
+
+        api_client = EyrieAPIClient(api, username, password)
+
+        # Test connection
+        if not api_client.test_connection():
+            click.echo("❌ Cannot connect to Eyrie API")
+            return False
+
+        # Process each sample
+        created_count = 0
+        updated_count = 0
+        failed_count = 0
+
+        for sample_id, metadata in metadata_dict.items():
+            try:
+                success, action = api_client.upload_metadata(sample_id, metadata, create_missing)
+
+                if success:
+                    if action == "created":
+                        created_count += 1
+                        click.echo(f"  ✓ Created sample: {sample_id}")
+                    elif action == "updated":
+                        updated_count += 1
+                        click.echo(f"  ✓ Updated sample: {sample_id}")
+                else:
+                    failed_count += 1
+                    click.echo(f"  ❌ Failed to process sample: {sample_id}")
+
+            except Exception as e:
+                failed_count += 1
+                click.echo(f"  ❌ Error processing {sample_id}: {e}")
+                if verbose:
+                    import traceback
+                    traceback.print_exc()
+
+        # Summary
+        click.echo(f"\n📊 Metadata Upload Summary:")
+        if created_count > 0:
+            click.echo(f"  ✅ Created: {created_count} samples")
+        if updated_count > 0:
+            click.echo(f"  ✅ Updated: {updated_count} samples")
+        if failed_count > 0:
+            click.echo(f"  ❌ Failed: {failed_count} samples")
+
+        if failed_count == 0:
+            click.echo("🎉 All metadata uploaded successfully!")
+
+        return failed_count == 0
+
+    except Exception as e:
+        click.echo(f"❌ Error uploading metadata: {e}")
+        if verbose:
+            import traceback
+            traceback.print_exc()
+        return False
+
+
+@cli.command()
+@click.option('-s', '--sample', 'sample_cnf', type=click.Path(exists=True, path_type=Path), help='YAML configuration file for sample analysis data [optional]')
+@click.option('-m', '--metadata', 'metadata_file', type=click.Path(exists=True, path_type=Path), help='TSV or CSV metadata file [optional]')
+@click.option('--api', default='http://localhost:8000/api', help='Eyrie API base URL')
+@click.option('--username', envvar='EYRIE_USER', help='Username for authentication (or set EYRIE_USER env var)')
+@click.option('--password', envvar='EYRIE_PASSWORD', help='Password for authentication (or set EYRIE_PASSWORD env var)')
+@click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
+@click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (metadata only)')
+def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str, 
+          username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool):
+    """Upload sample analysis data and/or metadata to Eyrie.
+
+    Specify at least one of:
+      -s, --sample PATH     Upload sample analysis results from YAML config
+      -m, --metadata PATH   Upload metadata from TSV/CSV file
+
+    Examples:
+      popup upload -s sample_config.yaml                    # Upload analysis data only
+      popup upload -m metadata.tsv --create-missing         # Upload metadata only  
+      popup upload -s config.yaml -m metadata.tsv           # Upload both together
+    """
+
+    # Validate that at least one option is provided
+    if not sample_cnf and not metadata_file:
+        click.echo("❌ Error: At least one of --sample (-s) or --metadata (-m) must be provided")
+        click.echo("\nExamples:")
+        click.echo("  popup upload -s sample_config.yaml")
+        click.echo("  popup upload -m metadata.tsv")
+        click.echo("  popup upload -s config.yaml -m metadata.tsv")
+        return
+
+    click.echo(f"🔬 Eyrie POPUP - Pipeline Output Processor & UPloader")
+
+    if verbose:
+        click.echo(f"🔗 API URL: {api}")
+
+    sample_success = True
+    metadata_success = True
+
+    # Upload sample analysis data if provided
+    if sample_cnf:
+        click.echo(f"\n📊 Processing sample analysis data...")
+        sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose)
+
+    # Upload metadata if provided  
+    if metadata_file:
+        click.echo(f"\n📋 Processing metadata...")
+        metadata_success = _upload_metadata(metadata_file, api, username, password, dry_run, verbose, create_missing)
+
+    # Overall summary
+    if sample_cnf and metadata_file:
+        click.echo(f"\n🎯 Overall Summary:")
+        if sample_success and metadata_success:
+            click.echo("✅ Both sample data and metadata uploaded successfully!")
+        elif sample_success:
+            click.echo("⚠️  Sample data uploaded, but metadata failed")
+        elif metadata_success:
+            click.echo("⚠️  Metadata uploaded, but sample data failed") 
+        else:
+            click.echo("❌ Both uploads failed")
+    elif sample_success or metadata_success:
+        click.echo("\n✅ Upload completed successfully!")
+    else:
+        click.echo("\n❌ Upload failed")
 
 
 @cli.command()
@@ -264,6 +435,8 @@ def test_connection(api: str, username: Optional[str], password: Optional[str]):
             click.echo("✅ Connection successful (no authentication provided)")
     else:
         click.echo("❌ Connection failed")
+
+
 
 
 if __name__ == '__main__':
