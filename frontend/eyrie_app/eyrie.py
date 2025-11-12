@@ -38,7 +38,7 @@ def test_backend_connectivity() -> str:
         for test_url in settings.backend_fallback_urls:
             try:
                 print(f"   Testing: {test_url} (attempt {attempt + 1}/{max_retries})")
-                response = requests.get(f"{test_url}/health", timeout=5)
+                response = requests.get(f"{test_url}/api/system/health", timeout=5)
                 if response.status_code == 200:
                     backend_url = test_url
                     print(f"✓ Backend connectivity successful: {backend_url} (status: {response.status_code})")
@@ -349,7 +349,7 @@ def health_check() -> Dict[str, Any]:
     """Health check with backend connectivity details"""
     try:
         # Check if backend is reachable
-        response = requests.get(f"{backend_url}/health", timeout=5)
+        response = requests.get(f"{backend_url}/api/system/health", timeout=5)
         if response.status_code == 200:
             return {
                 'status': 'healthy',
@@ -378,7 +378,7 @@ def health_check_base_path() -> Dict[str, Any]:
     """Health check with base path support"""
     try:
         # Check if backend is reachable
-        response = requests.get(f"{backend_url}/health", timeout=5)
+        response = requests.get(f"{backend_url}/api/system/health", timeout=5)
         if response.status_code == 200:
             return {
                 'status': 'healthy',

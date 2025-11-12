@@ -37,7 +37,7 @@ async def upsert_sample_endpoint(
                 detail="Sample ID in URL must match sample ID in data"
             )
 
-        sample_dict = sample_data.dict()
+        sample_dict = sample_data.dict(exclude_unset=False, exclude_none=False)
         db_id, was_created = await upsert_sample(sample_dict)
 
         action = "created" if was_created else "updated"
