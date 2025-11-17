@@ -76,7 +76,7 @@ async def upsert_sample(sample_data: Dict[str, Any]) -> Tuple[str, bool]:
             return str(result.inserted_id), True
 
 
-async def update_sample_qc(sample_id: str, qc_status: str, comments: str) -> bool:
+async def update_sample_qc(sample_id: str, qc_status: str, comments: Dict[str, Any]) -> bool:
     """Update sample QC status and comments."""
     async with get_db_connection() as db:
         result = await db.samples.update_one(
@@ -92,7 +92,7 @@ async def update_sample_qc(sample_id: str, qc_status: str, comments: str) -> boo
         return result.matched_count > 0
 
 
-async def update_sample_comment(sample_id: str, comments: str) -> bool:
+async def update_sample_comment(sample_id: str, comments: Dict[str, Any]) -> bool:
     """Update sample comments only."""
     async with get_db_connection() as db:
         result = await db.samples.update_one(
