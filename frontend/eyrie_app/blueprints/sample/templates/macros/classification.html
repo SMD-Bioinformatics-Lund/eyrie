@@ -19,10 +19,10 @@
                 </div>
                 <div class="card-body p-0">
                     <div id="classificationKronaContainer" class="w-100" style="height: 600px;">
-                        {% if sample and sample.krona_file %}
+                        {% if sample and sample.files and sample.files.krona %}
                             <iframe id="classificationKronaFrame"
                                     style="width: 100%; height: 600px; border: none;"
-                                    src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.krona_file) }}">
+                                    src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.files.krona) }}">
                             </iframe>
                         {% else %}
                             <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
