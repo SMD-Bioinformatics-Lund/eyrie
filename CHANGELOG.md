@@ -5,12 +5,22 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+- **Separate QC comments system** - Independent QC and general comments with separate submission buttons
+- **Sample metadata card** - Display sample metadata fields (sample_type, tissue, dilution, etc.)
+- **Metadata upload support** - Upload sample metadata via eyrie-popup tool
 
 ### Enhanced
+- **Sample overview layout** - Reorganized three-column layout with metadata card and centered visualizations
+- **Data structure** - Hierarchical organization (nested file paths)
+- **Eyrie-popup tool** - Unified upload command supporting both sample data and metadata
 
 ### Fixed
+- **QC comments ordering** - First chronological QC comment correctly displays in samples table
+- **Comment persistence** - QC comments properly append instead of replacing existing comments
 
 ### Changed
+- **Frontend data access** - Updated to use hierarchical structure
+- **Comments architecture** - Split QC comments (array with timestamps/users) from general comments (string)
 
 ## [0.3.0]
 
