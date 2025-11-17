@@ -4,10 +4,10 @@ from datetime import datetime
 
 class QCUpdate(BaseModel):
     qc: str
-    comments: Optional[str] = ""
+    comments: Optional[Dict[str, Any]] = None  # Updated to match new structure
 
 class CommentUpdate(BaseModel):
-    comments: str
+    comments: Optional[Dict[str, Any]] = None  # Updated to match new structure
 
 class SpeciesFlagsUpdate(BaseModel):
     flagged_contaminants: Optional[List[str]] = None
@@ -20,16 +20,13 @@ class SampleCreate(BaseModel):
     lims_id: str
     classification: str = "16S"
     qc: str = "unprocessed"
-    comments: str = ""
-    krona_file: Optional[str] = None
-    quality_plot: Optional[str] = None
-    statistics: Optional[Dict[str, Any]] = None
+    comments: Optional[Dict[str, Any]] = None  # {"qc": [...], "other": "..."}
+    files: Optional[Dict[str, Any]] = None  # {"krona": "...", "fastqc": "..."}
+    sequencing_statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
-    nano_stats_processed: Optional[Dict[str, Any]] = None
-    nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: List[str] = []
     flagged_top_hits: List[str] = []
-    nanoplot: Optional[Dict[str, Any]] = None
+    nanoplot: Optional[Dict[str, Any]] = None  # Now includes files and nanostats nested
     spike: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
@@ -38,15 +35,12 @@ class SampleUpdate(BaseModel):
     lims_id: Optional[str] = None
     classification: Optional[str] = None
     qc: Optional[str] = None
-    comments: Optional[str] = None
-    krona_file: Optional[str] = None
-    quality_plot: Optional[str] = None
-    statistics: Optional[Dict[str, Any]] = None
+    comments: Optional[Dict[str, Any]] = None  # {"qc": [...], "other": "..."}
+    files: Optional[Dict[str, Any]] = None  # {"krona": "...", "fastqc": "..."}
+    sequencing_statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
-    nano_stats_processed: Optional[Dict[str, Any]] = None
-    nano_stats_unprocessed: Optional[Dict[str, Any]] = None
     flagged_contaminants: Optional[List[str]] = None
     flagged_top_hits: Optional[List[str]] = None
-    nanoplot: Optional[Dict[str, Any]] = None
+    nanoplot: Optional[Dict[str, Any]] = None  # Now includes files and nanostats nested
     spike: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
