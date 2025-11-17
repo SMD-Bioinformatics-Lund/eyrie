@@ -25,11 +25,11 @@ class FormatHandler:
             contaminant_names = [taxa.species for taxa in contaminants]
             comments.append(f"Potential contamination detected: {', '.join(contaminant_names)}")
 
-        # Prepare statistics
-        statistics = {}
+        # Prepare sequencing statistics (prefer processed over unprocessed)
+        sequencing_statistics = {}
         if sample_data.nano_stats_processed:
             stats = sample_data.nano_stats_processed
-            statistics = {
+            sequencing_statistics = {
                 "total_reads": stats.number_of_reads,
                 "avg_length": stats.mean_read_length,
                 "avg_quality": stats.mean_read_quality,
@@ -38,7 +38,7 @@ class FormatHandler:
             }
         elif sample_data.nano_stats_unprocessed:
             stats = sample_data.nano_stats_unprocessed
-            statistics = {
+            sequencing_statistics = {
                 "total_reads": stats.number_of_reads,
                 "avg_length": stats.mean_read_length,
                 "avg_quality": stats.mean_read_quality,
@@ -69,7 +69,7 @@ class FormatHandler:
         # Use run directory only if provided, no fallback to sequencing_run_id
         run_dir = config.run_directory
 
-        # Structured nanoplot files
+        # Structured nanoplot data with nested nanostats
         nanoplot_data = None
         if sample_data.nanoplot:
             nanoplot_dict = sample_data.nanoplot.dict()
@@ -88,9 +88,63 @@ class FormatHandler:
                             nanoplot_dict['processed'][field] = f"{run_dir}/{file_path}"
                         else:
                             nanoplot_dict['processed'][field] = file_path
+                            
+            # Add nanostats to nanoplot structure
+            if sample_data.nano_stats_unprocessed and nanoplot_dict.get('unprocessed'):
+                # Convert existing files to nested structure
+                files_dict = nanoplot_dict['unprocessed'].copy()
+                nanoplot_dict['unprocessed'] = {
+                    "files": files_dict,
+                    "nanostats": sample_data.nano_stats_unprocessed.dict()
+                }
+            elif nanoplot_dict.get('unprocessed'):
+                # Convert existing files to nested structure 
+                files_dict = nanoplot_dict['unprocessed'].copy()
+                nanoplot_dict['unprocessed'] = {
+                    "files": files_dict,
+                    "nanostats": None
+                }
+                
+            if sample_data.nano_stats_processed and nanoplot_dict.get('processed'):
+                # Convert existing files to nested structure
+                files_dict = nanoplot_dict['processed'].copy()
+                nanoplot_dict['processed'] = {
+                    "files": files_dict,
+                    "nanostats": sample_data.nano_stats_processed.dict()
+                }
+            elif nanoplot_dict.get('processed'):
+                # Convert existing files to nested structure
+                files_dict = nanoplot_dict['processed'].copy()
+                nanoplot_dict['processed'] = {
+                    "files": files_dict,
+                    "nanostats": None
+                }
+                
             nanoplot_data = nanoplot_dict
 
-        # Prepare base sample data
+        # Prepare structured comments
+        comments_data = {
+            "qc": [],  # Will be populated by QC workflow in web interface
+            "other": ""  # User-editable field
+        }
+        
+        # Add contamination comments to QC comments with timestamp if any
+        if comments:
+            for comment in comments:
+                comments_data["qc"].append({
+                    "timestamp": datetime.now().isoformat(),
+                    "user": "system",  # System-generated contamination comment
+                    "comment": comment
+                })
+        
+        # Prepare files structure
+        files_data = {}
+        if sample_data.krona_file:
+            files_data["krona"] = f"{run_dir}/{sample_data.krona_file}" if run_dir else sample_data.krona_file
+        if sample_data.fastqc_file:
+            files_data["fastqc"] = f"{run_dir}/{sample_data.fastqc_file}" if run_dir else sample_data.fastqc_file
+
+        # Prepare base sample data with new structure
         eyrie_data = {
             "sample_name": sample_data.sample_info.sample_name,
             "sample_id": sample_data.sample_info.sample_id,
@@ -98,15 +152,12 @@ class FormatHandler:
             "lims_id": sample_data.sample_info.lims_id,
             "classification": sample_data.sample_info.classification_type,
             "qc": qc_status,
-            "comments": "; ".join(comments) if comments else "",
+            "comments": comments_data,
             "created_date": datetime.now().isoformat(),
             "updated_date": datetime.now().isoformat(),
-            "krona_file": f"{run_dir}/{sample_data.krona_file}" if run_dir and sample_data.krona_file else sample_data.krona_file,
-            "quality_plot": f"{run_dir}/{sample_data.fastqc_file}" if run_dir and sample_data.fastqc_file else sample_data.fastqc_file,
-            "statistics": statistics,
+            "files": files_data,
+            "sequencing_statistics": sequencing_statistics,
             "taxonomic_data": taxonomic_summary,
-            "nano_stats_processed": sample_data.nano_stats_processed.dict() if sample_data.nano_stats_processed else None,
-            "nano_stats_unprocessed": sample_data.nano_stats_unprocessed.dict() if sample_data.nano_stats_unprocessed else None,
             "nanoplot": nanoplot_data,
             "spike": sample_data.spike if hasattr(sample_data, 'spike') else None
         }

@@ -13,9 +13,9 @@ class SampleMetadata(BaseModel):
     dilution: Optional[str] = None
     library_concentration: Optional[str] = None
     multiple_finds: Optional[str] = None
-    other_comments: Optional[str] = None
-    qc_comment: Optional[str] = None
     sanger_expected_species: Optional[str] = None
+    extraction_kit: Optional[str] = None
+    library_prep_kit: Optional[str] = None
 
 
 class NanoStats(BaseModel):

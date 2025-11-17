@@ -109,12 +109,11 @@ class EyrieAPIClient:
 
             if existing_sample:
                 # Update existing sample with metadata
-                # Only include fields that are part of the SampleCreate API model
+                # Only include fields that are part of the SampleCreate API model (updated for new structure)
                 api_fields = [
                     'sample_name', 'sample_id', 'sequencing_run_id', 'lims_id',
-                    'classification', 'qc', 'comments', 'krona_file', 'quality_plot',
-                    'statistics', 'taxonomic_data', 'nano_stats_processed', 
-                    'nano_stats_unprocessed', 'flagged_contaminants', 'flagged_top_hits',
+                    'classification', 'qc', 'comments', 'files',
+                    'sequencing_statistics', 'taxonomic_data', 'flagged_contaminants', 'flagged_top_hits',
                     'nanoplot', 'spike'
                 ]
 

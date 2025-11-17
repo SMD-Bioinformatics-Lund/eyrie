@@ -18,9 +18,9 @@ class MetadataParser:
         'dilution': ['dilution', 'sample_dilution'],
         'library_concentration': ['library_concentration', 'lib_concentration', 'concentration', 'library_conc'],
         'multiple_finds': ['multiple_finds', 'multiple_bacteria', 'multi_finds'],
-        'other_comments': ['other_comments', 'comments', 'notes', 'other_notes'],
-        'qc_comment': ['qc_comment', 'qc_comments', 'quality_comment'],
-        'sanger_expected_species': ['sanger_expected_species', 'expected_species', 'sanger_species']
+        'sanger_expected_species': ['sanger_expected_species', 'expected_species', 'sanger_species'],
+        'extraction_kit': ['extraction_kit', 'dna_extraction_kit', 'extraction_method', 'dna_kit'],
+        'library_prep_kit': ['library_prep_kit', 'lib_prep_kit', 'library_preparation_kit', 'prep_kit']
     }
 
     def __init__(self, file_path: Union[str, Path]):
