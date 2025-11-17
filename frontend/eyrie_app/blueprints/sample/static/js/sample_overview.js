@@ -41,7 +41,14 @@ async function updateQC(status, comments = '') {
             credentials: 'include',
             body: JSON.stringify({
                 qc: status,
-                comments: comments || ''
+                comments: comments ? {
+                    qc: [...(currentSample.comments?.qc || []), {
+                        timestamp: new Date().toISOString(),
+                        user: 'current_user',  // Will be replaced by backend
+                        comment: comments
+                    }],
+                    other: currentSample.comments?.other || ''
+                } : currentSample.comments
             })
         });
 
@@ -50,13 +57,26 @@ async function updateQC(status, comments = '') {
             console.log('QC/comments saved successfully:', result);
             currentSample.qc = status;
             if (comments) {
-                currentSample.comments = comments;
-                updateElement('generalComments', comments, 'value');
+                // Update comments structure
+                if (!currentSample.comments) {
+                    currentSample.comments = {qc: [], other: ''};
+                }
+                currentSample.comments.qc = currentSample.comments.qc || [];
+                currentSample.comments.qc.push({
+                    timestamp: new Date().toISOString(),
+                    user: 'current_user',
+                    comment: comments
+                });
             }
 
             const qcStatus = document.getElementById('currentQCStatus');
             if (qcStatus) {
                 qcStatus.innerHTML = `<span class="badge ${getQCBadgeClass(status)}">${status.toUpperCase()}</span>`;
+            }
+
+            // Refresh QC comments display if a comment was added
+            if (comments) {
+                refreshQCComments();
             }
 
             showSuccess(`QC status updated to ${status.toUpperCase()}`);
@@ -100,9 +120,82 @@ function confirmFailQC() {
 }
 
 /**
- * Save comments
+ * Add QC comment
  */
-async function saveComments() {
+async function addQCComment() {
+    if (!currentSample) return;
+
+    const qcCommentInput = document.getElementById('qcCommentInput');
+    const comment = qcCommentInput ? qcCommentInput.value.trim() : '';
+
+    if (!comment) {
+        showError('Please enter a QC comment');
+        return;
+    }
+
+    const url = getSampleApiUrl('qc', currentSample.sample_id);
+    if (!url) {
+        showError('QC API URL not available');
+        return;
+    }
+    console.log('🔍 QC Comment Update URL:', url);
+
+    try {
+        const response = await fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({
+                qc: currentSample.qc,
+                comments: {
+                    qc: [...(currentSample.comments?.qc || []), {
+                        timestamp: new Date().toISOString(),
+                        user: 'current_user',  // Will be replaced by backend
+                        comment: comment
+                    }],
+                    other: currentSample.comments?.other || ''
+                }
+            })
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log('QC comment saved successfully:', result);
+            
+            // Update local sample data
+            if (!currentSample.comments) {
+                currentSample.comments = {qc: [], other: ''};
+            }
+            currentSample.comments.qc = currentSample.comments.qc || [];
+            currentSample.comments.qc.push({
+                timestamp: new Date().toISOString(),
+                user: 'current_user',
+                comment: comment
+            });
+
+            // Clear input
+            if (qcCommentInput) {
+                qcCommentInput.value = '';
+            }
+
+            // Refresh QC comments display
+            refreshQCComments();
+            showSuccess('QC comment added successfully');
+        } else {
+            const result = await response.json();
+            showError('Failed to add QC comment: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        showError('Network error: ' + error.message);
+    }
+}
+
+/**
+ * Save general comments
+ */
+async function saveGeneralComments() {
     if (!currentSample) return;
 
     const commentsElement = document.getElementById('generalComments');
@@ -113,7 +206,7 @@ async function saveComments() {
         showError('Comment API URL not available');
         return;
     }
-    console.log('🔍 Comments Update URL:', url);
+    console.log('🔍 General Comments Update URL:', url);
 
     try {
         const response = await fetch(url, {
@@ -123,17 +216,23 @@ async function saveComments() {
             },
             credentials: 'include',
             body: JSON.stringify({
-                comments: comments
+                comments: {
+                    qc: currentSample.comments?.qc || [],
+                    other: comments
+                }
             })
         });
 
         const result = await response.json();
 
         if (response.ok) {
-            currentSample.comments = comments;
-            showSuccess('Comments saved successfully');
+            if (!currentSample.comments) {
+                currentSample.comments = {qc: [], other: ''};
+            }
+            currentSample.comments.other = comments;
+            showSuccess('General comments saved successfully');
         } else {
-            showError('Failed to save comments: ' + result.error);
+            showError('Failed to save general comments: ' + (result.error || 'Unknown error'));
         }
     } catch (error) {
         showError('Network error: ' + error.message);
@@ -202,4 +301,63 @@ function confirmFailQC() {
         qcFailModal.hide();
     }
     updateQC('failed', comments);
+}
+
+/**
+ * Refresh QC comments display
+ */
+function refreshQCComments() {
+    const container = document.getElementById('qcCommentsContainer');
+    if (!container || !currentSample?.comments?.qc) return;
+
+    const qcComments = currentSample.comments.qc;
+    
+    if (qcComments.length === 0) {
+        container.innerHTML = `
+            <div class="text-muted fst-italic">
+                <small>No QC comments yet</small>
+            </div>
+        `;
+        return;
+    }
+
+    // Display comments in chronological order (oldest first)
+    const commentsHtml = qcComments
+        .slice()
+        .map(comment => `
+            <div class="qc-comment-item mb-2 p-2 bg-light rounded border-start border-warning border-3">
+                <div class="qc-comment-text mb-1">${escapeHtml(comment.comment)}</div>
+                <div class="qc-comment-meta">
+                    <small class="text-muted">
+                        <i class="bi bi-person me-1"></i>${escapeHtml(comment.user)}
+                        <span class="mx-1">•</span>
+                        <i class="bi bi-clock me-1"></i>${formatDate(comment.timestamp)}
+                    </small>
+                </div>
+            </div>
+        `)
+        .join('');
+
+    container.innerHTML = commentsHtml;
+}
+
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+/**
+ * Format date for display
+ */
+function formatDate(timestamp) {
+    try {
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+    } catch (e) {
+        return timestamp?.slice(0, 16) || 'Unknown';
+    }
 }

@@ -28,10 +28,30 @@
                         {{ sample.qc.upper() }}
                     </span>
                 </td>
+                <!-- QC Comments Column -->
                 <td>
-                    {% if sample.comments %}
-                        <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ sample.comments }}">
-                            {{ sample.comments }}
+                    {% if sample.comments and sample.comments.qc and sample.comments.qc|length > 0 %}
+                        {% set first_qc = sample.comments.qc[0] %}
+                        <div class="qc-comment-preview">
+                            <div class="text-truncate" style="max-width: 150px;" title="{{ first_qc.comment }}">
+                                {{ first_qc.comment }}
+                            </div>
+                            <small class="text-muted">
+                                <i class="bi bi-person me-1"></i>{{ first_qc.user }}
+                                <span class="mx-1">•</span>
+                                <i class="bi bi-clock me-1"></i>{{ first_qc.timestamp[:10] }}
+                            </small>
+                        </div>
+                    {% else %}
+                        <span class="text-muted">No QC comments</span>
+                    {% endif %}
+                </td>
+                
+                <!-- General Comments Column -->
+                <td>
+                    {% if sample.comments and sample.comments.other %}
+                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ sample.comments.other }}">
+                            {{ sample.comments.other }}
                         </span>
                     {% else %}
                         <span class="text-muted">No comments</span>
@@ -55,7 +75,7 @@
         {% endfor %}
     {% else %}
         <tr>
-            <td colspan="12" class="text-center py-4">
+            <td colspan="13" class="text-center py-4">
                 <div class="text-muted">
                     <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
                     <p class="mt-2">No samples found</p>
