@@ -11,7 +11,7 @@ sample:
   classification_type: "16S"  # or "ITS"
 
 # Base directory containing all analysis outputs
-base_path: "/Users/ryankennedy/Documents/dev/eyrie/data"
+base_path: "/path/to/eyrie/analysis-files"
 
 # Run directory name for file paths (defaults to sequencing_run_id if not specified)
 run_directory: "test"
