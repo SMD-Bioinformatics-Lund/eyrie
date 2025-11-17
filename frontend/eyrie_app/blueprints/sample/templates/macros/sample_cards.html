@@ -62,23 +62,95 @@
 </div>
 {% endmacro %}
 
-{% macro comments_card(sample=None) %}
+{% macro qc_comments_card(sample=None) %}
+<!-- QC Comments Card -->
+<div class="card qc-comment-card mb-4">
+    <div class="card-header bg-warning text-dark">
+        <h6 class="mb-0">
+            <i class="bi bi-clipboard-check me-2"></i>QC Comments
+        </h6>
+    </div>
+    <div class="card-body">
+        <!-- QC Comments Display -->
+        <div class="mb-3">
+            <div id="qcCommentsContainer" style="max-height: 200px; overflow-y: auto;">
+                {% if sample and sample.comments and sample.comments.qc and sample.comments.qc|length > 0 %}
+                    {% for qc_comment in sample.comments.qc %}
+                        <div class="qc-comment-item mb-2 p-2 bg-light rounded border-start border-warning border-3">
+                            <div class="qc-comment-text mb-1">{{ qc_comment.comment }}</div>
+                            <div class="qc-comment-meta">
+                                <small class="text-muted">
+                                    <i class="bi bi-person me-1"></i>{{ qc_comment.user }}
+                                    <span class="mx-1">•</span>
+                                    <i class="bi bi-clock me-1"></i>{{ qc_comment.timestamp | format_date }}
+                                </small>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-muted fst-italic">
+                        <small>No QC comments yet</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- QC Comment Input -->
+        <div class="mb-3">
+            <textarea class="form-control" id="qcCommentInput" rows="2" placeholder="Add QC comment..."></textarea>
+        </div>
+        <div class="d-grid">
+            <button type="button" class="btn btn-warning text-dark" onclick="addQCComment()">
+                <i class="bi bi-plus-circle me-2"></i>Add QC Comment
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro general_comments_card(sample=None) %}
 <!-- General Comments Card -->
 <div class="card comment-card">
     <div class="card-header bg-info text-white">
         <h6 class="mb-0">
-            <i class="bi bi-chat-text me-2"></i>Comments
+            <i class="bi bi-chat-text me-2"></i>General Comments
         </h6>
     </div>
     <div class="card-body">
+        <!-- General Comments Input -->
         <div class="mb-3">
-            <textarea class="form-control" id="generalComments" rows="4" placeholder="Add general comments...">{{ sample.comments or '' if sample else '' }}</textarea>
+            <textarea class="form-control" id="generalComments" rows="3" placeholder="Add general comments...">{{ (sample.comments.other if sample.comments else '') or '' if sample else '' }}</textarea>
         </div>
         <div class="d-grid">
-            <button type="button" class="btn btn-primary" onclick="saveComments()">
-                <i class="bi bi-save me-2"></i>Save Comments
+            <button type="button" class="btn btn-primary" onclick="saveGeneralComments()">
+                <i class="bi bi-save me-2"></i>Save General Comments
             </button>
         </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro metadata_card(sample=None) %}
+<!-- Sample Metadata Card -->
+<div class="card metadata-card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h6 class="mb-0">
+            <i class="bi bi-tags me-2"></i>Sample Metadata
+        </h6>
+    </div>
+    <div class="card-body">
+        <table class="table table-sm table-borderless mb-0">
+            <tbody>
+                <tr><td><strong>Sample Type:</strong></td><td>{{ sample.metadata.sample_type or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Tissue:</strong></td><td>{{ sample.metadata.tissue or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Dilution:</strong></td><td>{{ sample.metadata.dilution or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Library Concentration:</strong></td><td>{{ sample.metadata.library_concentration or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Multiple Finds:</strong></td><td>{{ sample.metadata.multiple_finds or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Sanger Expected Species:</strong></td><td>{{ sample.metadata.sanger_expected_species or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Extraction Kit:</strong></td><td>{{ sample.metadata.extraction_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Library Prep Kit:</strong></td><td>{{ sample.metadata.library_prep_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
+            </tbody>
+        </table>
     </div>
 </div>
 {% endmacro %}
@@ -93,9 +165,9 @@
     </div>
     <div class="card-body p-0">
         <div class="krona-container" style="height: 85vh;">
-            {% if sample and sample.krona_file %}
+            {% if sample and sample.files and sample.files.krona %}
                 <iframe style="width: 100%; height: 100%; border: none;"
-                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.krona_file) }}">
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.files.krona) }}">
                 </iframe>
             {% else %}
                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
@@ -215,7 +287,7 @@
     </div>
     <div class="card-body">
         <div class="row g-2">
-            {% set nano_stats = sample.nano_stats_processed if sample and sample.nano_stats_processed else (sample.nano_stats_unprocessed if sample and sample.nano_stats_unprocessed else {}) %}
+            {% set nano_stats = (sample.nanoplot.processed.nanostats if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.nanostats else (sample.nanoplot.unprocessed.nanostats if sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.nanostats else {})) %}
             <div class="col-6">
                 <div class="text-center">
                     <div class="h5 text-primary mb-0">{{ nano_stats.number_of_reads | format_number }}</div>
@@ -278,16 +350,16 @@
         </h6>
     </div>
     <div class="card-body p-0">
-        <div style="height: 300px;">
-            {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.length_quality_scatter %}
+        <div style="height: 85vh;">
+            {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.files and sample.nanoplot.processed.files.length_quality_scatter %}
                 <iframe id="qualityFrame"
                         style="width: 100%; height: 100%; border: none;"
-                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.length_quality_scatter) }}">
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.files.length_quality_scatter) }}">
                 </iframe>
-            {% elif sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.length_quality_scatter %}
+            {% elif sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.files and sample.nanoplot.unprocessed.files.length_quality_scatter %}
                 <iframe id="qualityFrame"
                         style="width: 100%; height: 100%; border: none;"
-                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.unprocessed.length_quality_scatter) }}">
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.unprocessed.files.length_quality_scatter) }}">
                 </iframe>
             {% else %}
                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">

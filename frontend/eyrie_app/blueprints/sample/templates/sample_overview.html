@@ -5,8 +5,8 @@
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
     {% from 'macros/sample_cards.html' import
-        general_info_card, qc_card, comments_card, krona_plot_card,
-        classification_summary_card, summary_statistics_card, quality_plot_card, qc_fail_modal %}
+        general_info_card, qc_card, qc_comments_card, general_comments_card, krona_plot_card,
+        metadata_card, classification_summary_card, summary_statistics_card, quality_plot_card, qc_fail_modal %}
 
     {{ sample_navbar(sample_id, 'overview', current_user, sample) }}
 
@@ -18,19 +18,21 @@
                 <div class="col-lg-3 mb-4">
                     {{ general_info_card(sample) }}
                     {{ qc_card(sample) }}
-                    {{ comments_card(sample) }}
+                    {{ qc_comments_card(sample) }}
+                    {{ general_comments_card(sample) }}
                 </div>
 
-                <!-- Center Column - Krona Plot -->
+                <!-- Center Column - Krona Plot and Quality Plot -->
                 <div class="col-lg-6 mb-4">
                     {{ krona_plot_card(sample) }}
+                    {{ quality_plot_card(sample) }}
                 </div>
 
-                <!-- Right Column - Stats and Links -->
+                <!-- Right Column - Metadata and Stats -->
                 <div class="col-lg-3 mb-4">
+                    {{ metadata_card(sample) }}
                     {{ classification_summary_card(sample) }}
                     {{ summary_statistics_card(sample) }}
-                    {{ quality_plot_card(sample) }}
                 </div>
             </div>
         </div>

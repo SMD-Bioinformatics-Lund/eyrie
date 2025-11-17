@@ -194,3 +194,55 @@ body {
 .spike-row td {
     background-color: rgba(13, 202, 240, 0.25) !important;
 }
+
+/* QC Comments Styling */
+.qc-comment-item {
+    transition: all 0.2s ease;
+}
+
+.qc-comment-item:hover {
+    background-color: #e9ecef !important;
+    transform: translateX(2px);
+}
+
+.qc-comment-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.qc-comment-meta {
+    font-size: 0.75rem;
+}
+
+.qc-comment-preview {
+    max-width: 200px;
+}
+
+.qc-comment-preview .text-truncate {
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.qc-comment-preview small {
+    font-size: 0.7rem;
+    opacity: 0.8;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+    .qc-comment-preview {
+        max-width: 120px;
+    }
+    
+    .qc-comment-preview .text-truncate {
+        max-width: 120px !important;
+    }
+    
+    /* Hide less critical columns on mobile */
+    .table th:nth-child(4),
+    .table td:nth-child(4),
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        display: none;
+    }
+}
