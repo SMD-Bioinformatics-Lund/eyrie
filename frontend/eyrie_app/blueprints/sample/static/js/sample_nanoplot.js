@@ -107,22 +107,22 @@ function loadPlot(processingType, plotType) {
     // Use structured nanoplot data
     let filePath = null;
 
-    if (currentSample.nanoplot && currentSample.nanoplot[processingType]) {
-        const plotData = currentSample.nanoplot[processingType];
+    if (currentSample.nanoplot && currentSample.nanoplot[processingType] && currentSample.nanoplot[processingType].files) {
+        const plotFiles = currentSample.nanoplot[processingType].files;
 
         // Map plot types to structured data fields
         switch (plotType) {
             case 'length-quality-scatter':
-                filePath = plotData.length_quality_scatter;
+                filePath = plotFiles.length_quality_scatter;
                 break;
             case 'non-weighted-histogram':
-                filePath = plotData.histogram_unweighted;
+                filePath = plotFiles.histogram_unweighted;
                 break;
             case 'weighted-histogram':
-                filePath = plotData.histogram_weighted;
+                filePath = plotFiles.histogram_weighted;
                 break;
             case 'yield-by-length':
-                filePath = plotData.yield_by_length;
+                filePath = plotFiles.yield_by_length;
                 break;
         }
     }
@@ -201,8 +201,8 @@ function displayDetailedStats(processingType) {
     if (!container) return;
 
     const stats = processingType === 'unprocessed' ?
-        currentSample.nano_stats_unprocessed :
-        currentSample.nano_stats_processed;
+        (currentSample.nanoplot?.unprocessed?.nanostats) :
+        (currentSample.nanoplot?.processed?.nanostats);
 
     if (!stats) {
         container.innerHTML = `
@@ -274,7 +274,7 @@ function updateNanoStats() {
     }
 
     // Update unprocessed stats
-    const unprocessed = currentSample.nano_stats_unprocessed;
+    const unprocessed = currentSample.nanoplot?.unprocessed?.nanostats;
     if (unprocessed) {
         updateStatsElement('unproc-reads', formatNumber(unprocessed.number_of_reads));
         updateStatsElement('unproc-length', formatLength(unprocessed.mean_read_length));
@@ -287,7 +287,7 @@ function updateNanoStats() {
     }
 
     // Update processed stats
-    const processed = currentSample.nano_stats_processed;
+    const processed = currentSample.nanoplot?.processed?.nanostats;
     if (processed) {
         updateStatsElement('proc-reads', formatNumber(processed.number_of_reads));
         updateStatsElement('proc-length', formatLength(processed.mean_read_length));

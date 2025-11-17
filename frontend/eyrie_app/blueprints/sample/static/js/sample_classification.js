@@ -283,7 +283,7 @@ function updateSampleClassificationSummary() {
  * Refresh Krona plot
  */
 function refreshKronaPlot() {
-    if (currentSample && currentSample.krona_file) {
+    if (currentSample && currentSample.files?.krona) {
         const frame = document.getElementById('classificationKronaFrame');
         if (frame) {
             frame.src = frame.src; // Reload the iframe
@@ -295,9 +295,9 @@ function refreshKronaPlot() {
  * Download Krona plot
  */
 function downloadKronaPlot() {
-    if (currentSample && currentSample.krona_file) {
+    if (currentSample && currentSample.files?.krona) {
         // Use Flask data file serving route
-        window.open(getDataFileUrl(currentSample.krona_file), '_blank');
+        window.open(getDataFileUrl(currentSample.files.krona), '_blank');
     } else {
         alert('No Krona plot available for download');
     }
