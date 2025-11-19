@@ -99,12 +99,10 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
                 click.echo(f"📋 Sample data spike attr: {getattr(sample_data, 'spike', 'NO_SPIKE_ATTR')}")
             return True
 
-        # Upload to Eyrie
         click.echo("\n📤 Uploading sample data to Eyrie database...")
 
         api_client = EyrieAPIClient(api, username, password)
 
-        # Test connection
         if not api_client.test_connection():
             click.echo("❌ Cannot connect to Eyrie API")
             return False
@@ -179,7 +177,6 @@ def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], pas
 
         api_client = EyrieAPIClient(api, username, password)
 
-        # Test connection
         if not api_client.test_connection():
             click.echo("❌ Cannot connect to Eyrie API")
             return False
@@ -294,10 +291,18 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
             click.echo("⚠️  Metadata uploaded, but sample data failed") 
         else:
             click.echo("❌ Both uploads failed")
-    elif sample_success or metadata_success:
-        click.echo("\n✅ Upload completed successfully!")
     else:
-        click.echo("\n❌ Upload failed")
+        # Single upload case
+        if sample_cnf and not metadata_file:
+            if sample_success:
+                click.echo("\n✅ Sample upload completed successfully!")
+            else:
+                click.echo("\n❌ Sample upload failed")
+        elif metadata_file and not sample_cnf:
+            if metadata_success:
+                click.echo("\n✅ Metadata upload completed successfully!")
+            else:
+                click.echo("\n❌ Metadata upload failed")
 
 
 @cli.command()
