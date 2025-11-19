@@ -1,4 +1,5 @@
 import logging
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -14,7 +15,6 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title=APP_TITLE)
 
-# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -31,7 +31,6 @@ async def startup_event():
         logger.info("Application startup - skipping database initialization to avoid threading issues")
         logger.info("Database initialization will be performed lazily on first request")
 
-        # Test basic functionality without database
         import os
         logger.info(f"Environment: {os.getenv('ENVIRONMENT', 'unknown')}")
         logger.info(f"MongoDB URI configured: {'MONGO_URI' in os.environ}")
@@ -42,7 +41,6 @@ async def startup_event():
         logger.error(f"Exception type: {type(e).__name__}")
         import traceback
         logger.error(f"Traceback: {traceback.format_exc()}")
-        # Don't raise to allow graceful degradation
         logger.warning("Application started but some initialization tasks failed")
 
 @app.on_event("shutdown")
@@ -85,13 +83,22 @@ async def api_root_no_slash():
     }
 
 
-# Include API routers (now they have /api prefix built into their paths due to updated prefixes)
 app.include_router(auth.router, prefix="/api")
 app.include_router(admin.router, prefix="/api")
 app.include_router(samples.router, prefix="/api")
 app.include_router(sample.router, prefix="/api")
 app.include_router(trends.router, prefix="/api")
 app.include_router(frontend.system_router, prefix="/api")
+
+@app.get("/health", operation_id="root_health_check")
+async def root_health_check():
+    """Legacy health check endpoint"""
+    return {
+        'status': 'healthy',
+        'service': 'eyrie-backend',
+        'environment': os.getenv('ENVIRONMENT', 'production'),
+        'database_required': False
+    }
 
 if __name__ == "__main__":
     import uvicorn
