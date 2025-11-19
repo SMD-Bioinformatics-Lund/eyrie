@@ -21,12 +21,10 @@ async def find_sample(sample_id: str) -> Optional[Dict[str, Any]]:
 async def create_sample(sample_data: Dict[str, Any]) -> str:
     """Create a new sample."""
     async with get_db_connection() as db:
-        # Check if sample already exists
         existing = await db.samples.find_one({'sample_id': sample_data['sample_id']})
         if existing:
             raise ValueError(f"Sample with ID '{sample_data['sample_id']}' already exists")
 
-        # Add timestamps
         sample_data['created_date'] = datetime.now()
         sample_data['updated_date'] = datetime.now()
 
@@ -37,13 +35,11 @@ async def create_sample(sample_data: Dict[str, Any]) -> str:
 async def update_sample(sample_id: str, update_data: Dict[str, Any]) -> bool:
     """Update an existing sample."""
     async with get_db_connection() as db:
-        # Remove None values from update data
         filtered_data = {k: v for k, v in update_data.items() if v is not None}
 
         if not filtered_data:
             return False
 
-        # Add updated timestamp
         filtered_data['updated_date'] = datetime.now()
 
         result = await db.samples.update_one(
@@ -59,7 +55,6 @@ async def upsert_sample(sample_data: Dict[str, Any]) -> Tuple[str, bool]:
         existing = await db.samples.find_one({'sample_id': sample_data['sample_id']})
 
         if existing:
-            # Update existing sample
             update_data = {k: v for k, v in sample_data.items() if k != 'sample_id'}
             update_data['updated_date'] = datetime.now()
 
@@ -69,7 +64,6 @@ async def upsert_sample(sample_data: Dict[str, Any]) -> Tuple[str, bool]:
             )
             return str(existing['_id']), False
         else:
-            # Create new sample
             sample_data['created_date'] = datetime.now()
             sample_data['updated_date'] = datetime.now()
             result = await db.samples.insert_one(sample_data)

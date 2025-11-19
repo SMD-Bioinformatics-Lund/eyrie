@@ -20,7 +20,6 @@ from ...eyrie import get_current_user_api, serve_shared_static, serve_blueprint_
 
 LOG = logging.getLogger(__name__)
 
-# Blueprint definition matching Bonsai pattern
 bp = Blueprint(
     "login",
     __name__,
@@ -48,7 +47,6 @@ class LoginUser(UserMixin):
         self.roles = []
         for key, value in user_data.items():
             setattr(self, key, value)
-        # store token
         self.token = token_data
 
     def get_id(self):
@@ -92,7 +90,6 @@ def get_auth_token(username: str, password: str):
 
 def unauthorized_handler():
     """Handle unauthorized access with proper URL generation"""
-    # Always use Flask's url_for which respects APPLICATION_ROOT and base_path
     return redirect(url_for('login.login', next=request.url))
 
 
@@ -100,13 +97,11 @@ def load_user(user_id):
     """Load user from session data"""
     try:
         if user_id and session.get('username'):
-            # Reconstruct user from session data
             user_data = {
                 'username': session.get('username', ''),
                 'email': session.get('email', ''),
                 'role': session.get('role', '')
             }
-            # Create a dummy token (actual token stored in session during API calls)
             token_data = TokenObject(user_id, 'Bearer')
             user = LoginUser(user_data, token_data)
             return user
@@ -154,13 +149,10 @@ def login():
                 user_data = auth_data['user']
                 token_data = auth_data['token']
 
-                # Create user object
                 user = LoginUser(user_data, token_data)
 
-                # Login user
                 login_user(user)
 
-                # Store additional session data
                 session["email"] = user_data.get("email", "")
                 session["username"] = user_data.get("username", "")
                 session["role"] = user_data.get("role", "")
@@ -168,7 +160,6 @@ def login():
 
                 LOG.info(f"User {username} logged in successfully")
 
-                # Redirect to next URL or samples page
                 next_url = session.pop("next_url", None)
                 if next_url:
                     return redirect(next_url)
@@ -184,11 +175,9 @@ def login():
             flash("Login failed. Please try again.", "error")
             return redirect(url_for("login.login"))
 
-    # GET request - show login page
     return render_template("login.html", title="Login")
 
 
-# API Endpoints
 @bp.route("/api/auth/current-user", methods=['GET'])
 @login_required
 def current_user_api():
@@ -202,7 +191,6 @@ def current_user_api():
         return jsonify({'error': str(e)}), 500
 
 
-# Static file serving endpoints
 @bp.route("/shared/static/<path:filename>", methods=['GET'])
 def serve_shared_static_endpoint(filename):
     """Serve shared static assets"""

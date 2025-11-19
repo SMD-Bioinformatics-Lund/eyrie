@@ -30,12 +30,10 @@ class TaxonomicParser:
                 reader = csv.DictReader(f, delimiter='\t')
 
                 for row in reader:
-                    # Skip unmapped and unclassified entries
                     species = row.get('species', '')
                     if not species or species in ['unmapped', 'mapped_unclassified']:
                         continue
 
-                    # Check if there's a contamination column in the TSV
                     contamination = False
                     if 'contamination' in row:
                         contamination = row['contamination'].lower() in ['true', '1', 'yes', 'contamination']

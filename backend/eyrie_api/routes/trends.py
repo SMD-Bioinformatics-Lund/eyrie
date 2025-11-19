@@ -24,24 +24,19 @@ async def get_trends_data(
     """Get trends data for visualisation."""
 
     try:
-        # Get current user for authentication
         current_user = get_current_user(request)
-        # Build time filter
         time_filter = {}
         if time_range != "all":
             days = int(time_range)
             start_date = datetime.utcnow() - timedelta(days=days)
             time_filter = {"created_date": {"$gte": start_date}}
 
-        # Build classification filter
         classification_filter = {}
         if classification != "all":
             classification_filter = {"classification": classification}
 
-        # Combine filters
         match_filter = {**time_filter, **classification_filter}
 
-        # Get samples data
         async with get_db_connection() as db:
             samples_collection = db.samples
             cursor = samples_collection.find(match_filter)
@@ -58,7 +53,6 @@ async def get_trends_data(
                 }
             }
 
-        # Process data based on category and metric
         series_data = process_trends_data(samples, category, metric, group_by)
 
         return {
@@ -81,17 +75,13 @@ async def get_trends_data(
 def process_trends_data(samples: List[Dict], category: str, metric: str, group_by: str) -> List[Dict[str, Any]]:
     """Process samples data into trends series."""
 
-    # Group samples by category
     category_groups = group_samples_by_category(samples, category)
 
-    # Generate time series for each category group
     series_list = []
 
     for category_value, category_samples in category_groups.items():
-        # Group by time period
         time_groups = group_by_time_period(category_samples, group_by)
 
-        # Calculate metric values for each time period
         dates = []
         values = []
 

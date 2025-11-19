@@ -15,7 +15,6 @@ class SampleParser:
     def __init__(self, config: SampleConfig):
         self.config = config
         self.base_path = Path(config.base_path)
-        # Create sequencing run path by combining base_path and run_directory
         run_dir = config.run_directory or config.sample.sequencing_run_id
         self.seqrun_path = self.base_path / run_dir
 
@@ -28,7 +27,6 @@ class SampleParser:
         """Parse data for the sample."""
         sample_data = SampleResults(sample_info=self.config.sample)
 
-        # Parse FastQC
         if self.config.fastqc and self.config.fastqc.enabled:
             sample_data.fastqc_file = find_file(
                 self.seqrun_path,
@@ -36,7 +34,6 @@ class SampleParser:
                 self.config.fastqc.file
             )
 
-        # Parse Krona
         if self.config.krona and self.config.krona.enabled:
             sample_data.krona_file = find_file(
                 self.seqrun_path,
@@ -44,7 +41,6 @@ class SampleParser:
                 self.config.krona.file
             )
 
-        # Parse MultiQC (shared across samples)
         if self.config.multiqc and self.config.multiqc.enabled:
             sample_data.multiqc_file = find_file(
                 self.seqrun_path,
@@ -52,7 +48,6 @@ class SampleParser:
                 self.config.multiqc.report_file
             )
 
-        # Parse NanoPlot data
         if self.config.nanoplot:
             nanoplot_parser = NanoPlotParser(self.seqrun_path)
 
@@ -78,15 +73,12 @@ class SampleParser:
                     self.config.nanoplot.processed.stats_file
                 )
 
-            # Create structured nanoplot data
             sample_data.nanoplot = nanoplot_parser.create_structured_nanoplot(self.config.nanoplot)
 
-        # Parse taxonomic abundances
         if self.config.results and self.config.results.enabled:
             taxonomic_parser = TaxonomicParser(self.seqrun_path)
             sample_data.taxonomic_abundances = taxonomic_parser.parse_rel_abundance(self.config.results)
 
-            # Detect spike species after parsing taxonomic data
             spike = get_detected_spike(sample_data.taxonomic_abundances)
             if spike:
                 sample_data.spike = spike

@@ -2,10 +2,7 @@
  * Core utilities shared across sample views
  */
 
-// Global variables
 let currentSample = null;
-
-// Simple client-side formatting functions (to be replaced by server-side pre-formatted data)
 function formatDate(dateString) {
     if (!dateString) return '-';
     const date = new Date(dateString);
