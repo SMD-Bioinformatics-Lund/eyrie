@@ -39,7 +39,7 @@ BACKEND_BASE_PATH=/api
 # =====================================================
 # Database Configuration
 # =====================================================
-MONGO_URI=mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie
+MONGO_URI=mongodb://mongodb:27017/eyrie
 
 # =====================================================
 # Application Environment
