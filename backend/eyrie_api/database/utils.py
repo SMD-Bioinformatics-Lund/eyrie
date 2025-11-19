@@ -12,14 +12,12 @@ async def get_database() -> AsyncMongoDatabase:
     """Get the database instance, ensuring it's connected and initialized."""
     await db_instance.ensure_connected()
 
-    # Initialize default user lazily on first database access
     if not hasattr(db_instance, '_initialized'):
         try:
             await _init_default_user_lazy()
             db_instance._initialized = True
         except Exception as e:
             LOG.warning(f"Failed to initialize default user: {e}")
-            # Don't fail completely, just mark as initialized to avoid retrying
             db_instance._initialized = True
 
     return db_instance
@@ -45,7 +43,6 @@ async def get_db_connection() -> AsyncGenerator[AsyncMongoDatabase, None]:
 async def _init_default_user_lazy() -> None:
     """Initialize default admin user if none exists (internal lazy version)."""
     try:
-        # Direct database access to avoid circular calls
         await db_instance.ensure_connected()
         user_count = await db_instance.users.count_documents({})
 

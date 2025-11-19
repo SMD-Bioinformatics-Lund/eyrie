@@ -24,10 +24,8 @@ class NanoStatsParser:
             with open(stats_file, 'r') as f:
                 content = f.read()
 
-            # Parse the stats using regex
             stats = {}
 
-            # Extract basic statistics
             patterns = {
                 'mean_read_length': r'Mean read length:\s+([0-9,]+\.?[0-9]*)',
                 'mean_read_quality': r'Mean read quality:\s+([0-9]+\.?[0-9]*)',
@@ -48,7 +46,6 @@ class NanoStatsParser:
                     else:
                         stats[key] = float(value)
 
-            # Parse quality cutoffs
             quality_cutoffs = {}
             q_pattern = r'>Q(\d+):\s+(\d+)\s+\(([0-9.]+)%\)\s+([0-9.]+)Mb'
             for match in re.finditer(q_pattern, content):

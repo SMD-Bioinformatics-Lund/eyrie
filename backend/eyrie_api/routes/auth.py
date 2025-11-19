@@ -12,7 +12,6 @@ from ..database.utils import get_db_connection
 router = APIRouter(prefix="/auth", tags=["authentication"])
 security = HTTPBearer()
 
-# JWT Secret - in production this should be a strong secret from environment
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_HOURS = 24
@@ -47,7 +46,6 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Get current authenticated user from JWT token"""
     payload = verify_jwt_token(credentials.credentials)
 
-    # Get user from database
     user = await find_user_by_id(payload['user_id'])
     if not user:
         raise HTTPException(
@@ -84,7 +82,6 @@ async def require_admin(current_user: dict = Depends(get_current_user)):
 @router.post("/login")
 async def login(login_data: LoginRequest):
     """Authenticate user and return JWT token"""
-    # Find user in database
     user = await find_user({'username': login_data.username})
 
     if not user:
@@ -93,21 +90,18 @@ async def login(login_data: LoginRequest):
             detail="Invalid username or password"
         )
 
-    # Check password
     if not check_password_hash(user['password_hash'], login_data.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
 
-    # Check if user is active
     if not user.get('is_active', True):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="User account is disabled"
         )
 
-    # Create JWT token
     token = create_jwt_token(user)
 
     return {
@@ -137,14 +131,12 @@ async def create_uploader_user(
     current_user: dict = Depends(require_admin)
 ):
     """Create a new uploader user (admin only)"""
-    # Check if username already exists
     if await find_user({'username': user_data.username}):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already exists"
         )
 
-    # Create new user
     async with get_db_connection() as db:
         new_user = {
             'username': user_data.username,

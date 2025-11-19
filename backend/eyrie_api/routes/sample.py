@@ -30,7 +30,6 @@ async def upsert_sample_endpoint(
 ):
     """Create or update a sample (requires admin or uploader role)"""
     try:
-        # Ensure the sample_id in URL matches the data
         if sample_data.sample_id != sample_id:
             raise HTTPException(
                 status_code=400, 

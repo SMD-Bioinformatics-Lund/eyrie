@@ -1,7 +1,7 @@
 import os
 
 # MongoDB Configuration
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie')
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://mongodb:27017/eyrie')
 
 # CORS Configuration
 CORS_ORIGINS = ["*"]

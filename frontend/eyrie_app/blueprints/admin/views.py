@@ -30,7 +30,6 @@ def dashboard():
 def users():
     """User management page"""
     try:
-        # Get users from backend API
         backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
         backend_token = session.get('backend_token')
 
@@ -63,7 +62,6 @@ def create_user():
     if request.method == 'GET':
         return render_template('create_user.html', current_user=current_user)
 
-    # Handle POST request
     try:
         data = {
             'username': request.form.get('username'),
@@ -72,12 +70,10 @@ def create_user():
             'role': request.form.get('role', 'user')
         }
 
-        # Validate required fields
         if not all([data['username'], data['email'], data['password']]):
             flash('Please fill in all required fields.', 'error')
             return render_template('create_user.html', current_user=current_user, form_data=data)
 
-        # Create user via backend API
         backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
         backend_token = session.get('backend_token')
 
@@ -119,7 +115,6 @@ def edit_user(user_id):
             return redirect(url_for('admin.dashboard'))
 
         if request.method == 'GET':
-            # Get current user data
             response = requests.get(
                 f"{backend_url}/api/admin/users",
                 headers={'Authorization': f'Bearer {backend_token}'},
@@ -138,14 +133,12 @@ def edit_user(user_id):
                 flash('Failed to load user data.', 'error')
                 return redirect(url_for('admin.users'))
 
-        # Handle POST request
         data = {
             'email': request.form.get('email'),
             'role': request.form.get('role'),
             'is_active': 'is_active' in request.form
         }
 
-        # Include password if provided
         password = request.form.get('password')
         if password:
             data['password'] = password
@@ -202,7 +195,6 @@ def delete_user(user_id):
     return redirect(url_for('admin.users'))
 
 
-# API Endpoints
 @bp.route("/api/admin/users", methods=['GET'])
 @login_required
 @admin_required

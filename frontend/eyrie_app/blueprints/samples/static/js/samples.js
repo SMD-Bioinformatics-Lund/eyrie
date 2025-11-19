@@ -3,7 +3,6 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Setup search functionality for server-rendered table
     const searchInput = document.getElementById('tableSearch');
     searchInput.addEventListener('input', filterTable);
 });
@@ -19,10 +18,8 @@ function filterTable() {
         const cells = row.getElementsByTagName('td');
         let shouldShow = false;
 
-        // Skip the loading/error rows
         if (cells.length === 1) continue;
 
-        // Search through all text content in the row
         for (let j = 0; j < cells.length; j++) {
             const cellText = cells[j].textContent.toLowerCase();
             if (cellText.includes(searchTerm)) {

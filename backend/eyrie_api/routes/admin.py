@@ -20,21 +20,18 @@ async def get_users(request: Request):
 async def create_new_user(user_data: UserCreate, request: Request):
     get_admin_user(request)  # Verify admin access
     try:
-        # Validate input
         if not user_data.username or not user_data.email or not user_data.password:
             raise HTTPException(status_code=400, detail="Username, email, and password are required")
 
         if user_data.role not in ['user', 'admin', 'uploader']:
             raise HTTPException(status_code=400, detail="Invalid role")
 
-        # Check if user already exists
         if await user_exists(username=user_data.username):
             raise HTTPException(status_code=400, detail="Username already exists")
 
         if await user_exists(email=user_data.email):
             raise HTTPException(status_code=400, detail="Email already exists")
 
-        # Create user
         user = await create_user(user_data)
         return {'success': True, 'user': user}
 
@@ -74,7 +71,6 @@ async def update_existing_user(user_id: str, user_data: UserUpdate, request: Req
 async def delete_existing_user(user_id: str, request: Request):
     admin_user = get_admin_user(request)  # Verify admin access
     try:
-        # Prevent deleting the current user
         if str(admin_user['_id']) == user_id:
             raise HTTPException(status_code=400, detail="Cannot delete your own account")
 

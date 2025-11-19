@@ -30,7 +30,6 @@ class NanoPlotParser:
 
         structured_nanoplot = StructuredNanoPlot()
 
-        # Process unprocessed files
         if nanoplot_config.unprocessed and nanoplot_config.unprocessed.enabled:
             unprocessed_files = NanoPlotFileSet()
             for html_file in nanoplot_config.unprocessed.html_files:
@@ -40,7 +39,6 @@ class NanoPlotParser:
                     self._assign_file_to_structure(unprocessed_files, html_file, relative_path)
             structured_nanoplot.unprocessed = unprocessed_files
 
-        # Process processed files
         if nanoplot_config.processed and nanoplot_config.processed.enabled:
             processed_files = NanoPlotFileSet()
             for html_file in nanoplot_config.processed.html_files:
