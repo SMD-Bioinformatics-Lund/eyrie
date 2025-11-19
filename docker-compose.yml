@@ -4,8 +4,6 @@ services:
     container_name: eyrie_mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
       MONGO_INITDB_DATABASE: eyrie
     ports:
       - "${MONGO_HOST_PORT:-27017}:27017"
@@ -20,7 +18,7 @@ services:
     container_name: eyrie_backend
     restart: unless-stopped
     environment:
-      MONGO_URI: ${MONGO_URI:-mongodb://admin:admin@mongodb:27017/eyrie?authSource=eyrie}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/eyrie}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       BACKEND_BASE_PATH: ${BACKEND_BASE_PATH:-/api}
     ports:
