@@ -5,11 +5,10 @@ import platform
 
 from eyrie_api.__version__ import __version__
 
-# System/health router - for health checks, system info, etc.
 system_router = APIRouter(prefix="/system", tags=["system"])
 
-@system_router.get("/health")
-async def health_check():
+@system_router.get("/health", operation_id="system_health_check")
+async def system_health_endpoint():
     """System health check"""
     return {
         'status': 'healthy',

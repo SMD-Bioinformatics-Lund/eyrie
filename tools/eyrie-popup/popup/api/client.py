@@ -77,8 +77,8 @@ class EyrieAPIClient:
     def test_connection(self) -> bool:
         """Test connection to Eyrie API."""
         try:
-            # Health endpoint is now at /api/system/health
             health_url = f"{self.api_url}/system/health"
+            print(f"🔍 Testing: {health_url}")
             response = self.session.get(health_url)
             if response.status_code == 200:
                 print("✓ Connection to Eyrie API successful")
