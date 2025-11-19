@@ -351,15 +351,15 @@
     </div>
     <div class="card-body p-0">
         <div style="height: 85vh;">
-            {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.files and sample.nanoplot.processed.files.length_quality_scatter %}
-                <iframe id="qualityFrame"
-                        style="width: 100%; height: 100%; border: none;"
-                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.files.length_quality_scatter) }}">
-                </iframe>
-            {% elif sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.files and sample.nanoplot.unprocessed.files.length_quality_scatter %}
+            {% if sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.files and sample.nanoplot.unprocessed.files.length_quality_scatter %}
                 <iframe id="qualityFrame"
                         style="width: 100%; height: 100%; border: none;"
                         src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.unprocessed.files.length_quality_scatter) }}">
+                </iframe>
+            {% elif sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.files and sample.nanoplot.processed.files.length_quality_scatter %}
+                <iframe id="qualityFrame"
+                        style="width: 100%; height: 100%; border: none;"
+                        src="{{ url_for('sample.serve_data_file_endpoint', file_path=sample.nanoplot.processed.files.length_quality_scatter) }}">
                 </iframe>
             {% else %}
                 <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6c757d;">
