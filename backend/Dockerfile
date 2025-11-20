@@ -1,5 +1,5 @@
 # Use more recent Python version with better ARM64 support
-FROM python:3.12.0-slim
+FROM python:3.11.3-slim
 
 # Add a cache-busting layer
 ARG CACHE_BUST=1
@@ -40,7 +40,7 @@ EXPOSE 5000
 
 # Add healthcheck - temporarily disabled for debugging
 # HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-#     CMD curl -f http://localhost:5000/health || exit 1
+#     CMD curl -f http://localhost:5000/api/system/health || exit 1
 
 # Production command using uvicorn with single worker and enhanced logging
 CMD ["uvicorn", "eyrie_api.main:app", "--host", "0.0.0.0", "--port", "5000", "--workers", "1", "--access-log", "--log-level", "info"]
