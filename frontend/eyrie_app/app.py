@@ -7,6 +7,7 @@ import json
 
 from .config import settings
 from .eyrie import test_backend_connectivity, health_check
+from .__version__ import __version__
 from .utils.template_filters import (
     format_number_filter, format_bases_filter, format_quality_filter,
     format_length_filter, qc_badge_class_filter, format_date_filter,
@@ -112,6 +113,14 @@ def create_app():
     app.jinja_env.filters['format_date'] = format_date_filter
     app.jinja_env.filters['shannon_diversity'] = shannon_diversity_filter
     app.jinja_env.filters['dominant_species'] = dominant_species_filter
+
+    # Add template context processor for version information
+    @app.context_processor
+    def inject_version():
+        return {
+            'app_version': __version__,
+            'app_name': 'Eyrie'
+        }
 
     # Register all blueprints
     register_blueprints(app, settings.external_base_path)

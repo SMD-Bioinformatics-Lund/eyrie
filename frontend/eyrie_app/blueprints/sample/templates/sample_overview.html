@@ -1,6 +1,6 @@
 {% extends "sample_base.html" %}
 
-{% block title %}Sample Overview - Eyrie Sample Manager{% endblock %}
+{% block title %}Sample Overview - Eyrie{% endblock %}
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
@@ -8,7 +8,7 @@
         general_info_card, qc_card, qc_comments_card, general_comments_card, krona_plot_card,
         metadata_card, classification_summary_card, summary_statistics_card, quality_plot_card, qc_fail_modal %}
 
-    {{ sample_navbar(sample_id, 'overview', current_user, sample) }}
+    {{ sample_navbar(sample_id, 'overview', current_user, sample, app_version) }}
 
     <div class="container-fluid sample-detail-container mt-4">
         <!-- Overview View -->
