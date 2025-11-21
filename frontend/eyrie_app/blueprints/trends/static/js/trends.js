@@ -13,6 +13,7 @@ let currentTrendsData = null;
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
+    loadMetadataFilters();
     // Don't auto-load trends - wait for user to click Update Chart button
 });
 
@@ -39,12 +40,19 @@ async function updateTrends() {
         const classificationFilter = document.getElementById('classificationFilter').value;
 
         // Build query parameters
+        const sampleTypeFilter = document.getElementById('sampleTypeFilter').value;
+        const tissueFilter = document.getElementById('tissueFilter').value;
+        const extractionKitFilter = document.getElementById('extractionKitFilter').value;
+
         const params = new URLSearchParams({
             category,
             metric,
             time_range: timeRange,
             group_by: groupBy,
-            classification: classificationFilter
+            classification: classificationFilter,
+            sample_type: sampleTypeFilter,
+            tissue: tissueFilter,
+            extraction_kit: extractionKitFilter
         });
 
         // Fetch trends data using Flask route
@@ -227,8 +235,59 @@ function resetFilters() {
     document.getElementById('timeRangeSelect').value = '30';
     document.getElementById('groupBySelect').value = 'week';
     document.getElementById('classificationFilter').value = 'all';
+    document.getElementById('sampleTypeFilter').value = 'all';
+    document.getElementById('tissueFilter').value = 'all';
+    document.getElementById('extractionKitFilter').value = 'all';
 
     updateTrends();
+}
+
+/**
+ * Load available metadata filter options
+ */
+async function loadMetadataFilters() {
+    try {
+        const trendsApiUrl = window.TRENDS_API_URL || '/api/trends/metadata/filters';
+        const response = await fetch(trendsApiUrl);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const filterData = await response.json();
+        debugLog('Received metadata filters:', filterData);
+        
+        // Populate sample type filter
+        const sampleTypeSelect = document.getElementById('sampleTypeFilter');
+        filterData.sample_types.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            sampleTypeSelect.appendChild(option);
+        });
+        
+        // Populate tissue filter
+        const tissueSelect = document.getElementById('tissueFilter');
+        filterData.tissues.forEach(tissue => {
+            const option = document.createElement('option');
+            option.value = tissue;
+            option.textContent = tissue;
+            tissueSelect.appendChild(option);
+        });
+        
+        // Populate extraction kit filter
+        const extractionKitSelect = document.getElementById('extractionKitFilter');
+        filterData.extraction_kits.forEach(kit => {
+            const option = document.createElement('option');
+            option.value = kit;
+            option.textContent = kit;
+            extractionKitSelect.appendChild(option);
+        });
+        
+    } catch (error) {
+        console.error('Error loading metadata filters:', error);
+        // Don't show error to user - just use empty filters
+    }
 }
 
 
@@ -240,7 +299,13 @@ function getCategoryLabel(category) {
         'tissue_sample_type': 'Tissue Sample Type',
         'true_hits': 'True Hits',
         'spike_species': 'Spike Species',
-        'classification_type': 'Classification Type'
+        'classification_type': 'Classification Type',
+        'sample_type': 'Sample Type',
+        'tissue': 'Tissue',
+        'dilution': 'Dilution',
+        'extraction_kit': 'Extraction Kit',
+        'library_prep_kit': 'Library Prep Kit',
+        'sanger_expected_species': 'Sanger Expected Species'
     };
     return labels[category] || category;
 }
@@ -254,7 +319,11 @@ function getMetricLabel(metric) {
         'top_hits_count': 'Top Hits Count',
         'qc_pass_rate': 'QC Pass Rate (%)',
         'total_bases': 'Total Bases',
-        'read_length_n50': 'Read Length N50 (bp)'
+        'read_length_n50': 'Read Length N50 (bp)',
+        'library_concentration': 'Library Concentration (ng/μL)',
+        'multiple_finds_rate': 'Multiple Finds Rate (%)',
+        'sample_count': 'Sample Count',
+        'sanger_match_rate': 'Sanger Match Rate (%)'
     };
     return labels[metric] || metric;
 }
