@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local development server for Eyrie Sample Manager
+Local development server for Eyrie
 This runs the Flask app with an in-memory database for quick testing
 """
 import os
@@ -191,7 +191,7 @@ def health_check():
 
 if __name__ == '__main__':
     print("=" * 50)
-    print("🚀 Starting Eyrie Sample Manager (Local Mode)")
+    print("🚀 Starting Eyrie (Local Mode)")
     print("=" * 50)
     print("📍 URL: http://localhost:5000")
     print("🔐 Login: admin / admin")

@@ -1,5 +1,5 @@
 /**
- * Shared JavaScript functions for Eyrie Sample Manager
+ * Shared JavaScript functions for Eyrie
  * These functions are used across multiple pages/blueprints
  */
 

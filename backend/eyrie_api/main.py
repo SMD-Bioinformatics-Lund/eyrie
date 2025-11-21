@@ -57,7 +57,7 @@ async def shutdown_event():
 async def root():
     """Root endpoint - redirect to API documentation"""
     return {
-        "message": "Eyrie Sample Manager Backend",
+        "message": "Eyrie Backend",
         "version": __version__,
         "api": "/api",
         "documentation": "/docs",
@@ -68,7 +68,7 @@ async def root():
 async def api_root_no_slash():
     """API root endpoint without trailing slash"""
     return {
-        "message": "Eyrie Sample Manager API",
+        "message": "Eyrie API",
         "version": __version__,
         "documentation": "/docs",
         "health": "/api/system/health",

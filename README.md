@@ -1,4 +1,4 @@
-# Eyrie Sample Manager
+# Eyrie
 
 A modern web-based application for managing 16S and ITS sequencing classification sample results. Built with FastAPI backend, Flask frontend, and MongoDB database.
 

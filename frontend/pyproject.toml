@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "eyrie-app"
 dynamic = ["version"]
-description = "Eyrie Sample Manager - Web Frontend Application"
+description = "Eyrie - Web Frontend Application"
 authors = [
     {name = "Ryan James Kennedy", email = "ryan.kennedy@skane.se"}
 ]
