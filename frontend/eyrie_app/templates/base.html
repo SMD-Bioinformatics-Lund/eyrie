@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Eyrie Sample Manager{% endblock %}</title>
+    <title>{% block title %}Eyrie{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ url_for('login.serve_shared_static_endpoint', filename='css/styles.css') }}" rel="stylesheet">
@@ -11,9 +11,23 @@
 </head>
 <body>
     {% from 'navbar.html' import navbar %}
-    {{ navbar(current_user) }}
+    {{ navbar(current_user, app_version) }}
 
     {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    <footer class="bg-light border-top mt-5">
+        <div class="container-fluid py-3">
+            <div class="row">
+                <div class="col-12 text-center text-muted small">
+                    {% block footer %}
+                        {{ app_name }} v{{ app_version }} | 
+                        &copy; {{ moment().format('YYYY') if moment else '2025' }} Eyrie
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script>
         // Initialize shared functionality

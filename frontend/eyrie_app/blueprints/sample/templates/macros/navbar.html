@@ -1,8 +1,9 @@
-{% macro sample_navbar(sample_id, active_tab='overview', current_user=None, sample=None) %}
+{% macro sample_navbar(sample_id, active_tab='overview', current_user=None, sample=None, app_version=None) %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark border-0">
     <div class="container-fluid">
         <a href="{{ url_for('samples.samples_page') }}" class="navbar-brand mb-0 h1">
             <i class="bi bi-arrow-left me-2"></i>Back to Samples
+            {% if app_version %}<small class="text-muted ms-2" style="font-size: 0.6rem;">v{{ app_version }}</small>{% endif %}
         </a>
         <span class="navbar-text me-3">
             {% if sample and sample.sample_name %}
@@ -38,6 +39,12 @@
                     <li><a class="dropdown-item" href="{{ url_for('login.logout') }}">
                         <i class="bi bi-box-arrow-right me-2"></i>Logout
                     </a></li>
+                    {% if app_version %}
+                    <li><hr class="dropdown-divider"></li>
+                    <li><span class="dropdown-item-text text-muted small">
+                        <i class="bi bi-info-circle me-2"></i>v{{ app_version }}
+                    </span></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

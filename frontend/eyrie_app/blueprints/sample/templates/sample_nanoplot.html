@@ -4,7 +4,7 @@
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'nanoplot', current_user, sample) }}
+    {{ sample_navbar(sample_id, 'nanoplot', current_user, sample, app_version) }}
 
     <!-- Main Content -->
     <div class="container-fluid mt-4">

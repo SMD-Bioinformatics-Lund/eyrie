@@ -4,7 +4,7 @@
 
 {% block content %}
     {% from 'macros/navbar.html' import sample_navbar %}
-    {{ sample_navbar(sample_id, 'classification', current_user, sample) }}
+    {{ sample_navbar(sample_id, 'classification', current_user, sample, app_version) }}
 
     <!-- Main Content -->
     {% from 'macros/classification.html' import classification_content %}
