@@ -21,7 +21,7 @@ async def system_health_endpoint():
 async def system_info():
     """System information"""
     return {
-        "message": "Eyrie Sample Manager API",
+        "message": "Eyrie API",
         "version": __version__,
         "documentation": "/docs",
         "health": "/api/system/health",

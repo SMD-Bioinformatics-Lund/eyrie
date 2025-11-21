@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Local development server for Eyrie Sample Manager with FastAPI
+Local development server for Eyrie with FastAPI
 Run this to test the application without Docker
 """
 import os
@@ -34,7 +34,7 @@ def check_dependencies():
 
 def main():
     print("=" * 60)
-    print("🚀 Eyrie Sample Manager - Local Development Server")
+    print("🚀 Eyrie - Local Development Server")
     print("=" * 60)
     
     if not check_dependencies():

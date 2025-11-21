@@ -10,7 +10,7 @@ CORS_METHODS = ["*"]
 CORS_HEADERS = ["*"]
 
 # Application Configuration
-APP_TITLE = "Eyrie Sample Manager"
+APP_TITLE = "Eyrie"
 APP_HOST = "0.0.0.0"
 APP_PORT = 5000
 

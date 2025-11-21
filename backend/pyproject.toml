@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "eyrie-api"
 dynamic = ["version"]
-description = "Eyrie Sample Manager - FastAPI Backend API"
+description = "Eyrie - FastAPI Backend API"
 authors = [
     {name = "Ryan James Kennedy", email = "ryan.kennedy@skane.se"}
 ]
