@@ -9,6 +9,10 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added display sample metadata fields (sample_type, tissue, dilution, etc.)
  - Added ability to upload sample metadata via eyrie-popup tool
  - Added `/api/system/health` endpoint for proper application health checking
+ - Added comprehensive version display across all pages including login page footer, navbar brand, user dropdown, and global footer
+ - Added metadata variables to trends calculation system for advanced sample analysis
+ - Added metadata filter endpoints for dynamic trends filtering by sample type, tissue, and extraction kit
+ - Added new trends metrics: library concentration, multiple finds rate, sample count, and Sanger match rate
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
@@ -23,6 +27,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Comprehensive removal of unnecessary comments across entire codebase
  - Updated Docker Compose configuration to support both pre-built images and local development builds
  - Changed Docker builds to python v11.3.0
+ - Simplified branding from "Eyrie Sample Manager" to "Eyrie" across all user interfaces, API responses, and documentation
+ - Enhanced trends analysis with metadata-based grouping and filtering capabilities
 
 ## [0.3.0]
 
