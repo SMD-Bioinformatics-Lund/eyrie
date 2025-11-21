@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Trends Analysis - Eyrie Sample Manager{% endblock %}
+{% block title %}Trends Analysis - Eyrie{% endblock %}
 
 {% block extra_css %}
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -27,6 +27,12 @@
                                     <option value="true_hits">True Hits</option>
                                     <option value="spike_species">Spike Species</option>
                                     <option value="classification_type">Classification Type</option>
+                                    <option value="sample_type">Sample Type</option>
+                                    <option value="tissue">Tissue</option>
+                                    <option value="dilution">Dilution</option>
+                                    <option value="extraction_kit">Extraction Kit</option>
+                                    <option value="library_prep_kit">Library Prep Kit</option>
+                                    <option value="sanger_expected_species">Sanger Expected Species</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
@@ -40,6 +46,10 @@
                                     <option value="qc_pass_rate">QC Pass Rate</option>
                                     <option value="total_bases">Total Bases</option>
                                     <option value="read_length_n50">Read Length N50</option>
+                                    <option value="library_concentration">Library Concentration</option>
+                                    <option value="multiple_finds_rate">Multiple Finds Rate</option>
+                                    <option value="sample_count">Sample Count</option>
+                                    <option value="sanger_match_rate">Sanger Match Rate</option>
                                 </select>
                             </div>
                         </div>
@@ -70,6 +80,28 @@
                                     <option value="all">All Classifications</option>
                                     <option value="16S">16S Only</option>
                                     <option value="ITS">ITS Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Metadata Filters Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="sampleTypeFilter" class="form-label">Sample Type Filter</label>
+                                <select class="form-select" id="sampleTypeFilter">
+                                    <option value="all">All Sample Types</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="tissueFilter" class="form-label">Tissue Filter</label>
+                                <select class="form-select" id="tissueFilter">
+                                    <option value="all">All Tissues</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="extractionKitFilter" class="form-label">Extraction Kit Filter</label>
+                                <select class="form-select" id="extractionKitFilter">
+                                    <option value="all">All Extraction Kits</option>
                                 </select>
                             </div>
                         </div>
