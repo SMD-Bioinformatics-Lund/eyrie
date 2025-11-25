@@ -20,88 +20,166 @@
                     <div class="card-body">
                         <!-- Controls Row -->
                         <div class="row mb-4">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="categorySelect" class="form-label">Category</label>
                                 <select class="form-select" id="categorySelect">
-                                    <option value="tissue_sample_type">Tissue Sample Type</option>
-                                    <option value="true_hits">True Hits</option>
-                                    <option value="spike_species">Spike Species</option>
-                                    <option value="classification_type">Classification Type</option>
-                                    <option value="sample_type">Sample Type</option>
-                                    <option value="tissue">Tissue</option>
-                                    <option value="dilution">Dilution</option>
-                                    <option value="extraction_kit">Extraction Kit</option>
-                                    <option value="library_prep_kit">Library Prep Kit</option>
-                                    <option value="sanger_expected_species">Sanger Expected Species</option>
+                                    {% for category in config.categories %}
+                                    <option value="{{ category.value }}"{% if category.get('selected') %} selected{% endif %}>
+                                        {{ category.label }}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <label for="chartTypeSelect" class="form-label">Chart Type</label>
+                                <select class="form-select" id="chartTypeSelect">
+                                    {% for chart_type in config.chart_types %}
+                                    <option value="{{ chart_type.value }}"{% if chart_type.get('selected') %} selected{% endif %}>
+                                        {{ chart_type.label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
                                 <label for="metricSelect" class="form-label">Metric</label>
                                 <select class="form-select" id="metricSelect">
-                                    <option value="number_of_reads">Number of Reads</option>
-                                    <option value="mean_read_length">Mean Read Length</option>
-                                    <option value="mean_read_quality">Mean Read Quality</option>
-                                    <option value="contaminants_count">Contaminants Count</option>
-                                    <option value="top_hits_count">Top Hits Count</option>
-                                    <option value="qc_pass_rate">QC Pass Rate</option>
-                                    <option value="total_bases">Total Bases</option>
-                                    <option value="read_length_n50">Read Length N50</option>
-                                    <option value="library_concentration">Library Concentration</option>
-                                    <option value="multiple_finds_rate">Multiple Finds Rate</option>
-                                    <option value="sample_count">Sample Count</option>
-                                    <option value="sanger_match_rate">Sanger Match Rate</option>
+                                    {% for metric in config.metrics %}
+                                    <option value="{{ metric.value }}"{% if metric.get('selected') %} selected{% endif %}>
+                                        {{ metric.label }}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
 
                         <!-- Additional Filters Row -->
                         <div class="row mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="timeRangeSelect" class="form-label">Time Range</label>
                                 <select class="form-select" id="timeRangeSelect">
-                                    <option value="7">Last 7 Days</option>
-                                    <option value="30" selected>Last 30 Days</option>
-                                    <option value="90">Last 90 Days</option>
-                                    <option value="365">Last Year</option>
-                                    <option value="all">All Time</option>
+                                    {% for time_range in config.time_ranges %}
+                                    <option value="{{ time_range.value }}"{% if time_range.get('selected') %} selected{% endif %}>
+                                        {{ time_range.label }}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="groupBySelect" class="form-label">Group By</label>
                                 <select class="form-select" id="groupBySelect">
-                                    <option value="day">Daily</option>
-                                    <option value="week" selected>Weekly</option>
-                                    <option value="month">Monthly</option>
+                                    {% for group_option in config.group_by_options %}
+                                    <option value="{{ group_option.value }}"{% if group_option.get('selected') %} selected{% endif %}>
+                                        {{ group_option.label }}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="classificationFilter" class="form-label">Classification Filter</label>
                                 <select class="form-select" id="classificationFilter">
                                     <option value="all">All Classifications</option>
-                                    <option value="16S">16S Only</option>
-                                    <option value="ITS">ITS Only</option>
+                                    {% for classification in config.predefined_filters.classifications %}
+                                    <option value="{{ classification.value }}">{{ classification.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="qcFilter" class="form-label">QC Filter</label>
+                                <select class="form-select" id="qcFilter">
+                                    <option value="all">All QC</option>
+                                    {% for qc_option in config.predefined_filters.qc %}
+                                    <option value="{{ qc_option.value }}">{{ qc_option.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
 
                         <!-- Metadata Filters Row -->
                         <div class="row mb-4">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="sampleTypeFilter" class="form-label">Sample Type Filter</label>
                                 <select class="form-select" id="sampleTypeFilter">
                                     <option value="all">All Sample Types</option>
+                                    {% for sample_type in config.predefined_filters.sample_types %}
+                                    <option value="{{ sample_type.value }}">{{ sample_type.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="tissueFilter" class="form-label">Tissue Filter</label>
                                 <select class="form-select" id="tissueFilter">
                                     <option value="all">All Tissues</option>
+                                    {% for tissue in dynamic_filters.tissues %}
+                                    <option value="{{ tissue }}">{{ tissue|title }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="dilutionFilter" class="form-label">Dilution Filter</label>
+                                <select class="form-select" id="dilutionFilter">
+                                    <option value="all">All Dilutions</option>
+                                    {% for dilution in config.predefined_filters.dilutions %}
+                                    <option value="{{ dilution.value }}">{{ dilution.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="spikeConcentrationFilter" class="form-label">Spike Concentration Filter</label>
+                                <select class="form-select" id="spikeConcentrationFilter">
+                                    <option value="all">All Spike Concentrations</option>
+                                    {% for spike in config.predefined_filters.spike_concentrations %}
+                                    <option value="{{ spike.value }}">{{ spike.label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Kit Filters Row -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <label for="readQualityFilteringFilter" class="form-label">Read Quality Filtering</label>
+                                <select class="form-select" id="readQualityFilteringFilter">
+                                    <option value="all">All Read Quality Filtering</option>
+                                    {% for filter_option in config.predefined_filters.read_quality_filtering %}
+                                    <option value="{{ filter_option.value }}"{% if filter_option.get('selected') %} selected{% endif %}>{{ filter_option.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label for="extractionKitFilter" class="form-label">Extraction Kit Filter</label>
                                 <select class="form-select" id="extractionKitFilter">
                                     <option value="all">All Extraction Kits</option>
+                                    {% for kit in dynamic_filters.extraction_kits %}
+                                    <option value="{{ kit }}">{{ kit }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="libraryKitFilter" class="form-label">Library Prep Kit Filter</label>
+                                <select class="form-select" id="libraryKitFilter">
+                                    <option value="all">All Library Prep Kits</option>
+                                    {% for kit in dynamic_filters.library_prep_kits %}
+                                    <option value="{{ kit }}">{{ kit }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Genus Filter Row (for species proportion analysis) -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="genusFilter" class="form-label">
+                                    Genus Filter 
+                                    <i class="bi bi-info-circle-fill text-muted ms-1" 
+                                       data-bs-toggle="tooltip" 
+                                       data-bs-placement="top" 
+                                       title="Filter samples by dominant species genus for stacked area/bar charts"></i>
+                                </label>
+                                <select class="form-select" id="genusFilter">
+                                    <option value="all">All Genera</option>
+                                    {% for genus in dynamic_filters.genera %}
+                                    <option value="{{ genus }}">{{ genus }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                         </div>
@@ -159,6 +237,12 @@
 {% block dom_ready %}
 // Trends page specific initialization
 window.TRENDS_API_URL = '{{ url_for("trends.trends_data_api") }}';
+
+// Initialize Bootstrap tooltips
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+});
 {% endblock %}
 
 {% block extra_js %}
