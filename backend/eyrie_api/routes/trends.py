@@ -302,15 +302,12 @@ def group_by_time_period(samples: List[Dict], group_by: str) -> Dict[str, List[D
             period_key = sample.get("sequencing_run_date", "Unknown")
         else:
             # Get sample date for time-based grouping
-            # Prefer sequencing_run_date over created_date for more accurate temporal analysis
             sample_date = sample.get("sequencing_run_date") or sample.get("created_date")
             if not sample_date:
                 continue
 
-            # Convert to datetime if it's a string (legacy created_date handling)
             if isinstance(sample_date, str):
                 sample_date = datetime.fromisoformat(sample_date.replace('Z', '+00:00'))
-            # If it's already a datetime object (sequencing_run_date), use it directly
 
             # Generate period key
             if group_by == "day":
@@ -370,10 +367,8 @@ def calculate_metric_value(samples: List[Dict], metric: str, read_quality_filter
             if "number_of_reads" in stats and stats["number_of_reads"] is not None:
                 total_reads += stats["number_of_reads"]
                 count += 1
-        # For single sample groups (like sample_id category), return the actual count
-        # For multiple sample groups, return the average
         if len(samples) == 1 and count == 1:
-            return total_reads  # Return actual read count for single sample
+            return total_reads
         return total_reads / count if count > 0 else 0.0
 
     elif metric == "mean_read_length":
@@ -522,10 +517,8 @@ async def get_trends_summary(
     """Get summary statistics for trends dashboard."""
 
     try:
-        # Get current user for authentication  
         current_user = get_current_user(request)
 
-        # Get recent samples (last 30 days)
         thirty_days_ago = datetime.utcnow() - timedelta(days=30)
         async with get_db_connection() as db:
             samples_collection = db.samples

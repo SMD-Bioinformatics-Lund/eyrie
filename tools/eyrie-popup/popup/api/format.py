@@ -34,7 +34,6 @@ class FormatHandler:
                 else:
                     return None
 
-                # Return datetime object for MongoDB ISODate storage
                 return datetime(year, month, day)
             except (ValueError, TypeError):
                 # Invalid date values (e.g., month > 12, day > 31)
@@ -163,13 +162,11 @@ class FormatHandler:
             # If provided in config, parse it to datetime object
             if isinstance(sequencing_run_date, str):
                 try:
-                    # Handle ISO date format (YYYY-MM-DD)
                     sequencing_run_date = datetime.fromisoformat(sequencing_run_date)
                 except ValueError:
                     # Invalid date format, fall back to extraction
                     sequencing_run_date = self.extract_sequencing_run_date(sample_data.sample_info.sequencing_run_id)
         else:
-            # Extract from sequencing_run_id
             sequencing_run_date = self.extract_sequencing_run_date(sample_data.sample_info.sequencing_run_id)
 
         # Prepare base sample data with new structure
