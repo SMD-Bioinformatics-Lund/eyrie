@@ -10,13 +10,19 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added ability to upload sample metadata via eyrie-popup tool
  - Added `/api/system/health` endpoint for proper application health checking
  - Added comprehensive version display across all pages including login page footer, navbar brand, user dropdown, and global footer
- - Added metadata variables to trends calculation system for advanced sample analysis
- - Added metadata filter endpoints for dynamic trends filtering by sample type, tissue, and extraction kit
  - Added new trends metrics: library concentration, multiple finds rate, sample count, and Sanger match rate
+ - Added proportion analysis, chart types, and genus-level filtering to trends
+ - Added dominant species & `sequencing_run_id` category and abundance percentage metric for species composition analysis
+ - Added chart type selection: line, bar, and stacked area charts for different visualization needs
+ - Added dilution, genus filter for advanced species analysis
+ - Standardized spike concentration filter field with predefined values: IC3/IC4
+ - Standardized sample type filter with predefined values: validation, patient, negative control, positive control
+ - Standardized dilution filter with laboratory standard values: 1:1, 1:10
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
  - Fixed misleading success messages in eyrie-popup when uploads actually fail
+ - Fixed trends page dynamic filter population by using proper `@api_authentication` decorator pattern
 
 ### Changed
  - Reorganized three-column layout with metadata card and centered visualizations
@@ -29,6 +35,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed Docker builds to python v11.3.0
  - Simplified branding from "Eyrie Sample Manager" to "Eyrie" across all user interfaces, API responses, and documentation
  - Enhanced trends analysis with metadata-based grouping and filtering capabilities
+ - Changed `spike_species` to `spike_concentration` with IC3/IC4 validation in trends system
 
 ## [0.3.0]
 
