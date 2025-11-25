@@ -13,15 +13,44 @@ let currentTrendsData = null;
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
-    loadMetadataFilters();
-    // Don't auto-load trends - wait for user to click Update Chart button
 });
 
 /**
  * Setup event listeners
  */
 function setupEventListeners() {
-    // No automatic updates - user must click the Update Chart button
+    // Auto-suggest species frequency for stacked charts
+    document.getElementById('chartTypeSelect').addEventListener('change', function() {
+        const chartType = this.value;
+        const metricSelect = document.getElementById('metricSelect');
+        const categorySelect = document.getElementById('categorySelect');
+
+        if (chartType === 'stacked_area' || chartType === 'bar') {
+            // Auto-select species frequency and dominant species for composition analysis
+            if (metricSelect.value !== 'species_frequency') {
+                metricSelect.value = 'species_frequency';
+            }
+            if (categorySelect.value !== 'dominant_species') {
+                categorySelect.value = 'dominant_species';
+            }
+        }
+    });
+
+    // Auto-suggest chart type for species frequency
+    document.getElementById('metricSelect').addEventListener('change', function() {
+        const metric = this.value;
+        const chartTypeSelect = document.getElementById('chartTypeSelect');
+        const categorySelect = document.getElementById('categorySelect');
+
+        if (metric === 'species_frequency') {
+            if (chartTypeSelect.value === 'line') {
+                chartTypeSelect.value = 'stacked_area';
+            }
+            if (categorySelect.value !== 'dominant_species') {
+                categorySelect.value = 'dominant_species';
+            }
+        }
+    });
 }
 
 /**
@@ -43,6 +72,13 @@ async function updateTrends() {
         const sampleTypeFilter = document.getElementById('sampleTypeFilter').value;
         const tissueFilter = document.getElementById('tissueFilter').value;
         const extractionKitFilter = document.getElementById('extractionKitFilter').value;
+        const libraryKitFilter = document.getElementById('libraryKitFilter').value;
+        const dilutionFilter = document.getElementById('dilutionFilter').value;
+        const spikeConcentrationFilter = document.getElementById('spikeConcentrationFilter').value;
+        const qcFilter = document.getElementById('qcFilter').value;
+        const readQualityFilteringFilter = document.getElementById('readQualityFilteringFilter').value;
+        const genusFilter = document.getElementById('genusFilter').value;
+        const chartType = document.getElementById('chartTypeSelect').value;
 
         const params = new URLSearchParams({
             category,
@@ -52,7 +88,13 @@ async function updateTrends() {
             classification: classificationFilter,
             sample_type: sampleTypeFilter,
             tissue: tissueFilter,
-            extraction_kit: extractionKitFilter
+            extraction_kit: extractionKitFilter,
+            library_prep_kit: libraryKitFilter,
+            dilution: dilutionFilter,
+            spike_concentration: spikeConcentrationFilter,
+            qc: qcFilter,
+            read_quality_filtering: readQualityFilteringFilter,
+            genus: genusFilter
         });
 
         // Fetch trends data using Flask route
@@ -68,8 +110,21 @@ async function updateTrends() {
         debugLog('Received trends data:', trendsData);
         currentTrendsData = trendsData;
 
+        // Auto-adjust chart type for insufficient data points
+        let adjustedChartType = chartType;
+        debugLog(`Chart type check: chartType=${chartType}, period_count=${trendsData.metadata?.period_count}, group_by=${groupBy}`);
+
+        if (chartType === 'stacked_area' && trendsData.metadata && trendsData.metadata.period_count === 1) {
+            adjustedChartType = 'bar';
+            const chartTypeSelect = document.getElementById('chartTypeSelect');
+            chartTypeSelect.value = 'bar';
+            debugLog('Auto-switched from stacked area to bar chart due to single data point');
+        } else if (chartType === 'stacked_area') {
+            debugLog(`No auto-switch needed: period_count=${trendsData.metadata?.period_count}`);
+        }
+
         // Render chart
-        renderTrendsChart(trendsData, category, metric, groupBy);
+        renderTrendsChart(trendsData, category, metric, groupBy, adjustedChartType);
 
         chartStatus.textContent = 'Updated';
         chartStatus.className = 'badge bg-success text-white';
@@ -91,7 +146,7 @@ async function updateTrends() {
 /**
  * Render trends chart using Plotly
  */
-function renderTrendsChart(data, category, metric, groupBy) {
+function renderTrendsChart(data, category, metric, groupBy, chartType = 'line') {
     const chartDiv = document.getElementById('trendsChart');
 
     // Clear any existing content (including placeholder)
@@ -102,13 +157,53 @@ function renderTrendsChart(data, category, metric, groupBy) {
         return;
     }
 
-    const traces = data.series.map((series, index) => {
-        const colors = [
-            '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-            '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
-        ];
+    const colors = [
+        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
+        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
+    ];
 
-        return {
+    let traces;
+
+    if (chartType === 'bar') {
+        traces = data.series.map((series, index) => ({
+            x: series.dates,
+            y: series.values,
+            type: 'bar',
+            name: series.name,
+            marker: {
+                color: colors[index % colors.length]
+            },
+            hovertemplate: `<b>${series.name}</b><br>` +
+                          `Date: %{x}<br>` +
+                          `${getMetricLabel(metric)}: %{y}<br>` +
+                          `<extra></extra>`
+        }));
+    } else if (chartType === 'stacked_area') {
+        traces = data.series.map((series, index) => ({
+            x: series.dates,
+            y: series.values,
+            type: 'scatter',
+            mode: 'lines',
+            name: series.name,
+            fill: 'tonexty',
+            fillcolor: colors[index % colors.length] + '40',
+            line: {
+                color: colors[index % colors.length],
+                width: 1
+            },
+            hovertemplate: `<b>${series.name}</b><br>` +
+                          `Date: %{x}<br>` +
+                          `${getMetricLabel(metric)}: %{y}<br>` +
+                          `<extra></extra>`
+        }));
+
+        // Set first trace to fill to zero
+        if (traces.length > 0) {
+            traces[0].fill = 'tozeroy';
+        }
+    } else {
+        // Default line chart
+        traces = data.series.map((series, index) => ({
             x: series.dates,
             y: series.values,
             type: 'scatter',
@@ -126,8 +221,8 @@ function renderTrendsChart(data, category, metric, groupBy) {
                           `Date: %{x}<br>` +
                           `${getMetricLabel(metric)}: %{y}<br>` +
                           `<extra></extra>`
-        };
-    });
+        }));
+    }
 
     const layout = {
         title: {
@@ -230,7 +325,7 @@ function exportChart() {
  * Reset all filters to default values
  */
 function resetFilters() {
-    document.getElementById('categorySelect').value = 'tissue_sample_type';
+    document.getElementById('categorySelect').value = 'sample_id';
     document.getElementById('metricSelect').value = 'number_of_reads';
     document.getElementById('timeRangeSelect').value = '30';
     document.getElementById('groupBySelect').value = 'week';
@@ -238,101 +333,34 @@ function resetFilters() {
     document.getElementById('sampleTypeFilter').value = 'all';
     document.getElementById('tissueFilter').value = 'all';
     document.getElementById('extractionKitFilter').value = 'all';
+    document.getElementById('libraryKitFilter').value = 'all';
+    document.getElementById('dilutionFilter').value = 'all';
+    document.getElementById('spikeConcentrationFilter').value = 'all';
+    document.getElementById('qcFilter').value = 'all';
+    document.getElementById('readQualityFilteringFilter').value = 'processed';
+    document.getElementById('genusFilter').value = 'all';
+    document.getElementById('chartTypeSelect').value = 'line';
 
     updateTrends();
 }
 
 /**
- * Load available metadata filter options
- */
-async function loadMetadataFilters() {
-    try {
-        const trendsApiUrl = window.TRENDS_API_URL || '/api/trends/metadata/filters';
-        const response = await fetch(trendsApiUrl);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const filterData = await response.json();
-        debugLog('Received metadata filters:', filterData);
-        
-        // Populate sample type filter
-        const sampleTypeSelect = document.getElementById('sampleTypeFilter');
-        filterData.sample_types.forEach(type => {
-            const option = document.createElement('option');
-            option.value = type;
-            option.textContent = type;
-            sampleTypeSelect.appendChild(option);
-        });
-        
-        // Populate tissue filter
-        const tissueSelect = document.getElementById('tissueFilter');
-        filterData.tissues.forEach(tissue => {
-            const option = document.createElement('option');
-            option.value = tissue;
-            option.textContent = tissue;
-            tissueSelect.appendChild(option);
-        });
-        
-        // Populate extraction kit filter
-        const extractionKitSelect = document.getElementById('extractionKitFilter');
-        filterData.extraction_kits.forEach(kit => {
-            const option = document.createElement('option');
-            option.value = kit;
-            option.textContent = kit;
-            extractionKitSelect.appendChild(option);
-        });
-        
-    } catch (error) {
-        console.error('Error loading metadata filters:', error);
-        // Don't show error to user - just use empty filters
-    }
-}
-
-
-/**
- * Helper functions for labels
+ * Helper functions for labels - simplified, now just extracting from DOM elements
  */
 function getCategoryLabel(category) {
-    const labels = {
-        'tissue_sample_type': 'Tissue Sample Type',
-        'true_hits': 'True Hits',
-        'spike_species': 'Spike Species',
-        'classification_type': 'Classification Type',
-        'sample_type': 'Sample Type',
-        'tissue': 'Tissue',
-        'dilution': 'Dilution',
-        'extraction_kit': 'Extraction Kit',
-        'library_prep_kit': 'Library Prep Kit',
-        'sanger_expected_species': 'Sanger Expected Species'
-    };
-    return labels[category] || category;
+    const select = document.getElementById('categorySelect');
+    const option = select.querySelector(`option[value="${category}"]`);
+    return option ? option.textContent : category;
 }
 
 function getMetricLabel(metric) {
-    const labels = {
-        'number_of_reads': 'Number of Reads',
-        'mean_read_length': 'Mean Read Length (bp)',
-        'mean_read_quality': 'Mean Read Quality (Q-score)',
-        'contaminants_count': 'Contaminants Count',
-        'top_hits_count': 'Top Hits Count',
-        'qc_pass_rate': 'QC Pass Rate (%)',
-        'total_bases': 'Total Bases',
-        'read_length_n50': 'Read Length N50 (bp)',
-        'library_concentration': 'Library Concentration (ng/μL)',
-        'multiple_finds_rate': 'Multiple Finds Rate (%)',
-        'sample_count': 'Sample Count',
-        'sanger_match_rate': 'Sanger Match Rate (%)'
-    };
-    return labels[metric] || metric;
+    const select = document.getElementById('metricSelect');
+    const option = select.querySelector(`option[value="${metric}"]`);
+    return option ? option.textContent : metric;
 }
 
 function getGroupByLabel(groupBy) {
-    const labels = {
-        'day': 'Daily',
-        'week': 'Weekly',
-        'month': 'Monthly'
-    };
-    return labels[groupBy] || groupBy;
+    const select = document.getElementById('groupBySelect');
+    const option = select.querySelector(`option[value="${groupBy}"]`);
+    return option ? option.textContent : groupBy;
 }

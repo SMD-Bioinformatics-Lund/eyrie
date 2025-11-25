@@ -1,8 +1,9 @@
 """Views for trends analysis."""
 
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, current_app
 from flask_login import login_required
-from ...eyrie import get_trends_data
+from ...eyrie import get_trends_data, get_metadata_filters
+from ...config import settings
 
 trends_bp = Blueprint('trends', __name__,
                      template_folder='templates',
@@ -13,8 +14,20 @@ trends_bp = Blueprint('trends', __name__,
 @trends_bp.route('/trends')
 @login_required
 def index():
-    """Display trends dashboard."""
-    return render_template('trends.html')
+    """Display trends dashboard with server-side populated data."""
+    try:
+        dynamic_filters = get_metadata_filters()
+
+        return render_template('trends.html',
+                             config=settings.trends_config,
+                             dynamic_filters=dynamic_filters)
+
+    except Exception as e:
+        current_app.logger.warning(f"Failed to load metadata filters: {e}")
+        empty_filters = {'tissues': [], 'extraction_kits': [], 'genera': []}
+        return render_template('trends.html',
+                             config=settings.trends_config,
+                             dynamic_filters=empty_filters)
 
 
 # API Endpoints
