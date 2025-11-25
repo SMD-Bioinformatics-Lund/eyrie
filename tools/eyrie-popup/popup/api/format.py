@@ -1,5 +1,6 @@
 """Data formatting for Eyrie API."""
 
+import re
 from typing import Dict, Any
 from datetime import datetime
 
@@ -8,6 +9,38 @@ from ..models import SampleResults, SampleConfig
 
 class FormatHandler:
     """Handles data format conversion for Eyrie API."""
+
+    def extract_sequencing_run_date(self, sequencing_run_id: str):
+        """Extract sequence run date from sequencing_run_id and convert to datetime object.
+
+        Splits sequencing_run_id on first '_' and extracts date from the first part.
+        Handles both YYYYMMDD and YYMMDD formats and returns datetime object for MongoDB ISODate storage.
+        """
+        if not sequencing_run_id:
+            return None
+
+        first_part = sequencing_run_id.split('_')[0]
+
+        if first_part.isdigit():
+            try:
+                if len(first_part) == 8:
+                    year = int(first_part[:4])
+                    month = int(first_part[4:6])
+                    day = int(first_part[6:8])
+                elif len(first_part) == 6:
+                    year = int(f"20{first_part[:2]}")
+                    month = int(first_part[2:4])
+                    day = int(first_part[4:6])
+                else:
+                    return None
+
+                # Return datetime object for MongoDB ISODate storage
+                return datetime(year, month, day)
+            except (ValueError, TypeError):
+                # Invalid date values (e.g., month > 12, day > 31)
+                return None
+
+        return None
 
     def convert_to_eyrie_format(self, sample_data: SampleResults, config: SampleConfig) -> Dict[str, Any]:
         """Convert sample data to Eyrie database format."""
@@ -25,26 +58,6 @@ class FormatHandler:
             contaminant_names = [taxa.species for taxa in contaminants]
             comments.append(f"Potential contamination detected: {', '.join(contaminant_names)}")
 
-        # Prepare sequencing statistics (prefer processed over unprocessed)
-        sequencing_statistics = {}
-        if sample_data.nano_stats_processed:
-            stats = sample_data.nano_stats_processed
-            sequencing_statistics = {
-                "total_reads": stats.number_of_reads,
-                "avg_length": stats.mean_read_length,
-                "avg_quality": stats.mean_read_quality,
-                "total_bases": stats.total_bases,
-                "read_length_n50": stats.read_length_n50
-            }
-        elif sample_data.nano_stats_unprocessed:
-            stats = sample_data.nano_stats_unprocessed
-            sequencing_statistics = {
-                "total_reads": stats.number_of_reads,
-                "avg_length": stats.mean_read_length,
-                "avg_quality": stats.mean_read_quality,
-                "total_bases": stats.total_bases,
-                "read_length_n50": stats.read_length_n50
-            }
 
         # Prepare taxonomic data as additional metadata
         taxonomic_summary = {
@@ -88,7 +101,7 @@ class FormatHandler:
                             nanoplot_dict['processed'][field] = f"{run_dir}/{file_path}"
                         else:
                             nanoplot_dict['processed'][field] = file_path
-                            
+
             # Add nanostats to nanoplot structure
             if sample_data.nano_stats_unprocessed and nanoplot_dict.get('unprocessed'):
                 # Convert existing files to nested structure
@@ -104,7 +117,7 @@ class FormatHandler:
                     "files": files_dict,
                     "nanostats": None
                 }
-                
+
             if sample_data.nano_stats_processed and nanoplot_dict.get('processed'):
                 # Convert existing files to nested structure
                 files_dict = nanoplot_dict['processed'].copy()
@@ -119,7 +132,7 @@ class FormatHandler:
                     "files": files_dict,
                     "nanostats": None
                 }
-                
+
             nanoplot_data = nanoplot_dict
 
         # Prepare structured comments
@@ -127,7 +140,7 @@ class FormatHandler:
             "qc": [],  # Will be populated by QC workflow in web interface
             "other": ""  # User-editable field
         }
-        
+
         # Add contamination comments to QC comments with timestamp if any
         if comments:
             for comment in comments:
@@ -136,7 +149,7 @@ class FormatHandler:
                     "user": "system",  # System-generated contamination comment
                     "comment": comment
                 })
-        
+
         # Prepare files structure
         files_data = {}
         if sample_data.krona_file:
@@ -144,11 +157,27 @@ class FormatHandler:
         if sample_data.fastqc_file:
             files_data["fastqc"] = f"{run_dir}/{sample_data.fastqc_file}" if run_dir else sample_data.fastqc_file
 
+        # Extract sequence run date from sequencing_run_id or use provided value
+        sequencing_run_date = sample_data.sample_info.sequencing_run_date
+        if sequencing_run_date:
+            # If provided in config, parse it to datetime object
+            if isinstance(sequencing_run_date, str):
+                try:
+                    # Handle ISO date format (YYYY-MM-DD)
+                    sequencing_run_date = datetime.fromisoformat(sequencing_run_date)
+                except ValueError:
+                    # Invalid date format, fall back to extraction
+                    sequencing_run_date = self.extract_sequencing_run_date(sample_data.sample_info.sequencing_run_id)
+        else:
+            # Extract from sequencing_run_id
+            sequencing_run_date = self.extract_sequencing_run_date(sample_data.sample_info.sequencing_run_id)
+
         # Prepare base sample data with new structure
         eyrie_data = {
             "sample_name": sample_data.sample_info.sample_name,
             "sample_id": sample_data.sample_info.sample_id,
             "sequencing_run_id": sample_data.sample_info.sequencing_run_id,
+            "sequencing_run_date": sequencing_run_date.isoformat() if sequencing_run_date else None,
             "lims_id": sample_data.sample_info.lims_id,
             "classification": sample_data.sample_info.classification_type,
             "qc": qc_status,
@@ -156,7 +185,6 @@ class FormatHandler:
             "created_date": datetime.now().isoformat(),
             "updated_date": datetime.now().isoformat(),
             "files": files_data,
-            "sequencing_statistics": sequencing_statistics,
             "taxonomic_data": taxonomic_summary,
             "nanoplot": nanoplot_data,
             "spike": sample_data.spike if hasattr(sample_data, 'spike') else None

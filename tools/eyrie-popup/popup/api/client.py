@@ -101,19 +101,15 @@ class EyrieAPIClient:
                 return False, 'failed'
 
         try:
-            # Check if sample exists
             existing_sample = self._get_sample(sample_id)
 
-            # Convert metadata to dict, excluding None values
             metadata_dict = {k: v for k, v in metadata.dict().items() if v is not None}
 
             if existing_sample:
-                # Update existing sample with metadata
-                # Only include fields that are part of the SampleCreate API model (updated for new structure)
                 api_fields = [
                     'sample_name', 'sample_id', 'sequencing_run_id', 'lims_id',
                     'classification', 'qc', 'comments', 'files',
-                    'sequencing_statistics', 'taxonomic_data', 'flagged_contaminants', 'flagged_top_hits',
+                    'taxonomic_data', 'flagged_contaminants', 'flagged_top_hits',
                     'nanoplot', 'spike'
                 ]
 
@@ -135,13 +131,9 @@ class EyrieAPIClient:
                 # Create new sample with minimal required fields + metadata
                 new_sample = {
                     'sample_id': sample_id,
-                    'sample_name': f"Sample_{sample_id}",
-                    'lims_id': f"LIMS_{sample_id}",
-                    'sequencing_run_id': f"RUN_{sample_id}",
-                    'classification': '16S',  # Default classification type
-                    'qc': 'unprocessed',  # Default QC status
-                    'comments': '',  # Default empty comments
-                    'metadata': metadata_dict  # Add metadata under metadata key
+                    'qc': 'unprocessed',
+                    'comments': '',
+                    'metadata': metadata_dict
                 }
 
                 response = self.session.post(

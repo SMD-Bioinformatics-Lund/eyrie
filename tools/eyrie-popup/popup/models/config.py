@@ -12,6 +12,7 @@ class SampleInfo(BaseModel):
     sequencing_run_id: str
     classification_type: str = Field(..., regex="^(16S|ITS)$")
     barcode: Optional[str] = None
+    sequencing_run_date: Optional[str] = None
 
 
 class FastQCConfig(BaseModel):
