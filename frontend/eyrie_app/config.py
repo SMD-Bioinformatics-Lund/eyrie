@@ -63,7 +63,6 @@ class Settings:
             'categories': [
                 {'value': 'sample_id', 'label': 'Sample ID'},
                 {'value': 'sequencing_run_id', 'label': 'Sequencing Run ID'},
-                {'value': 'sequencing_run_date', 'label': 'Sequencing Run Date'},
                 {'value': 'dominant_species', 'label': 'Dominant Species'},
                 {'value': 'sample_type', 'label': 'Sample Type'},
                 {'value': 'tissue', 'label': 'Tissue'},
