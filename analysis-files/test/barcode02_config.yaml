@@ -7,7 +7,7 @@ sample:
   sample_name: "Sample_BC02"
   lims_id: "LIMS_BC02_001"
   barcode: "barcode02"
-  sequencing_run_id: "RUN_2025_09_30"
+  sequencing_run_id: "20250930_1234_MN12345_TEST1234_test1234"
   classification_type: "16S"  # or "ITS"
 
 # Base directory containing all analysis outputs
