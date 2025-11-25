@@ -17,6 +17,7 @@ class MetadataParser:
         'dilution': ['dilution', 'sample_dilution'],
         'library_concentration': ['library_concentration', 'lib_concentration', 'concentration', 'library_conc'],
         'multiple_finds': ['multiple_finds', 'multiple_bacteria', 'multi_finds'],
+        'spike_concentration': ['spike_concentration', 'spike_conc', 'spike'],
         'sanger_expected_species': ['sanger_expected_species', 'expected_species', 'sanger_species'],
         'extraction_kit': ['extraction_kit', 'dna_extraction_kit', 'extraction_method', 'dna_kit'],
         'library_prep_kit': ['library_prep_kit', 'lib_prep_kit', 'library_preparation_kit', 'prep_kit']
@@ -107,9 +108,9 @@ class MetadataParser:
             dilution=get_value('dilution'),
             library_concentration=get_value('library_concentration'),
             multiple_finds=get_value('multiple_finds'),
-            other_comments=get_value('other_comments'),
-            qc_comment=get_value('qc_comment'),
-            sanger_expected_species=get_value('sanger_expected_species')
+            spike_concentration=get_value('spike_concentration'),
+            extraction_kit=get_value('extraction_kit'),
+            library_prep_kit=get_value('library_prep_kit')
         )
 
 
@@ -138,15 +139,27 @@ def validate_metadata_file(file_path: Union[str, Path]) -> tuple[bool, List[str]
                 sample_id_variations = ", ".join(parser.COLUMN_MAPPINGS['sample_id'])
                 errors.append(f"No sample ID column found. Expected one of: {sample_id_variations}")
 
-            if 'sample_type' in normalized_fieldnames.values():
-                for row_num, row in enumerate(reader, start=2):
-                    normalized_row = {normalized_fieldnames.get(k, k): v for k, v in row.items()}
-                    sample_type = normalized_row.get('sample_type', '').strip()
-                    if sample_type and sample_type not in ['validation', 'patient', 'negative', 'positive']:
-                        errors.append(f"Row {row_num}: Invalid sample_type '{sample_type}'. Must be one of: validation, patient, negative, positive")
+            # Validate constrained fields
+            for row_num, row in enumerate(reader, start=2):
+                normalized_row = {normalized_fieldnames.get(k, k): v for k, v in row.items()}
 
-                    if row_num > 11:
-                        break
+                # Validate sample_type
+                sample_type = normalized_row.get('sample_type', '').strip()
+                if sample_type and sample_type not in ['validation', 'patient', 'negative control', 'positive control']:
+                    errors.append(f"Row {row_num}: Invalid sample_type '{sample_type}'. Must be one of: validation, patient, negative control, positive control")
+
+                # Validate dilution
+                dilution = normalized_row.get('dilution', '').strip()
+                if dilution and dilution not in ['1:1', '1:10']:
+                    errors.append(f"Row {row_num}: Invalid dilution '{dilution}'. Must be one of: 1:1, 1:10")
+
+                # Validate spike_concentration
+                spike_concentration = normalized_row.get('spike_concentration', '').strip()
+                if spike_concentration and spike_concentration not in ['IC3', 'IC4']:
+                    errors.append(f"Row {row_num}: Invalid spike_concentration '{spike_concentration}'. Must be one of: IC3, IC4")
+
+                if row_num > 11:  # Limit validation to first 10 rows for performance
+                    break
 
     except Exception as e:
         errors.append(f"Error reading file: {e}")

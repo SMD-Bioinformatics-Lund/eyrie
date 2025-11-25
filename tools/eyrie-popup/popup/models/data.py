@@ -8,12 +8,12 @@ from .config import SampleInfo
 
 class SampleMetadata(BaseModel):
     """Sample metadata information."""
-    sample_type: Optional[str] = Field(None, regex="^(validation|patient|negative|positive)$")
+    sample_type: Optional[str] = Field(None, regex="^(validation|patient|negative control|positive control)$")
     tissue: Optional[str] = None
-    dilution: Optional[str] = None
+    dilution: Optional[str] = Field(None, regex="^(1:1|1:10)$")
     library_concentration: Optional[str] = None
     multiple_finds: Optional[str] = None
-    sanger_expected_species: Optional[str] = None
+    spike_concentration: Optional[str] = Field(None, regex="^(IC3|IC4)$")
     extraction_kit: Optional[str] = None
     library_prep_kit: Optional[str] = None
 
