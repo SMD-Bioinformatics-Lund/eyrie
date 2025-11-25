@@ -17,12 +17,12 @@ class SampleCreate(BaseModel):
     sample_name: str
     sample_id: str
     sequencing_run_id: str
+    sequencing_run_date: Optional[datetime] = None
     lims_id: str
     classification: str = "16S"
     qc: str = "unprocessed"
     comments: Optional[Dict[str, Any]] = None
     files: Optional[Dict[str, Any]] = None
-    sequencing_statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
     flagged_contaminants: List[str] = []
     flagged_top_hits: List[str] = []
@@ -37,7 +37,6 @@ class SampleUpdate(BaseModel):
     qc: Optional[str] = None
     comments: Optional[Dict[str, Any]] = None
     files: Optional[Dict[str, Any]] = None
-    sequencing_statistics: Optional[Dict[str, Any]] = None
     taxonomic_data: Optional[Dict[str, Any]] = None
     flagged_contaminants: Optional[List[str]] = None
     flagged_top_hits: Optional[List[str]] = None
