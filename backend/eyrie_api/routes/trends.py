@@ -22,7 +22,13 @@ async def get_trends_data(
     classification: str = Query("all", description="Classification filter"),
     sample_type: str = Query("all", description="Sample type filter from metadata"),
     tissue: str = Query("all", description="Tissue filter from metadata"),
-    extraction_kit: str = Query("all", description="Extraction kit filter from metadata")
+    extraction_kit: str = Query("all", description="Extraction kit filter from metadata"),
+    library_prep_kit: str = Query("all", description="Library prep kit filter from metadata"),
+    dilution: str = Query("all", description="Dilution filter from metadata"),
+    spike_concentration: str = Query("all", description="Spike concentration filter from metadata"),
+    qc: str = Query("all", description="QC status filter"),
+    read_quality_filtering: str = Query("all", description="Read quality filtering filter"),
+    genus: str = Query("all", description="Genus filter for dominant species analysis")
 ) -> Dict[str, Any]:
     """Get trends data for visualisation."""
 
@@ -38,6 +44,10 @@ async def get_trends_data(
         if classification != "all":
             classification_filter = {"classification": classification}
 
+        qc_filter = {}
+        if qc != "all":
+            qc_filter = {"qc": qc}
+
         metadata_filter = {}
         if sample_type != "all":
             metadata_filter["metadata.sample_type"] = sample_type
@@ -45,13 +55,29 @@ async def get_trends_data(
             metadata_filter["metadata.tissue"] = tissue
         if extraction_kit != "all":
             metadata_filter["metadata.extraction_kit"] = extraction_kit
+        if library_prep_kit != "all":
+            metadata_filter["metadata.library_prep_kit"] = library_prep_kit
+        if dilution != "all":
+            metadata_filter["metadata.dilution"] = dilution
+        if spike_concentration != "all":
+            metadata_filter["metadata.spike_concentration"] = spike_concentration
 
-        match_filter = {**time_filter, **classification_filter, **metadata_filter}
+        match_filter = {**time_filter, **classification_filter, **qc_filter, **metadata_filter}
 
         async with get_db_connection() as db:
             samples_collection = db.samples
             cursor = samples_collection.find(match_filter)
             samples = await cursor.to_list(length=None)
+
+        # Apply genus filter for dominant species analysis
+        if genus != "all":
+            filtered_samples = []
+            for sample in samples:
+                taxonomic_data = sample.get("taxonomic_data", {})
+                hits = taxonomic_data.get("hits", [])
+                if hits and hits[0].get("genus", "").lower() == genus.lower():
+                    filtered_samples.append(sample)
+            samples = filtered_samples
 
         if not samples:
             return {
@@ -64,7 +90,16 @@ async def get_trends_data(
                 }
             }
 
-        series_data = process_trends_data(samples, category, metric, group_by)
+        # Process trends data and get period count
+        if metric == "species_frequency" and category == "dominant_species":
+            # For species frequency analysis, we need the period count from the grouped data
+            time_groups = group_by_time_period(samples, group_by)
+            period_count = len(time_groups)
+            series_data = process_species_frequency_data(samples, group_by)
+        else:
+            # Standard trends analysis
+            period_count = len(group_by_time_period(samples, group_by))
+            series_data = process_trends_data(samples, category, metric, group_by, read_quality_filtering)
 
         return {
             "series": series_data,
@@ -73,7 +108,8 @@ async def get_trends_data(
                 "date_range": f"Last {time_range} days" if time_range != "all" else "All time",
                 "category": category,
                 "metric": metric,
-                "group_by": group_by
+                "group_by": group_by,
+                "period_count": period_count
             }
         }
 
@@ -83,9 +119,14 @@ async def get_trends_data(
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
 
-def process_trends_data(samples: List[Dict], category: str, metric: str, group_by: str) -> List[Dict[str, Any]]:
+def process_trends_data(samples: List[Dict], category: str, metric: str, group_by: str, read_quality_filtering: str = "all") -> List[Dict[str, Any]]:
     """Process samples data into trends series."""
 
+    # Check if this is species frequency analysis
+    if metric == "species_frequency" and category == "dominant_species":
+        return process_species_frequency_data(samples, group_by)
+
+    # Standard trends analysis
     category_groups = group_samples_by_category(samples, category)
 
     series_list = []
@@ -98,7 +139,7 @@ def process_trends_data(samples: List[Dict], category: str, metric: str, group_b
 
         for date_key in sorted(time_groups.keys()):
             period_samples = time_groups[date_key]
-            metric_value = calculate_metric_value(period_samples, metric)
+            metric_value = calculate_metric_value(period_samples, metric, read_quality_filtering)
 
             dates.append(date_key)
             values.append(metric_value)
@@ -113,21 +154,94 @@ def process_trends_data(samples: List[Dict], category: str, metric: str, group_b
     return series_list
 
 
+def process_species_frequency_data(samples: List[Dict], group_by: str) -> List[Dict[str, Any]]:
+    """Process samples for species frequency analysis (stacked area/bar charts)."""
+
+    # Group samples by time period/sequencing run first
+    time_groups = group_by_time_period(samples, group_by)
+
+    # Collect all unique dominant species across all periods
+    all_species = set()
+    for period_samples in time_groups.values():
+        for sample in period_samples:
+            taxonomic_data = sample.get("taxonomic_data", {})
+            hits = taxonomic_data.get("hits", [])
+            if hits:
+                species = hits[0].get("species", "Unknown")
+                all_species.add(species)
+
+    # Build series for each species
+    series_list = []
+    sorted_dates = sorted(time_groups.keys())
+
+    for species in sorted(all_species):
+        dates = []
+        values = []
+
+        for date_key in sorted_dates:
+            period_samples = time_groups[date_key]
+
+            # Count how many samples have this species as dominant
+            species_count = 0
+            total_samples = len(period_samples)
+
+            for sample in period_samples:
+                taxonomic_data = sample.get("taxonomic_data", {})
+                hits = taxonomic_data.get("hits", [])
+                if hits and hits[0].get("species", "") == species:
+                    species_count += 1
+
+            # Calculate percentage
+            percentage = (species_count / total_samples * 100) if total_samples > 0 else 0
+
+            dates.append(date_key)
+            values.append(percentage)
+
+        if any(value > 0 for value in values):  # Only include species that appear
+            series_list.append({
+                "name": species,
+                "dates": dates,
+                "values": values
+            })
+    return series_list
+
+
 def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, List[Dict]]:
     """Group samples by the specified category."""
 
     groups = {}
 
     for sample in samples:
-        if category == "tissue_sample_type":
-            # Extract tissue type from sample name or use classification
-            key = sample.get("classification", "Unknown")
-        elif category == "true_hits":
-            # Count of flagged top hits
-            key = len(sample.get("flagged_top_hits", []))
-        elif category == "spike_species":
-            # Spike species name
-            key = sample.get("spike", "No Spike")
+        if category == "sample_id":
+            # Individual sample ID for tracking specific samples over time
+            key = sample.get("sample_id", "Unknown")
+        elif category == "read_quality_filtering":
+            # Group by processing status - create separate entries for both processed and unprocessed if both exist
+            nanoplot = sample.get("nanoplot", {})
+            processed_stats = nanoplot.get("processed", {}).get("nanostats")
+            unprocessed_stats = nanoplot.get("unprocessed", {}).get("nanostats")
+
+            # Create separate sample entries for each processing type that exists
+            if processed_stats:
+                processed_sample = sample.copy()
+                processed_sample["_nanostats_type"] = "processed"
+                if "Processed" not in groups:
+                    groups["Processed"] = []
+                groups["Processed"].append(processed_sample)
+
+            if unprocessed_stats:
+                unprocessed_sample = sample.copy()
+                unprocessed_sample["_nanostats_type"] = "unprocessed"
+                if "Unprocessed" not in groups:
+                    groups["Unprocessed"] = []
+                groups["Unprocessed"].append(unprocessed_sample)
+
+            # Skip the normal grouping logic for this category
+            continue
+        elif category == "spike_concentration":
+            # Spike concentration from metadata (IC3 or IC4)
+            metadata = sample.get("metadata", {})
+            key = metadata.get("spike_concentration", "Unknown") if metadata else "Unknown"
         elif category == "classification_type":
             # Classification type (16S, ITS)
             key = sample.get("classification", "Unknown")
@@ -151,10 +265,20 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
             # Library prep kit from metadata
             metadata = sample.get("metadata", {})
             key = metadata.get("library_prep_kit", "Unknown") if metadata else "Unknown"
-        elif category == "sanger_expected_species":
-            # Expected species from Sanger sequencing
-            metadata = sample.get("metadata", {})
-            key = metadata.get("sanger_expected_species", "Unknown") if metadata else "Unknown"
+        elif category == "sequencing_run_id":
+            # Sequencing run identifier
+            key = sample.get("sequencing_run_id", "Unknown")
+        elif category == "sequencing_run_date":
+            # Sequencing run date in YYMMDD format
+            key = sample.get("sequencing_run_date", "Unknown")
+        elif category == "dominant_species":
+            # Dominant species from taxonomic data for proportion analysis
+            taxonomic_data = sample.get("taxonomic_data", {})
+            hits = taxonomic_data.get("hits", [])
+            if hits:
+                key = hits[0].get("species", "Unknown")
+            else:
+                key = "Unknown"
         else:
             key = "All Samples"
 
@@ -166,30 +290,39 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
 
 
 def group_by_time_period(samples: List[Dict], group_by: str) -> Dict[str, List[Dict]]:
-    """Group samples by time period."""
+    """Group samples by time period or sequencing run ID."""
 
     groups = {}
 
     for sample in samples:
-        # Get sample date
-        sample_date = sample.get("created_date")
-        if not sample_date:
-            continue
-
-        if isinstance(sample_date, str):
-            sample_date = datetime.fromisoformat(sample_date.replace('Z', '+00:00'))
-
-        # Generate period key
-        if group_by == "day":
-            period_key = sample_date.strftime("%Y-%m-%d")
-        elif group_by == "week":
-            # Start of week (Monday)
-            start_of_week = sample_date - timedelta(days=sample_date.weekday())
-            period_key = start_of_week.strftime("%Y-%m-%d")
-        elif group_by == "month":
-            period_key = sample_date.strftime("%Y-%m-01")
+        # Handle sequencing run ID or date grouping
+        if group_by == "sequencing_run_id":
+            period_key = sample.get("sequencing_run_id", "Unknown")
+        elif group_by == "sequencing_run_date":
+            period_key = sample.get("sequencing_run_date", "Unknown")
         else:
-            period_key = sample_date.strftime("%Y-%m-%d")
+            # Get sample date for time-based grouping
+            # Prefer sequencing_run_date over created_date for more accurate temporal analysis
+            sample_date = sample.get("sequencing_run_date") or sample.get("created_date")
+            if not sample_date:
+                continue
+
+            # Convert to datetime if it's a string (legacy created_date handling)
+            if isinstance(sample_date, str):
+                sample_date = datetime.fromisoformat(sample_date.replace('Z', '+00:00'))
+            # If it's already a datetime object (sequencing_run_date), use it directly
+
+            # Generate period key
+            if group_by == "day":
+                period_key = sample_date.strftime("%Y-%m-%d")
+            elif group_by == "week":
+                # Start of week (Monday)
+                start_of_week = sample_date - timedelta(days=sample_date.weekday())
+                period_key = start_of_week.strftime("%Y-%m-%d")
+            elif group_by == "month":
+                period_key = sample_date.strftime("%Y-%m-01")
+            else:
+                period_key = sample_date.strftime("%Y-%m-%d")
 
         if period_key not in groups:
             groups[period_key] = []
@@ -198,7 +331,32 @@ def group_by_time_period(samples: List[Dict], group_by: str) -> Dict[str, List[D
     return groups
 
 
-def calculate_metric_value(samples: List[Dict], metric: str) -> float:
+def get_nanostats(sample: Dict, read_quality_filtering: str) -> Dict:
+    """Get nanostats from sample based on read quality filtering setting."""
+    nanoplot = sample.get("nanoplot", {})
+
+    # Check if sample has a specific nanostats type tag (for read_quality_filtering category)
+    nanostats_type = sample.get("_nanostats_type")
+    if nanostats_type:
+        if nanostats_type == "processed":
+            return nanoplot.get("processed", {}).get("nanostats", {})
+        elif nanostats_type == "unprocessed":
+            return nanoplot.get("unprocessed", {}).get("nanostats", {})
+
+    # Otherwise use the read_quality_filtering parameter
+    if read_quality_filtering == "processed":
+        return nanoplot.get("processed", {}).get("nanostats", {})
+    elif read_quality_filtering == "unprocessed":
+        return nanoplot.get("unprocessed", {}).get("nanostats", {})
+    else:
+        # Default to processed if available, else unprocessed
+        processed_stats = nanoplot.get("processed", {}).get("nanostats")
+        if processed_stats:
+            return processed_stats
+        return nanoplot.get("unprocessed", {}).get("nanostats", {})
+
+
+def calculate_metric_value(samples: List[Dict], metric: str, read_quality_filtering: str = "all") -> float:
     """Calculate metric value for a group of samples."""
 
     if not samples:
@@ -208,19 +366,23 @@ def calculate_metric_value(samples: List[Dict], metric: str) -> float:
         total_reads = 0
         count = 0
         for sample in samples:
-            stats = sample.get("statistics", {})
-            if "total_reads" in stats and stats["total_reads"]:
-                total_reads += stats["total_reads"]
+            stats = get_nanostats(sample, read_quality_filtering)
+            if "number_of_reads" in stats and stats["number_of_reads"] is not None:
+                total_reads += stats["number_of_reads"]
                 count += 1
+        # For single sample groups (like sample_id category), return the actual count
+        # For multiple sample groups, return the average
+        if len(samples) == 1 and count == 1:
+            return total_reads  # Return actual read count for single sample
         return total_reads / count if count > 0 else 0.0
 
     elif metric == "mean_read_length":
         total_length = 0
         count = 0
         for sample in samples:
-            stats = sample.get("statistics", {})
-            if "avg_length" in stats and stats["avg_length"]:
-                total_length += stats["avg_length"]
+            stats = get_nanostats(sample, read_quality_filtering)
+            if "mean_read_length" in stats and stats["mean_read_length"]:
+                total_length += stats["mean_read_length"]
                 count += 1
         return total_length / count if count > 0 else 0.0
 
@@ -228,9 +390,9 @@ def calculate_metric_value(samples: List[Dict], metric: str) -> float:
         total_quality = 0
         count = 0
         for sample in samples:
-            stats = sample.get("statistics", {})
-            if "avg_quality" in stats and stats["avg_quality"]:
-                total_quality += stats["avg_quality"]
+            stats = get_nanostats(sample, read_quality_filtering)
+            if "mean_read_quality" in stats and stats["mean_read_quality"]:
+                total_quality += stats["mean_read_quality"]
                 count += 1
         return total_quality / count if count > 0 else 0.0
 
@@ -259,7 +421,7 @@ def calculate_metric_value(samples: List[Dict], metric: str) -> float:
         total_bases = 0
         count = 0
         for sample in samples:
-            stats = sample.get("statistics", {})
+            stats = get_nanostats(sample, read_quality_filtering)
             if "total_bases" in stats and stats["total_bases"]:
                 total_bases += stats["total_bases"]
                 count += 1
@@ -269,7 +431,7 @@ def calculate_metric_value(samples: List[Dict], metric: str) -> float:
         total_n50 = 0
         count = 0
         for sample in samples:
-            stats = sample.get("statistics", {})
+            stats = get_nanostats(sample, read_quality_filtering)
             if "read_length_n50" in stats and stats["read_length_n50"]:
                 total_n50 += stats["read_length_n50"]
                 count += 1
@@ -327,11 +489,27 @@ def calculate_metric_value(samples: List[Dict], metric: str) -> float:
                     abundances = taxonomic_data["species_abundance"]
                     if abundances and len(abundances) > 0:
                         top_species = abundances[0].get("species")
-                
+
                 if top_species and expected_species.lower() in top_species.lower():
                     matches += 1
-        
+
         return (matches / total_with_sanger) * 100 if total_with_sanger > 0 else 0.0
+
+    elif metric == "abundance_percentage":
+        # Average abundance percentage for dominant species (for proportion analysis)
+        total_abundance = 0
+        count = 0
+        for sample in samples:
+            taxonomic_data = sample.get("taxonomic_data", {})
+            hits = taxonomic_data.get("hits", [])
+            if hits and "abundance" in hits[0]:
+                total_abundance += hits[0]["abundance"]
+                count += 1
+        return total_abundance / count if count > 0 else 0.0
+
+    elif metric == "species_frequency":
+        # Count of samples (for species frequency analysis)
+        return len(samples)
 
     else:
         return 0.0
@@ -365,23 +543,23 @@ async def get_trends_summary(
         # Calculate metadata statistics
         samples_with_metadata = [s for s in recent_samples if s.get("metadata")]
         metadata_coverage = (len(samples_with_metadata) / total_samples * 100) if total_samples > 0 else 0
-        
+
         # Sample type distribution
         sample_types = {}
         tissue_types = {}
         extraction_kits = {}
-        
+
         for sample in samples_with_metadata:
             metadata = sample.get("metadata", {})
-            
+
             # Count sample types
             sample_type = metadata.get("sample_type", "Unknown")
             sample_types[sample_type] = sample_types.get(sample_type, 0) + 1
-            
+
             # Count tissue types
             tissue = metadata.get("tissue", "Unknown")
             tissue_types[tissue] = tissue_types.get(tissue, 0) + 1
-            
+
             # Count extraction kits
             extraction_kit = metadata.get("extraction_kit", "Unknown")
             extraction_kits[extraction_kit] = extraction_kits.get(extraction_kit, 0) + 1
@@ -413,50 +591,52 @@ async def get_metadata_filters(
     request: Request
 ) -> Dict[str, Any]:
     """Get available metadata filter values."""
-    
+
     try:
         current_user = get_current_user(request)
-        
+
         async with get_db_connection() as db:
             samples_collection = db.samples
-            cursor = samples_collection.find({"metadata": {"$exists": True, "$ne": None}})
-            samples_with_metadata = await cursor.to_list(length=None)
-        
-        # Collect unique values for each metadata field
-        sample_types = set()
+            # Get samples with metadata for metadata fields
+            metadata_cursor = samples_collection.find({"metadata": {"$exists": True, "$ne": None}})
+            samples_with_metadata = await metadata_cursor.to_list(length=None)
+
+            # Get samples with taxonomic data for genera collection
+            taxonomic_cursor = samples_collection.find({"taxonomic_data.hits": {"$exists": True, "$ne": []}})
+            samples_with_taxonomic = await taxonomic_cursor.to_list(length=None)
+
+        # Collect unique genera from dominant species (hits[0])
+        genera = set()
+        for sample in samples_with_taxonomic:
+            taxonomic_data = sample.get("taxonomic_data", {})
+            hits = taxonomic_data.get("hits", [])
+            if hits and hits[0].get("genus"):
+                genera.add(hits[0]["genus"])
+
+        # Collect dynamic metadata fields
         tissues = set()
-        dilutions = set()
         extraction_kits = set()
         library_prep_kits = set()
-        sanger_species = set()
-        
+
         for sample in samples_with_metadata:
             metadata = sample.get("metadata", {})
             if not metadata:
                 continue
-                
-            if metadata.get("sample_type"):
-                sample_types.add(metadata["sample_type"])
+
             if metadata.get("tissue"):
                 tissues.add(metadata["tissue"])
-            if metadata.get("dilution"):
-                dilutions.add(metadata["dilution"])
             if metadata.get("extraction_kit"):
                 extraction_kits.add(metadata["extraction_kit"])
             if metadata.get("library_prep_kit"):
                 library_prep_kits.add(metadata["library_prep_kit"])
-            if metadata.get("sanger_expected_species"):
-                sanger_species.add(metadata["sanger_expected_species"])
-        
+
         return {
-            "sample_types": sorted(list(sample_types)),
             "tissues": sorted(list(tissues)),
-            "dilutions": sorted(list(dilutions)),
             "extraction_kits": sorted(list(extraction_kits)),
             "library_prep_kits": sorted(list(library_prep_kits)),
-            "sanger_expected_species": sorted(list(sanger_species)),
+            "genera": sorted(list(genera)),
             "total_samples_with_metadata": len(samples_with_metadata)
         }
-        
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
