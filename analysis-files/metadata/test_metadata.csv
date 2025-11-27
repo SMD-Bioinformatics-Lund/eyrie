@@ -1,0 +1,3 @@
+sample_id,sample_type,tissue,dilution,library_concentration,other_comments
+barcode01,patient,lung,1:10,5.2ng/uL,CSV format test
+barcode02,validation,blood,1:5,3.8ng/uL,Testing comma separation
