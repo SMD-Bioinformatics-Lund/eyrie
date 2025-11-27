@@ -2,7 +2,7 @@
 Configuration settings for Eyrie application
 """
 import os
-from typing import List
+from typing import List, Dict
 from enum import Enum
 
 
@@ -45,6 +45,12 @@ class Settings:
         # Flask Configuration
         self.session_cookie_path: str = self.external_base_path or '/'
         self.application_root: str = self.external_base_path
+
+        # Analysis Results Paths for different pipeline software
+        self.analysis_results_paths: Dict[str, str] = {
+            "trana": os.getenv('TRANA_ANALYSIS_RESULTS', '/app/analysis-files/results/trana'),
+            "metaval": os.getenv('METAVAL_ANALYSIS_RESULTS', '/app/analysis-files/results/metaval'),
+        }
 
     @property
     def is_development(self) -> bool:

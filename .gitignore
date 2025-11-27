@@ -34,9 +34,10 @@ ssl/
 *.db
 *.sqlite
 *.sqlite3
-data/mongodb/
 mongodb_data/
-analysis-files/
+analysis-files/mongodb/
+analysis-files/mongodb-dev
+analysis-files/mongodb-prod
 
 # Credentials and passwords
 *password*
