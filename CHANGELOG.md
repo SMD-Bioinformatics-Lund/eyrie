@@ -18,6 +18,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Standardized spike concentration filter field with predefined values: IC3/IC4
  - Standardized sample type filter with predefined values: validation, patient, negative control, positive control
  - Standardized dilution filter with laboratory standard values: 1:1, 1:10
+ - Added `sequencing_run_date` extraction from sequencing run IDs
+ - Improved trends analysis to use sequencing run dates for more accurate temporal grouping
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
@@ -36,6 +38,11 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Simplified branding from "Eyrie Sample Manager" to "Eyrie" across all user interfaces, API responses, and documentation
  - Enhanced trends analysis with metadata-based grouping and filtering capabilities
  - Changed `spike_species` to `spike_concentration` with IC3/IC4 validation in trends system
+ - Migrated sequencing run date storage to MongoDB ISODate format for better performance
+ - Simplified eyrie-popup directory structure by removing `run_directory` concept entirely
+ - Changed `base_path` to `analysis_output_dirpath` for clearer naming and direct file path resolution
+ - Updated generate-config command to use explicit flags (--analysis-output-dirpath, --sample-id) instead of positional arguments
+ - Changed dirnames in `analysis-files/`
 
 ## [0.3.0]
 
