@@ -383,6 +383,23 @@ def health_check() -> Dict[str, Any]:
         }
 
 
+def get_analysis_path_for_sample(sample_data: Dict[str, Any]) -> str:
+    """Get the correct analysis results path for a sample based on pipeline_software"""
+    
+    pipeline_software = sample_data.get('pipeline_software', 'trana')
+    analysis_path = settings.analysis_results_paths.get(pipeline_software, 
+                                                       settings.analysis_results_paths['trana'])
+    
+    # Return path without /app/analysis-files prefixes for URL construction  
+    if analysis_path.startswith('/app/analysis-files/'):
+        result_path = analysis_path[len('/app/analysis-files/'):]
+    else:
+        # Fallback for unexpected paths
+        result_path = 'results/trana' if pipeline_software == 'trana' else f'results/{pipeline_software}'
+    
+    return result_path
+
+
 def health_check_base_path() -> Dict[str, Any]:
     """Health check with base path support"""
     try:

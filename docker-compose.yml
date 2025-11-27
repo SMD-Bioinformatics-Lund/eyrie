@@ -37,12 +37,14 @@ services:
       EXTERNAL_BASE_PATH: ${EXTERNAL_BASE_PATH:-}
       EXTERNAL_API_URL: ${EXTERNAL_API_URL:-http://localhost:8000/api}
       ENVIRONMENT: ${ENVIRONMENT:-production}
+      TRANA_ANALYSIS_RESULTS: ${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}
+      METAVAL_ANALYSIS_RESULTS: ${METAVAL_ANALYSIS_RESULTS:-/app/analysis-files/results/metaval}
     ports:
       - "${FRONTEND_HOST_PORT:-3000}:5000"
     depends_on:
       - eyrie-backend
     volumes:
-      - ./analysis-files:/app/analysis-files:ro
+      - ./analysis-files/results/trana:${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}:ro
     networks:
       - eyrie-network
 

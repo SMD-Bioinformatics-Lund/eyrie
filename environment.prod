@@ -53,6 +53,12 @@ LOG_LEVEL=INFO
 DEBUG=false
 
 # =====================================================
+# Analysis Results Paths
+# =====================================================
+TRANA_ANALYSIS_RESULTS=/app/analysis-files/results/trana
+METAVAL_ANALYSIS_RESULTS=/app/analysis-files/results/metaval
+
+# =====================================================
 # Security
 # =====================================================
 SECRET_KEY=prod-secret-key-change-this-in-production
