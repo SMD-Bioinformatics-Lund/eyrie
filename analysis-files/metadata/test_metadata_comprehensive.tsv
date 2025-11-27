@@ -1,0 +1,9 @@
+sample_id	sample_type	tissue	dilution	library_concentration	multiple_finds	spike_concentration	extraction_kit	library_prep_kit
+SAMPLE001	validation	blood	1:1	25.5 ng/μL	no	IC3	Kit_A	PrepKit_1
+SAMPLE002	patient	urine	1:10	18.2 ng/μL	yes	IC4	Kit_B	PrepKit_2
+SAMPLE003	negative control	wound	1:1	30.1 ng/μL	no	IC3	Kit_A	PrepKit_1
+SAMPLE004	positive control	sputum	1:10	22.7 ng/μL	yes	IC4	Kit_B	PrepKit_2
+SAMPLE005	validation	csf	1:1	28.0 ng/μL	no	IC3	Kit_C	PrepKit_3
+SAMPLE006	patient	tissue	1:10	20.5 ng/μL	yes	IC4	Kit_A	PrepKit_1
+SAMPLE007	negative control	saliva	1:1	35.2 ng/μL	no	IC3	Kit_B	PrepKit_2
+SAMPLE008	positive control	stool	1:10	15.8 ng/μL	yes	IC4	Kit_C	PrepKit_3
