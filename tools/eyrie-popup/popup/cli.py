@@ -1,10 +1,10 @@
 """Command line interface for Eyrie POPUP (Pipeline Output Processor and UPloader)."""
 
-import os
-import yaml
-import click
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import yaml
+import click
 
 from .models import SampleConfig
 from .parser import SampleParser
@@ -239,7 +239,7 @@ def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], pas
 @click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (metadata only)')
-def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str, 
+def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
           username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool):
     """Upload sample analysis data and/or metadata to Eyrie.
 
@@ -275,7 +275,7 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
         click.echo(f"\n📊 Processing sample analysis data...")
         sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose)
 
-    # Upload metadata if provided  
+    # Upload metadata if provided
     if metadata_file:
         click.echo(f"\n📋 Processing metadata...")
         metadata_success = _upload_metadata(metadata_file, api, username, password, dry_run, verbose, create_missing)
@@ -306,24 +306,30 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
 
 
 @cli.command()
-@click.argument('trana_output_dirpath', type=click.Path(exists=True, path_type=Path))
-@click.argument('sample_id')
+@click.option('--analysis-output-dirpath', required=True, type=click.Path(exists=True, path_type=Path), 
+              help='Analysis output directory path containing pipeline output directories (fastqc, krona, nanoplot_processed, etc.)')
+@click.option('--sample-id', required=True, help='Sample identifier')
 @click.option('--output', '-o', type=click.Path(path_type=Path), 
               help='Output YAML file (default: {sample_id}_config.yaml)')
 @click.option('--sample-name', help='Sample name (default: Sample_{sample_id})')
 @click.option('--lims-id', help='LIMS identifier (default: LIMS_{sample_id})')
-@click.option('--run-id', help='Sequencing run identifier')
-@click.option('--run-dir', help='Run directory name (default: auto-detect from path or use run-id)')
+@click.option('--sequencing-run-id', help='Sequencing run identifier')
 @click.option('--classification', type=click.Choice(['16S', 'ITS']), default='16S',
               help='Classification type')
-def generate_config(trana_output_dirpath: Path, sample_id: str, output: Optional[Path], 
+@click.option('--pipeline-software', default='trana', help='Pipeline software used (trana, metaval, etc.)')
+def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
-                   run_id: Optional[str], run_dir: Optional[str], classification: str):
-    """Generate a YAML configuration file for a single sample."""
+                   sequencing_run_id: Optional[str], classification: str, pipeline_software: str):
+    """Generate a YAML configuration file for a single sample.
+    
+    Examples:
+      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01
+      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 --pipeline-software metaval
+    """
 
     click.echo(f"🔍 Generating config for sample: {sample_id}")
-    click.echo(f"📁 TRANA output path: {trana_output_dirpath}")
-    click.echo(f"📁 Base path (parent): {trana_output_dirpath.parent}")
+    click.echo(f"📁 Analysis output directory: {analysis_output_dirpath}")
+    click.echo(f"🔧 Pipeline software: {pipeline_software}")
 
     # Generate defaults
     if not sample_name:
@@ -332,19 +338,8 @@ def generate_config(trana_output_dirpath: Path, sample_id: str, output: Optional
     if not lims_id:
         lims_id = f"LIMS_{sample_id}"
 
-    if not run_id:
-        from datetime import datetime
-        run_id = f"RUN_{datetime.now().strftime('%Y_%m_%d')}"
-
-    # Determine run directory
-    if not run_dir:
-        # Try to auto-detect from trana_output_dirpath
-        trana_output_dir_name = trana_output_dirpath.name
-        if trana_output_dir_name and trana_output_dir_name != ".":
-            run_dir = trana_output_dir_name
-        else:
-            # Fallback to run_id
-            run_dir = run_id
+    if not sequencing_run_id:
+        sequencing_run_id = f"RUN_{datetime.now().strftime('%Y_%m_%d')}"
 
     # Create configuration
     config = {
@@ -353,11 +348,11 @@ def generate_config(trana_output_dirpath: Path, sample_id: str, output: Optional
             "sample_name": sample_name,
             "lims_id": lims_id,
             "barcode": sample_id if sample_id.startswith("barcode") else None,
-            "sequencing_run_id": run_id,
-            "classification_type": classification
+            "sequencing_run_id": sequencing_run_id,
+            "classification_type": classification,
+            "pipeline_software": pipeline_software
         },
-        "base_path": str(trana_output_dirpath.parent),
-        "run_directory": run_dir,
+        "analysis_output_dirpath": str(analysis_output_dirpath),
         "fastqc": {
             "enabled": True,
             "directory": "fastqc",

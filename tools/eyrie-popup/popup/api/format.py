@@ -78,29 +78,10 @@ class FormatHandler:
             ]
         }
 
-        # Use run directory only if provided, no fallback to sequencing_run_id
-        run_dir = config.run_directory
-
         # Structured nanoplot data with nested nanostats
         nanoplot_data = None
         if sample_data.nanoplot:
             nanoplot_dict = sample_data.nanoplot.dict()
-            # Prepend run_dir to all file paths only if run_dir is provided
-            if nanoplot_dict.get('unprocessed'):
-                for field, file_path in nanoplot_dict['unprocessed'].items():
-                    if file_path:
-                        if run_dir:
-                            nanoplot_dict['unprocessed'][field] = f"{run_dir}/{file_path}"
-                        else:
-                            nanoplot_dict['unprocessed'][field] = file_path
-            if nanoplot_dict.get('processed'):
-                for field, file_path in nanoplot_dict['processed'].items():
-                    if file_path:
-                        if run_dir:
-                            nanoplot_dict['processed'][field] = f"{run_dir}/{file_path}"
-                        else:
-                            nanoplot_dict['processed'][field] = file_path
-
             # Add nanostats to nanoplot structure
             if sample_data.nano_stats_unprocessed and nanoplot_dict.get('unprocessed'):
                 # Convert existing files to nested structure
@@ -152,9 +133,9 @@ class FormatHandler:
         # Prepare files structure
         files_data = {}
         if sample_data.krona_file:
-            files_data["krona"] = f"{run_dir}/{sample_data.krona_file}" if run_dir else sample_data.krona_file
+            files_data["krona"] = sample_data.krona_file
         if sample_data.fastqc_file:
-            files_data["fastqc"] = f"{run_dir}/{sample_data.fastqc_file}" if run_dir else sample_data.fastqc_file
+            files_data["fastqc"] = sample_data.fastqc_file
 
         # Extract sequence run date from sequencing_run_id or use provided value
         sequencing_run_date = sample_data.sample_info.sequencing_run_date

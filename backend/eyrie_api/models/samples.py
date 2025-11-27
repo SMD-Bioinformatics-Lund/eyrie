@@ -20,6 +20,7 @@ class SampleCreate(BaseModel):
     sequencing_run_date: Optional[datetime] = None
     lims_id: str
     classification: str = "16S"
+    pipeline_software: Optional[str] = "trana"
     qc: str = "unprocessed"
     comments: Optional[Dict[str, Any]] = None
     files: Optional[Dict[str, Any]] = None
@@ -34,6 +35,7 @@ class SampleUpdate(BaseModel):
     sample_name: Optional[str] = None
     lims_id: Optional[str] = None
     classification: Optional[str] = None
+    pipeline_software: Optional[str] = None
     qc: Optional[str] = None
     comments: Optional[Dict[str, Any]] = None
     files: Optional[Dict[str, Any]] = None

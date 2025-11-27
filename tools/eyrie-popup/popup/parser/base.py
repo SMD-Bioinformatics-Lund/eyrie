@@ -14,9 +14,8 @@ class SampleParser:
 
     def __init__(self, config: SampleConfig):
         self.config = config
-        self.base_path = Path(config.base_path)
-        run_dir = config.run_directory or config.sample.sequencing_run_id
-        self.seqrun_path = self.base_path / run_dir
+        self.analysis_output_path = Path(config.analysis_output_dirpath)
+        self.seqrun_path = self.analysis_output_path
 
     def parse_sample(self) -> ParsedSample:
         """Parse the sample analysis data."""

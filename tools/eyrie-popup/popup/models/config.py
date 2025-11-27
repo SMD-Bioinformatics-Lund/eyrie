@@ -11,6 +11,7 @@ class SampleInfo(BaseModel):
     lims_id: str
     sequencing_run_id: str
     classification_type: str = Field(..., regex="^(16S|ITS)$")
+    pipeline_software: str = "trana"
     barcode: Optional[str] = None
     sequencing_run_date: Optional[str] = None
 
@@ -60,8 +61,7 @@ class ResultsConfig(BaseModel):
 class SampleConfig(BaseModel):
     """Complete sample configuration."""
     sample: SampleInfo
-    base_path: str
-    run_directory: Optional[str] = None
+    analysis_output_dirpath: str
     fastqc: Optional[FastQCConfig] = None
     krona: Optional[KronaConfig] = None
     multiqc: Optional[MultiQCConfig] = None

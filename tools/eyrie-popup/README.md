@@ -24,7 +24,7 @@ pip install -e .
 Auto-generate a configuration file for a sample:
 
 ```bash
-popup generate-config /path/to/analysis/results sample_id --output config.yaml
+popup generate-config --trana-output-dirpath /path/to/analysis/results --sample-id sample_id --output config.yaml
 ```
 
 ### Upload Sample
@@ -63,11 +63,8 @@ sample:
   sequencing_run_id: "RUN_2025_09_30"
   classification_type: "16S"  # or "ITS"
 
-# Base directory containing all analysis outputs
-base_path: "/path/to/analysis/results"
-
-# Run directory name for file paths (defaults to sequencing_run_id if not specified)
-run_directory: "test"
+# TRANA output directory containing analysis output directories (fastqc, krona, nanoplot_processed, etc.)
+trana_output_dirpath: "/path/to/analysis/results"
 
 # Quality control files
 fastqc:
