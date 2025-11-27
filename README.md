@@ -112,11 +112,47 @@ conda run -n eyrie-popup popup upload --sample data/test/barcode01_config.yaml -
 conda run -n eyrie-popup popup test-connection --username admin --password admin --api http://localhost:8000/api
 ```
 
-Yaml files can be created by running:
+### Creating configuration files
+
+Generate YAML configuration files for sample processing:
 
 ```bash
+# Generate config with explicit flags
+conda run -n eyrie-popup popup generate-config --trana-output-dirpath /path/to/analysis --sample-id barcode01
+
+# Generate config with custom output file
+conda run -n eyrie-popup popup generate-config --trana-output-dirpath /path/to/analysis --sample-id barcode01 --output custom_config.yaml
+
+# See all options
 conda run -n eyrie-popup popup generate-config --help
 ```
+
+### File path behavior
+
+Eyrie-popup searches for analysis files using a simplified directory structure:
+
+```yaml
+trana_output_dirpath: "/path/to/analysis"
+```
+
+Files are searched in: `/path/to/analysis/{component_directory}/{sample_id}_file.ext`
+
+**Example directory structure:**
+```
+/path/to/analysis/
+├── fastqc/
+│   └── barcode01_fastqc.html
+├── krona/
+│   └── barcode01_krona.html
+├── nanoplot_processed/
+│   ├── barcode01_nanoplot_processed_NanoStats.txt
+│   └── barcode01_nanoplot_processed_NanoPlot-report.html
+├── nanoplot_unprocessed/
+└── results/
+    └── barcode01_filtered.fastq_rel-abundance.tsv
+```
+
+The `trana_output_dirpath` should point directly to the directory containing the analysis output directories (`fastqc/`, `krona/`, etc.).
 
 ## Project Structure
 
