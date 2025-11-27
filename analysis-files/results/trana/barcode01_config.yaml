@@ -9,12 +9,10 @@ sample:
   barcode: "barcode01"
   sequencing_run_id: "20250930_1234_MN12345_TEST1234_test1234"
   classification_type: "16S"  # or "ITS"
+  pipeline_software: "trana"
 
-# Base directory containing all analysis outputs
-base_path: "/path/to/eyrie/analysis-files"
-
-# Run directory name for file paths (defaults to sequencing_run_id if not specified)
-run_directory: "test"
+# Analysis output directory containing pipeline output directories (fastqc, krona, nanoplot_processed, etc.)
+analysis_output_dirpath: "/Users/ryankennedy/Documents/dev/eyrie/analysis-files/results/trana"
 
 # Quality control files
 fastqc:
