@@ -118,10 +118,10 @@ Generate YAML configuration files for sample processing:
 
 ```bash
 # Generate config with explicit flags
-conda run -n eyrie-popup popup generate-config --trana-output-dirpath /path/to/analysis --sample-id barcode01
+conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01
 
 # Generate config with custom output file
-conda run -n eyrie-popup popup generate-config --trana-output-dirpath /path/to/analysis --sample-id barcode01 --output custom_config.yaml
+conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 --output custom_config.yaml
 
 # See all options
 conda run -n eyrie-popup popup generate-config --help
@@ -132,7 +132,7 @@ conda run -n eyrie-popup popup generate-config --help
 Eyrie-popup searches for analysis files using a simplified directory structure:
 
 ```yaml
-trana_output_dirpath: "/path/to/analysis"
+analysis_output_dirpath: "/path/to/analysis"
 ```
 
 Files are searched in: `/path/to/analysis/{component_directory}/{sample_id}_file.ext`
@@ -152,7 +152,7 @@ Files are searched in: `/path/to/analysis/{component_directory}/{sample_id}_file
     └── barcode01_filtered.fastq_rel-abundance.tsv
 ```
 
-The `trana_output_dirpath` should point directly to the directory containing the analysis output directories (`fastqc/`, `krona/`, etc.).
+The `analysis_output_dirpath` should point directly to the directory containing the analysis output directories (`fastqc/`, `krona/`, etc.).
 
 ## Project Structure
 
