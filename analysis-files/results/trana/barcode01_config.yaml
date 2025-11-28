@@ -12,7 +12,7 @@ sample:
   pipeline_software: "trana"
 
 # Analysis output directory containing pipeline output directories (fastqc, krona, nanoplot_processed, etc.)
-analysis_output_dirpath: "/Users/ryankennedy/Documents/dev/eyrie/analysis-files/results/trana"
+analysis_output_dirpath: "/path/to/analysis-files/results/trana"
 
 # Quality control files
 fastqc:

@@ -27,15 +27,10 @@
         // Helper function to build analysis file URLs with pipeline software path resolution
         window.getDataFileUrl = function(filePath) {
             // Use the pre-calculated analysis base path for the sample's pipeline software
-            const basePath = '{{ analysis_base_path }}';
-            const fullFilePath = `${basePath}/${filePath}`;
+            const analysisBasePath = '{{ analysis_base_path }}';
+            const fullFilePath = `${analysisBasePath}/${filePath}`;
             
             return window.DATA_URL_TEMPLATE.replace('__FILE_PATH__', fullFilePath);
-        };
-
-        // Backward compatibility for legacy code
-        window.getBasePath = function() {
-            return '';
         };
 
         // Helper function to build URLs for specific samples
