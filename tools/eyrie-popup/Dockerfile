@@ -24,5 +24,5 @@ RUN useradd -m -u 1000 eyrie && chown -R eyrie:eyrie /app
 USER eyrie
 
 # Set the entrypoint
-ENTRYPOINT ["eyrie-popup"]
+ENTRYPOINT ["popup"]
 CMD ["--help"]

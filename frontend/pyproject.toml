@@ -9,7 +9,6 @@ description = "Eyrie - Web Frontend Application"
 authors = [
     {name = "Ryan James Kennedy", email = "ryan.kennedy@skane.se"}
 ]
-readme = "README.md"
 requires-python = ">=3.11.0"
 license = {text = "MIT"}
 keywords = ["bioinformatics", "sample-management", "16s", "its", "sequencing"]
