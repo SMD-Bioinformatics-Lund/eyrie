@@ -13,20 +13,18 @@ jobs:
         working-directory: tools/eyrie-popup
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.0
         with:
           fetch-depth: 0
 
       - name: Extract version from release tag
         id: version
         run: |
-          # Extract version from tag (e.g., eyrie-popup-v0.2.1 -> 0.2.1)
           VERSION=${GITHUB_REF#refs/tags/eyrie-popup-v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Publishing eyrie-popup version: $VERSION"
+          echo "POPUP_TAG=$VERSION" >> $GITHUB_ENV
 
       - name: Set up Python
-        uses: actions/setup-python@v5.0.0
+        uses: actions/setup-python@v6.1.0
         with:
           python-version: '3.11'
 
@@ -38,24 +36,22 @@ jobs:
 
       - name: Verify version matches release
         run: |
-          # Check that the version in __version__.py matches the release tag
           PACKAGE_VERSION=$(grep '__version__ = ' popup/__version__.py | cut -d'"' -f2)
-          RELEASE_VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_VERSION="${{ env.POPUP_TAG }}"
           
           if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
-            echo "❌ Version mismatch!"
+            echo "Version mismatch!"
             echo "Package version: $PACKAGE_VERSION"
             echo "Release tag version: $RELEASE_VERSION"
             echo "Please ensure the version in popup/__version__.py matches the release tag."
             exit 1
           fi
           
-          echo "✅ Version verified: $PACKAGE_VERSION"
+          echo "Version verified: $PACKAGE_VERSION"
 
       - name: Build package
         run: |
           python -m build
-          echo "Built eyrie-popup package version: ${{ steps.version.outputs.version }}"
 
       - name: Check package contents
         run: |
@@ -66,21 +62,4 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: |
-          echo "Publishing eyrie-popup version ${{ steps.version.outputs.version }} to PyPI..."
           python -m twine upload dist/*
-
-      - name: Publish summary
-        run: |
-          echo "## PyPI Package Published Successfully! 📦" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Package:** \`eyrie-popup==${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Installation:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "pip install eyrie-popup==${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Usage:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "popup --help" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

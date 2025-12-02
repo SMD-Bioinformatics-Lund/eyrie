@@ -10,61 +10,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.1
+        uses: actions/checkout@v6.0.0
         with:
           fetch-depth: 0
+
+      - name: Wait for PyPI to publish package
+        run: sleep 60s
+        shell: bash
 
       - name: Extract version from release tag
         id: version
         run: |
-          # Extract version from tag (e.g., eyrie-popup-v0.2.1 -> 0.2.1)
           VERSION=${GITHUB_REF#refs/tags/eyrie-popup-v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "Building Docker image for eyrie-popup version: $VERSION"
+          echo "POPUP_TAG=$VERSION" >> $GITHUB_ENV
+          echo "POPUP_TAG_LATEST=latest" >> $GITHUB_ENV
 
       - name: Verify version matches release
         run: |
-          # Check that the version in __version__.py matches the release tag
           PACKAGE_VERSION=$(grep '__version__ = ' tools/eyrie-popup/popup/__version__.py | cut -d'"' -f2)
-          RELEASE_VERSION="${{ steps.version.outputs.version }}"
+          RELEASE_VERSION="${{ env.POPUP_TAG }}"
           
           if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
-            echo "❌ Version mismatch!"
+            echo "Version mismatch!"
             echo "Package version: $PACKAGE_VERSION"
             echo "Release tag version: $RELEASE_VERSION"
             echo "Please ensure the version in popup/__version__.py matches the release tag."
             exit 1
           fi
           
-          echo "✅ Version verified: $PACKAGE_VERSION"
+          echo "Version verified: $PACKAGE_VERSION"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.0.0
+        uses: docker/setup-buildx-action@v3.11.1
 
       - name: Login to DockerHub
-        uses: docker/login-action@v3.0.0
+        uses: docker/login-action@v3.6.0
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Extract metadata for Docker
         id: meta
-        uses: docker/metadata-action@v5.0.0
+        uses: docker/metadata-action@v5.10.0
         with:
           images: clinicalgenomicslund/eyrie-popup
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ steps.version.outputs.version }}
-            type=raw,value=v${{ steps.version.outputs.version }}
+            type=raw,value=${{ env.POPUP_TAG }}
           labels: |
             org.opencontainers.image.title=eyrie-popup
             org.opencontainers.image.description=Pipeline Output Processor and UPloader for Eyrie - parsing sequencing analysis results
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.version=${{ env.POPUP_TAG }}
             org.opencontainers.image.source=https://github.com/clinicalgenomicslund/eyrie
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5.0.0
+        uses: docker/build-push-action@v6.8
         with:
           context: tools/eyrie-popup
           file: tools/eyrie-popup/Dockerfile
@@ -72,43 +73,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ steps.version.outputs.version }}
 
       - name: Update Docker Hub description
-        uses: peter-evans/dockerhub-description@v3.4.2
+        uses: peter-evans/dockerhub-description@v5
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
           repository: clinicalgenomicslund/eyrie-popup
           readme-filepath: tools/eyrie-popup/README.md
-
-      - name: Docker image summary
-        run: |
-          echo "## Docker Image Published Successfully! 🐳" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Image:** \`clinicalgenomicslund/eyrie-popup:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Available Tags:" >> $GITHUB_STEP_SUMMARY
-          echo "- \`clinicalgenomicslund/eyrie-popup:latest\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`clinicalgenomicslund/eyrie-popup:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`clinicalgenomicslund/eyrie-popup:v${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Usage:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull clinicalgenomicslund/eyrie-popup:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "docker run --rm clinicalgenomicslund/eyrie-popup:${{ steps.version.outputs.version }} --help" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Example with volume mount:" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker run --rm -v /path/to/data:/data \\" >> $GITHUB_STEP_SUMMARY
-          echo "  clinicalgenomicslund/eyrie-popup:${{ steps.version.outputs.version }} \\" >> $GITHUB_STEP_SUMMARY
-          echo "  generate-config --analysis-output-dirpath /data --sample-id sample01" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Platforms:" >> $GITHUB_STEP_SUMMARY
-          echo "- \`linux/amd64\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`linux/arm64\`" >> $GITHUB_STEP_SUMMARY
