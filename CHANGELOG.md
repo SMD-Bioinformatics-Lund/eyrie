@@ -19,7 +19,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Standardized sample type filter with predefined values: validation, patient, negative control, positive control
  - Standardized dilution filter with laboratory standard values: 1:1, 1:10
  - Added `sequencing_run_date` extraction from sequencing run IDs
- - Improved trends analysis to use sequencing run dates for more accurate temporal grouping
+ - Added sequencing run dates for more accurate temporal grouping in trends analysis
+ - Added GA workflows to publish eyrie-popup to PyPI and dockerhub on tag push
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
