@@ -3,7 +3,8 @@ from fastapi import APIRouter, HTTPException, Depends
 from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
 from eyrie_api.database.async_sample_operations import (
     find_sample, update_sample_qc, update_sample_comment,
-    update_sample, upsert_sample, update_sample_species_flags
+    update_sample, upsert_sample, update_sample_species_flags,
+    find_negative_controls_by_run_id
 )
 from eyrie_api.routes.auth import require_admin_or_uploader
 from eyrie_api.utils.json_encoder import JSONEncoder
@@ -131,4 +132,25 @@ async def update_species_flags(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+@router.get("/{sample_id}/negative-controls")
+async def get_negative_controls(sample_id: str):
+    """Get negative control samples from the same sequencing run"""
+    try:
+        # First, get the main sample to find its sequencing_run_id
+        sample = await find_sample(sample_id)
+        if not sample:
+            raise HTTPException(status_code=404, detail="Sample not found")
+        
+        sequencing_run_id = sample.get('sequencing_run_id')
+        if not sequencing_run_id:
+            return []  # Return empty list if no sequencing_run_id
+        
+        # Find negative controls for this sequencing run
+        negative_controls = await find_negative_controls_by_run_id(sequencing_run_id)
+        
+        return json.loads(JSONEncoder().encode(negative_controls))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
