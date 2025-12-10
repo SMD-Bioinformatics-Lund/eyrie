@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, jsonify
 from flask_login import login_required, current_user
 from ...eyrie import (
-    get_sample_from_backend, update_sample_qc, update_sample_comment,
+    get_sample_from_backend, get_negative_controls_from_backend, update_sample_qc, update_sample_comment,
     update_sample_species_flags, serve_analysis_file, get_analysis_path_for_sample
 )
 
@@ -29,14 +29,21 @@ def sample_classification(sample_id):
     try:
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
-        # Get sample data for server-side rendering
-        sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path_for_sample(sample)
-        return render_template('sample_classification.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path)
+        
+        # Get negative controls from the same sequencing run
+        negative_controls = []
+        try:
+            negative_controls = get_negative_controls_from_backend(sample_id)
+        except Exception as neg_error:
+            print(f"Warning: Could not load negative controls: {neg_error}")
+            # Continue without negative controls rather than failing the whole page
+        
+        return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=current_user, analysis_base_path=analysis_base_path)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for classification view: {e}")
-        return render_template('sample_classification.html', sample_id=sample_id, sample=None, current_user=current_user)
+        return render_template('sample_classification.html', sample_id=sample_id, sample=None, negative_controls=[], current_user=current_user)
 
 @bp.route("/sample/<sample_id>/nanoplot")
 @login_required

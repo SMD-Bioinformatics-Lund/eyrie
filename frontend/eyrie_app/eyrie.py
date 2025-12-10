@@ -227,6 +227,15 @@ def get_sample_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> Dic
 
 
 @api_authentication
+def get_negative_controls_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> List[Dict[str, Any]]:
+    """Get negative control samples from the same sequencing run"""
+    url = f"{backend_url}/api/sample/{sample_id}/negative-controls"
+    resp = requests.get(url, headers=headers, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@api_authentication
 def update_sample_qc(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample QC status"""
     url = f"{backend_url}/api/sample/{sample_id}/qc"

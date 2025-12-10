@@ -8,7 +8,7 @@
 
     <!-- Main Content -->
     {% from 'macros/classification.html' import classification_content %}
-    {{ classification_content(sample_id, sample, analysis_base_path) }}
+    {{ classification_content(sample_id, sample, negative_controls, analysis_base_path) }}
 
     <!-- Scripts -->
 {% endblock %}
