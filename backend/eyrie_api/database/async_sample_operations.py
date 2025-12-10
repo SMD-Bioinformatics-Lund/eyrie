@@ -121,3 +121,20 @@ async def update_sample_species_flags(
             {'$set': update_data}
         )
         return result.matched_count > 0
+
+
+async def find_negative_controls_by_run_id(sequencing_run_id: str) -> List[Dict[str, Any]]:
+    """Find negative control samples by sequencing_run_id."""
+    async with get_db_connection() as db:
+        cursor = db.samples.find(
+            {
+                'sequencing_run_id': sequencing_run_id,
+                'metadata.sample_type': 'negative control'
+            },
+            {
+                'sample_id': 1,
+                'taxonomic_data.hits': 1,
+                '_id': 0
+            }
+        )
+        return await cursor.to_list(length=4)  # Limit to maximum 4 negative controls
