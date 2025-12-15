@@ -141,14 +141,14 @@ async def get_negative_controls(sample_id: str):
         sample = await find_sample(sample_id)
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
-        
+
         sequencing_run_id = sample.get('sequencing_run_id')
         if not sequencing_run_id:
             return []  # Return empty list if no sequencing_run_id
-        
+
         # Find negative controls for this sequencing run
         negative_controls = await find_negative_controls_by_run_id(sequencing_run_id)
-        
+
         return json.loads(JSONEncoder().encode(negative_controls))
     except HTTPException:
         raise

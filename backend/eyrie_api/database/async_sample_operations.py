@@ -137,4 +137,4 @@ async def find_negative_controls_by_run_id(sequencing_run_id: str) -> List[Dict[
                 '_id': 0
             }
         )
-        return await cursor.to_list(length=4)  # Limit to maximum 4 negative controls
+        return await cursor.to_list(length=4)
