@@ -5,6 +5,12 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+ - Added negative controls display in classification view with automatic detection from same sequencing run
+ - Added MongoDB query to find negative controls by sequencing_run_id and metadata.sample_type 'negative control'
+ - Added backend API endpoint `/api/sample/{sample_id}/negative-controls` to retrieve negative control data
+ - Added frontend integration to display up to 4 negative control tables side-by-side below main classification data
+ - Added negative control tables showing Species, Abundance %, and Estimated Counts (excluding flag columns)
+ - Added favicon.ico support to both base.html and sample_base.html templates for consistent branding
  - Implemented QC (array with timestamps/users) and general (string) comments with separate submission buttons
  - Added display sample metadata fields (sample_type, tissue, dilution, etc.)
  - Added ability to upload sample metadata via eyrie-popup tool
