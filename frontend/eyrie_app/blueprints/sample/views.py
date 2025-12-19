@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, jsonify
+from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 from ...eyrie import (
     get_sample_from_backend, get_negative_controls_from_backend, update_sample_qc, update_sample_comment,
@@ -11,22 +11,29 @@ bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
 @login_required
 def sample_overview(sample_id):
     try:
+        # Get return_to parameter if provided
+        return_to = request.args.get('return_to')
+        
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path_for_sample(sample)
-        return render_template('sample_overview.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path)
+        return render_template('sample_overview.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path, return_to=return_to)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for overview: {e}")
         print(f"Error type: {type(e).__name__}")
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
-        return render_template('sample_overview.html', sample_id=sample_id, sample=None, current_user=current_user)
+        return_to = request.args.get('return_to')
+        return render_template('sample_overview.html', sample_id=sample_id, sample=None, current_user=current_user, return_to=return_to)
 
 @bp.route("/sample/<sample_id>/classification")
 @login_required
 def sample_classification(sample_id):
     try:
+        # Get return_to parameter if provided
+        return_to = request.args.get('return_to')
+        
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path_for_sample(sample)
@@ -38,26 +45,29 @@ def sample_classification(sample_id):
         except Exception as neg_error:
             print(f"Warning: Could not load negative controls: {neg_error}")
 
-        return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=current_user, analysis_base_path=analysis_base_path)
+        return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=current_user, analysis_base_path=analysis_base_path, return_to=return_to)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for classification view: {e}")
-        return render_template('sample_classification.html', sample_id=sample_id, sample=None, negative_controls=[], current_user=current_user)
+        return_to = request.args.get('return_to')
+        return render_template('sample_classification.html', sample_id=sample_id, sample=None, negative_controls=[], current_user=current_user, return_to=return_to)
 
 @bp.route("/sample/<sample_id>/nanoplot")
 @login_required
 def sample_nanoplot(sample_id):
     try:
-        # Get sample data for server-side rendering
-        sample = get_sample_from_backend(sample_id)
+        # Get return_to parameter if provided
+        return_to = request.args.get('return_to')
+
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path_for_sample(sample)
-        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path)
+        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path, return_to=return_to)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for nanoplot: {e}")
-        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=None, current_user=current_user)
+        return_to = request.args.get('return_to')
+        return render_template('sample_nanoplot.html', sample_id=sample_id, sample=None, current_user=current_user, return_to=return_to)
 
 # API Routes
 @bp.route("/api/sample/<sample_id>")

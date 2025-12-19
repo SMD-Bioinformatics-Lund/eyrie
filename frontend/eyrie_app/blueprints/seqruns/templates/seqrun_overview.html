@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seqrun.sequencing_run_id }} - Sequencing Run Overview{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('seqruns.seqruns_page') }}">
+                        <i class="bi bi-cpu me-1"></i>Sequencing Runs
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ seqrun.sequencing_run_id }}</li>
+            </ol>
+        </nav>
+
+        <!-- Overview Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="bi bi-cpu me-2"></i>{{ seqrun.sequencing_run_id }}
+                            <small class="ms-3 opacity-75">Run Overview</small>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-primary">{{ seqrun.total_samples or 0 }}</div>
+                                    <div class="text-muted">Total Samples</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-success">{{ seqrun.approved_samples or 0 }}</div>
+                                    <div class="text-muted">Approved</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-info">{{ seqrun.true_hits or 0 }}</div>
+                                    <div class="text-muted">True Hits</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-warning">{{ seqrun.spikes_detected or 0 }}</div>
+                                    <div class="text-muted">Spikes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline Files -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-text me-2"></i>Pipeline Files
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6>Reports</h6>
+                                <div class="list-group">
+                                    <a href="{{ url_for('seqruns.seqrun_execution_report', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-file-earmark-bar-graph me-2"></i>Execution Report
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_execution_timeline', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-clock-history me-2"></i>Execution Timeline
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h6>Configuration & Logs</h6>
+                                <div class="list-group">
+                                    <a href="{{ url_for('seqruns.seqrun_params', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-gear me-2"></i>Parameters JSON
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_execution_trace', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-list-ul me-2"></i>Execution Trace
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_software_versions', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-code-square me-2"></i>Software Versions
+                                        <small class="text-muted ms-2">(YAML)</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Samples in this Run -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>Samples in Run
+                        </h5>
+                        <div class="input-group" style="width: 300px;">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" id="runSamplesSearch" placeholder="Search samples...">
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="runSamplesTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Open</th>
+                                        <th>Sample Name</th>
+                                        <th>Sample ID</th>
+                                        <th>LIMS ID</th>
+                                        <th>Classification</th>
+                                        <th>Top Hits</th>
+                                        <th>Contaminants</th>
+                                        <th>QC Status</th>
+                                        <th>Spike</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="runSamplesTableBody">
+                                    {% if seqrun.samples %}
+                                        {% for sample in seqrun.samples %}
+                                            <tr>
+                                                <td>
+                                                    <a href="{{ url_for('sample.sample_page', sample_id=sample.sample_id) }}" 
+                                                       class="btn btn-sm btn-outline-primary">
+                                                        <i class="bi bi-eye me-1"></i>View
+                                                    </a>
+                                                </td>
+                                                <td>{{ sample.sample_name }}</td>
+                                                <td>{{ sample.sample_id }}</td>
+                                                <td>{{ sample.lims_id }}</td>
+                                                <td>
+                                                    <span class="badge bg-primary">{{ sample.classification }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if sample.flagged_top_hits %}
+                                                        <small class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                            {{ sample.flagged_top_hits | join(', ') }}
+                                                        </small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {% if sample.flagged_contaminants %}
+                                                        <small class="text-truncate d-inline-block" style="max-width: 200px;">
+                                                            {{ sample.flagged_contaminants | join(', ') }}
+                                                        </small>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    <span class="badge {{ sample.qc | qc_badge_class }}">{{ sample.qc }}</span>
+                                                </td>
+                                                <td>
+                                                    {% if sample.spike %}
+                                                        <span class="badge bg-warning">{{ sample.spike }}</span>
+                                                    {% else %}
+                                                        <span class="text-muted">-</span>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="9" class="text-center text-muted py-4">
+                                                <i class="bi bi-info-circle me-2"></i>No samples found for this sequencing run
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        // Search functionality for samples in run
+        document.getElementById('runSamplesSearch').addEventListener('keyup', function() {
+            const searchValue = this.value.toLowerCase();
+            const tableBody = document.getElementById('runSamplesTableBody');
+            const rows = tableBody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchValue) ? '' : 'none';
+            }
+        });
+    </script>
+{% endblock %}

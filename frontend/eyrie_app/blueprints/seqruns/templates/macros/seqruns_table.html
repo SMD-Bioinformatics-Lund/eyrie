@@ -1,0 +1,72 @@
+{% macro seqruns_table_rows(seqruns, error) %}
+    {% if error %}
+        <tr>
+            <td colspan="9" class="text-center text-danger py-4">
+                <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
+            </td>
+        </tr>
+    {% elif not seqruns %}
+        <tr>
+            <td colspan="9" class="text-center text-muted py-4">
+                <i class="bi bi-info-circle me-2"></i>No sequencing runs available
+            </td>
+        </tr>
+    {% else %}
+        {% for seqrun in seqruns %}
+            <tr>
+                <td class="text-center">
+                    <a href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}"
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-eye"></i>
+                    </a>
+                </td>
+                <td>{{ seqrun.sequencing_run_id }}</td>
+                <td>
+                    {% if seqrun.run_date %}
+                        {{ seqrun.run_date | format_date }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge bg-secondary">{{ seqrun.total_samples or 0 }}</span>
+                </td>
+                <td>
+                    <span class="badge bg-success">{{ seqrun.approved_samples or 0 }}</span>
+                </td>
+                <td>
+                    <span class="badge bg-info">{{ seqrun.true_hits or 0 }}</span>
+                </td>
+                <td>
+                    <span class="badge bg-warning">{{ seqrun.spikes_detected or 0 }}</span>
+                </td>
+                <td>
+                    {% if seqrun.pipeline_status == 'completed' %}
+                        <span class="badge bg-success">
+                            <i class="bi bi-check-circle me-1"></i>Completed
+                        </span>
+                    {% elif seqrun.pipeline_status == 'running' %}
+                        <span class="badge bg-info">
+                            <i class="bi bi-clock me-1"></i>Running
+                        </span>
+                    {% elif seqrun.pipeline_status == 'failed' %}
+                        <span class="badge bg-danger">
+                            <i class="bi bi-x-circle me-1"></i>Failed
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-question-circle me-1"></i>{{ seqrun.pipeline_status or 'Unknown' }}
+                        </span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if seqrun.created_date %}
+                        {{ seqrun.created_date | format_date }}
+                    {% else %}
+                        <span class="text-muted">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}

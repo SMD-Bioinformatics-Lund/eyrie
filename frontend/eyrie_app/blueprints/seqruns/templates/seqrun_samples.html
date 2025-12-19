@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seqrun.sequencing_run_id }} Samples - Eyrie{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('seqruns.seqruns_page') }}">
+                        <i class="bi bi-cpu me-1"></i>Sequencing runs
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ seqrun.sequencing_run_id }}</li>
+            </ol>
+        </nav>
+
+        <!-- Header with Sequencing Run Info -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>
+                    <i class="bi bi-cpu me-2"></i>{{ seqrun.sequencing_run_id }}
+                    <small class="text-muted">Sequencing Run</small>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-table me-2"></i>Samples
+                    <span class="badge bg-primary ms-2">{{ seqrun.total_samples or 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-info-circle me-2"></i>Information
+                </a>
+            </li>
+        </ul>
+
+        <!-- Samples Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>Sample Results
+                            <small class="ms-3 opacity-75">{{ seqrun.sequencing_run_id }}</small>
+                        </h5>
+                        <div class="input-group" style="width: 300px;">
+                            <span class="input-group-text bg-white border-0">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control border-0" id="tableSearch" placeholder="Search samples...">
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="samplesTable">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Open</th>
+                                        <th>Sample Name</th>
+                                        <th>Sample ID</th>
+                                        <th>Sequencing Run ID</th>
+                                        <th>LIMS ID</th>
+                                        <th>Classification</th>
+                                        <th>Top Hits</th>
+                                        <th>Contaminants</th>
+                                        <th>QC Status</th>
+                                        <th>QC Comments</th>
+                                        <th>General Comments</th>
+                                        <th>Created Date</th>
+                                        <th>Updated Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="samplesTableBody">
+                                    {{ seqrun_samples_table_rows(samples, error, url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id)) }}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block dom_ready %}
+// Samples page specific initialization
+{% endblock %}
+
+{% from 'macros/seqrun_table_rows.html' import seqrun_samples_table_rows %}
+
+{% block extra_js %}
+    <script>
+        // Search functionality for samples table
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('tableSearch');
+            const tableBody = document.getElementById('samplesTableBody');
+
+            if (searchInput && tableBody) {
+                searchInput.addEventListener('keyup', function() {
+                    const searchValue = this.value.toLowerCase();
+                    const rows = tableBody.getElementsByTagName('tr');
+                    
+                    for (let i = 0; i < rows.length; i++) {
+                        const row = rows[i];
+                        const text = row.textContent.toLowerCase();
+                        row.style.display = text.includes(searchValue) ? '' : 'none';
+                    }
+                });
+            }
+        });
+    </script>
+{% endblock %}

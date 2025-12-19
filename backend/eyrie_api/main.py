@@ -9,7 +9,7 @@ from eyrie_api.config.settings import (
     CORS_ORIGINS, CORS_CREDENTIALS, CORS_METHODS, CORS_HEADERS
 )
 from eyrie_api.database.utils import close_database
-from eyrie_api.routes import admin, samples, sample, frontend, auth, trends
+from eyrie_api.routes import admin, samples, sample, frontend, auth, trends, seqruns
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +78,7 @@ async def api_root_no_slash():
             "sample": "/api/sample",
             "admin": "/api/admin", 
             "trends": "/api/trends",
+            "seqruns": "/api/seqruns",
             "system": "/api/system"
         }
     }
@@ -88,6 +89,7 @@ app.include_router(admin.router, prefix="/api")
 app.include_router(samples.router, prefix="/api")
 app.include_router(sample.router, prefix="/api")
 app.include_router(trends.router, prefix="/api")
+app.include_router(seqruns.router, prefix="/api")
 app.include_router(frontend.system_router, prefix="/api")
 
 @app.get("/health", operation_id="root_health_check")
