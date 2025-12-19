@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ seqrun.sequencing_run_id }} Information - Eyrie{% endblock %}
+
+{% block content %}
+    <div class="container-fluid mt-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('seqruns.seqruns_page') }}">
+                        <i class="bi bi-cpu me-1"></i>Sequencing runs
+                    </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ seqrun.sequencing_run_id }}</li>
+            </ol>
+        </nav>
+
+        <!-- Header with Sequencing Run Info -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2>
+                    <i class="bi bi-cpu me-2"></i>{{ seqrun.sequencing_run_id }}
+                    <small class="text-muted">Sequencing Run</small>
+                </h2>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs mb-4">
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-table me-2"></i>Samples
+                    <span class="badge bg-primary ms-2">{{ seqrun.total_samples or 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-info-circle me-2"></i>Information
+                </a>
+            </li>
+        </ul>
+
+        <!-- Overview Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Run Statistics
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-primary">{{ seqrun.total_samples or 0 }}</div>
+                                    <div class="text-muted">Total Samples</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-success">{{ seqrun.approved_samples or 0 }}</div>
+                                    <div class="text-muted">Approved</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-info">{{ seqrun.true_hits or 0 }}</div>
+                                    <div class="text-muted">True Hits</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="text-center">
+                                    <div class="display-4 text-warning">{{ seqrun.spikes_detected or 0 }}</div>
+                                    <div class="text-muted">Spikes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pipeline Files -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-file-earmark-text me-2"></i>Pipeline Files
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <h6>Reports</h6>
+                                <div class="list-group">
+                                    <a href="{{ url_for('seqruns.seqrun_execution_report', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-file-earmark-bar-graph me-2"></i>Execution Report
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_execution_timeline', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-clock-history me-2"></i>Execution Timeline
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <h6>Configuration & Logs</h6>
+                                <div class="list-group">
+                                    <a href="{{ url_for('seqruns.seqrun_params', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-gear me-2"></i>Parameters JSON
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_execution_trace', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-list-ul me-2"></i>Execution Trace
+                                        <small class="text-muted ms-2">(latest)</small>
+                                    </a>
+                                    <a href="{{ url_for('seqruns.seqrun_software_versions', seqrun_id=seqrun.sequencing_run_id) }}" 
+                                       class="list-group-item list-group-item-action" target="_blank">
+                                        <i class="bi bi-code-square me-2"></i>Software Versions
+                                        <small class="text-muted ms-2">(YAML)</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Summary -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list me-2"></i>Sample Summary
+                        </h5>
+                        <a href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}" 
+                           class="btn btn-light btn-sm">
+                            <i class="bi bi-table me-1"></i>View All Samples
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        {% if seqrun.samples %}
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <h6>Quality Control Status</h6>
+                                    <div class="mb-3">
+                                        {% set qc_counts = {'approved': 0, 'failed': 0, 'unprocessed': 0} %}
+                                        {% for sample in seqrun.samples %}
+                                            {% if sample.qc in qc_counts %}
+                                                {% set _ = qc_counts.__setitem__(sample.qc, qc_counts[sample.qc] + 1) %}
+                                            {% endif %}
+                                        {% endfor %}
+                                        
+                                        <div class="d-flex justify-content-between">
+                                            <span>Approved:</span>
+                                            <span class="badge bg-success">{{ qc_counts.approved }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Failed:</span>
+                                            <span class="badge bg-danger">{{ qc_counts.failed }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Unprocessed:</span>
+                                            <span class="badge bg-secondary">{{ qc_counts.unprocessed }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Classification Types</h6>
+                                    <div class="mb-3">
+                                        {% set class_counts = {} %}
+                                        {% for sample in seqrun.samples %}
+                                            {% set classification = sample.classification or 'Unknown' %}
+                                            {% set _ = class_counts.__setitem__(classification, class_counts.get(classification, 0) + 1) %}
+                                        {% endfor %}
+                                        
+                                        {% for classification, count in class_counts.items() %}
+                                            <div class="d-flex justify-content-between">
+                                                <span>{{ classification }}:</span>
+                                                <span class="badge bg-primary">{{ count }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <h6>Run Information</h6>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Run Date:</span>
+                                            <span class="text-muted">
+                                                {% if seqrun.run_date %}
+                                                    {{ seqrun.run_date | format_date }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Pipeline Status:</span>
+                                            <span class="badge bg-success">{{ seqrun.pipeline_status or 'Unknown' }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Created:</span>
+                                            <span class="text-muted">
+                                                {% if seqrun.created_date %}
+                                                    {{ seqrun.created_date | format_date }}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-muted py-4">
+                                <i class="bi bi-info-circle me-2"></i>No samples found for this sequencing run
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

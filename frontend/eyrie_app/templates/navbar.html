@@ -10,6 +10,9 @@
                 <a href="{{ url_for('samples.samples_page') }}" class="btn {% if request.endpoint == 'samples.samples_page' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
                     <i class="bi bi-table me-2"></i>Samples
                 </a>
+                <a href="{{ url_for('seqruns.seqruns_page') }}" class="btn {% if request.endpoint == 'seqruns.seqruns_page' or request.endpoint == 'seqruns.seqrun_overview' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                    <i class="bi bi-cpu me-2"></i>Sequencing runs
+                </a>
                 <a href="{{ url_for('trends.index') }}" class="btn {% if request.endpoint == 'trends.index' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
                     <i class="bi bi-graph-up me-2"></i>Trends
                 </a>

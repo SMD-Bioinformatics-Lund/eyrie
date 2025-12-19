@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_login import LoginManager
 from datetime import datetime
@@ -18,6 +18,7 @@ from .blueprints.sample.views import bp as sample_bp
 from .blueprints.admin.views import bp as admin_bp
 from .blueprints.samples.views import bp as samples_bp
 from .blueprints.trends.views import trends_bp
+from .blueprints.seqruns.views import bp as seqruns_bp
 
 
 # Custom JSON encoder for datetime
@@ -44,6 +45,9 @@ def register_blueprints(app, base_path=None):
 
     # Register trends blueprint
     app.register_blueprint(trends_bp, url_prefix=base_path)
+
+    # Register sequencing runs blueprint
+    app.register_blueprint(seqruns_bp, url_prefix=base_path)
 
 
 def create_app():
