@@ -21,7 +21,7 @@ def cli():
 
 
 def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str], 
-                       dry_run: bool, verbose: bool) -> bool:
+                       dry_run: bool, verbose: bool, pipeline_datetime_suffix: Optional[str] = None) -> bool:
     """Upload sample analysis data from YAML configuration."""
 
     click.echo(f"📁 Sample config: {sample_cnf}")
@@ -35,7 +35,7 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
 
         if verbose:
             click.echo(f"🧬 Sample: {config.sample.sample_id}")
-            click.echo(f"📂 Base path: {config.base_path}")
+            click.echo(f"📂 Analysis output directory: {config.analysis_output_dirpath}")
 
         # Parse the sample
         click.echo("\n🔍 Parsing analysis files...")
@@ -108,7 +108,7 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
             return False
 
         # Upload the sample
-        if api_client.upload_sample(parsed_sample, config):
+        if api_client.upload_sample(parsed_sample, config, pipeline_datetime_suffix):
             click.echo("✅ Successfully uploaded sample data to Eyrie!")
             return True
         else:
@@ -230,6 +230,53 @@ def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], pas
         return False
 
 
+def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix: str, api: str, 
+                                username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool) -> bool:
+    """Upload pipeline files only for a sequencing run."""
+
+    try:
+        click.echo(f"🏃 Sequencing run: {sequencing_run_id}")
+        click.echo(f"📅 Pipeline datetime suffix: {pipeline_datetime_suffix}")
+
+        if dry_run:
+            click.echo("\n🏃 Dry run mode - skipping pipeline files upload")
+            click.echo("📋 Would upload pipeline files for sequencing run")
+            return True
+
+        click.echo("\n📤 Uploading pipeline files to Eyrie database...")
+
+        # Create API client
+        api_client = EyrieAPIClient(api, username, password)
+
+        if not api_client.test_connection():
+            click.echo("❌ Cannot connect to Eyrie API")
+            return False
+
+        # Authenticate if credentials are provided
+        if username and password:
+            if not api_client.authenticate():
+                click.echo("❌ Authentication failed")
+                return False
+
+        # Use default pipeline software and current directory for analysis output
+        pipeline_software = 'trana'  # Default to trana
+
+        # Upload pipeline files only
+        if api_client.upload_handler.upload_pipeline_files_only(sequencing_run_id, pipeline_software, pipeline_datetime_suffix):
+            click.echo("✅ Successfully uploaded pipeline files!")
+            return True
+        else:
+            click.echo("❌ Failed to upload pipeline files")
+            return False
+
+    except Exception as e:
+        click.echo(f"❌ Error uploading pipeline files: {e}")
+        if verbose:
+            import traceback
+            traceback.print_exc()
+        return False
+
+
 @cli.command()
 @click.option('-s', '--sample', 'sample_cnf', type=click.Path(exists=True, path_type=Path), help='YAML configuration file for sample analysis data [optional]')
 @click.option('-m', '--metadata', 'metadata_file', type=click.Path(exists=True, path_type=Path), help='TSV or CSV metadata file [optional]')
@@ -239,70 +286,93 @@ def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], pas
 @click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (metadata only)')
+@click.option('--sequencing-run-id', help='Sequencing run identifier (required when using --pipeline-datetime-suffix without sample config)')
+@click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to upload specific pipeline files')
 def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
-          username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool):
+          username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool,
+          sequencing_run_id: Optional[str], pipeline_datetime_suffix: Optional[str]):
     """Upload sample analysis data and/or metadata to Eyrie.
 
     Specify at least one of:
       -s, --sample PATH     Upload sample analysis results from YAML config
       -m, --metadata PATH   Upload metadata from TSV/CSV file
+  
+    Pipeline file management:
+      --pipeline-datetime-suffix   Upload specific pipeline files by datetime suffix
+      --sequencing-run-id          Required when using --pipeline-datetime-suffix without sample config
 
     Examples:
-      popup upload -s sample_config.yaml                    # Upload analysis data only
-      popup upload -m metadata.tsv --create-missing         # Upload metadata only  
-      popup upload -s config.yaml -m metadata.tsv           # Upload both together
+      popup upload -s sample_config.yaml                                     # Upload analysis data only
+      popup upload -m metadata.tsv --create-missing                          # Upload metadata only  
+      popup upload -s config.yaml -m metadata.tsv                            # Upload both together
+      popup upload -s config.yaml --pipeline-datetime-suffix 2025-09-30_09-46-56  # Upload with specific pipeline files
+      popup upload --sequencing-run-id 20250930_1234 --pipeline-datetime-suffix 2025-09-30_09-46-56  # Update pipeline files only
     """
 
-    # Validate that at least one option is provided
-    if not sample_cnf and not metadata_file:
-        click.echo("❌ Error: At least one of --sample (-s) or --metadata (-m) must be provided")
-        click.echo("\nExamples:")
-        click.echo("  popup upload -s sample_config.yaml")
-        click.echo("  popup upload -m metadata.tsv")
-        click.echo("  popup upload -s config.yaml -m metadata.tsv")
-        return
+    try:
+        # Validate arguments
+        if not sample_cnf and not metadata_file and not pipeline_datetime_suffix:
+            click.echo("❌ Error: At least one of --sample (-s), --metadata (-m), or --pipeline-datetime-suffix must be provided")
+            click.echo("\nExamples:")
+            click.echo("  popup upload -s sample_config.yaml")
+            click.echo("  popup upload -m metadata.tsv")
+            click.echo("  popup upload -s config.yaml -m metadata.tsv")
+            click.echo("  popup upload --sequencing-run-id 20250930_1234 --pipeline-datetime-suffix 2025-09-30_09-46-56")
+            return
 
-    click.echo(f"🔬 Eyrie POPUP - Pipeline Output Processor & UPloader")
+        # Validate pipeline-datetime-suffix requirements
+        if pipeline_datetime_suffix and not sample_cnf and not sequencing_run_id:
+            click.echo("❌ Error: When using --pipeline-datetime-suffix without --sample, --sequencing-run-id must be provided")
+            click.echo("\nExample:")
+            click.echo("  popup upload --sequencing-run-id 20250930_1234 --pipeline-datetime-suffix 2025-09-30_09-46-56")
+            return
 
-    if verbose:
-        click.echo(f"🔗 API URL: {api}")
+        click.echo(f"🔬 Eyrie POPUP - Pipeline Output Processor & UPloader")
 
-    sample_success = True
-    metadata_success = True
+        if verbose:
+            click.echo(f"🔗 API URL: {api}")
+            click.echo(f"🔍 Arguments: sample_cnf={sample_cnf}, metadata_file={metadata_file}, pipeline_datetime_suffix={pipeline_datetime_suffix}, sequencing_run_id={sequencing_run_id}")
 
-    # Upload sample analysis data if provided
-    if sample_cnf:
-        click.echo(f"\n📊 Processing sample analysis data...")
-        sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose)
+        sample_success = True
+        metadata_success = True
 
-    # Upload metadata if provided
-    if metadata_file:
-        click.echo(f"\n📋 Processing metadata...")
-        metadata_success = _upload_metadata(metadata_file, api, username, password, dry_run, verbose, create_missing)
+        # Upload sample analysis data if provided
+        if sample_cnf:
+            click.echo(f"\n📊 Processing sample analysis data...")
+            sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose, pipeline_datetime_suffix)
 
-    # Overall summary
-    if sample_cnf and metadata_file:
-        click.echo(f"\n🎯 Overall Summary:")
-        if sample_success and metadata_success:
-            click.echo("✅ Both sample data and metadata uploaded successfully!")
-        elif sample_success:
-            click.echo("⚠️  Sample data uploaded, but metadata failed")
-        elif metadata_success:
-            click.echo("⚠️  Metadata uploaded, but sample data failed") 
-        else:
-            click.echo("❌ Both uploads failed")
-    else:
-        # Single upload case
-        if sample_cnf and not metadata_file:
-            if sample_success:
-                click.echo("\n✅ Sample upload completed successfully!")
+        # Upload metadata if provided
+        if metadata_file:
+            click.echo(f"\n📋 Processing metadata...")
+            metadata_success = _upload_metadata(metadata_file, api, username, password, dry_run, verbose, create_missing)
+
+        # Upload pipeline files only if provided
+        pipeline_success = True
+        if pipeline_datetime_suffix and not sample_cnf and sequencing_run_id:
+            click.echo(f"\n🔧 Processing pipeline files only...")
+            pipeline_success = _upload_pipeline_files_only(sequencing_run_id, pipeline_datetime_suffix, api, username, password, dry_run, verbose)
+        elif pipeline_datetime_suffix and not sample_cnf:
+            if verbose:
+                click.echo(f"\n🔍 Debug: pipeline_datetime_suffix={pipeline_datetime_suffix}, sample_cnf={sample_cnf}, sequencing_run_id={sequencing_run_id}")
+                click.echo("❌ Missing sequencing_run_id for pipeline-only upload")
+
+        # Overall summary for combined uploads only
+        if sample_cnf and metadata_file:
+            click.echo(f"\n🎯 Overall Summary:")
+            if sample_success and metadata_success:
+                click.echo("✅ Both sample data and metadata uploaded successfully!")
+            elif sample_success:
+                click.echo("⚠️  Sample data uploaded, but metadata failed")
+            elif metadata_success:
+                click.echo("⚠️  Metadata uploaded, but sample data failed") 
             else:
-                click.echo("\n❌ Sample upload failed")
-        elif metadata_file and not sample_cnf:
-            if metadata_success:
-                click.echo("\n✅ Metadata upload completed successfully!")
-            else:
-                click.echo("\n❌ Metadata upload failed")
+                click.echo("❌ Both uploads failed")
+
+    except Exception as e:
+        click.echo(f"❌ Unexpected error in upload: {e}")
+        if verbose:
+            import traceback
+            traceback.print_exc()
 
 
 @cli.command()
@@ -321,7 +391,7 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
                    sample_name: Optional[str], lims_id: Optional[str], 
                    sequencing_run_id: Optional[str], classification: str, pipeline_software: str):
     """Generate a YAML configuration file for a single sample.
-    
+
     Examples:
       popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01
       popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 --pipeline-software metaval
