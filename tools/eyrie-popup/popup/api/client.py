@@ -62,13 +62,13 @@ class EyrieAPIClient:
             print(f"✗ Authentication error: {e}")
             return False
 
-    def upload_sample(self, parsed_sample: ParsedSample, config: SampleConfig) -> bool:
+    def upload_sample(self, parsed_sample: ParsedSample, config: SampleConfig, pipeline_datetime_suffix: str = None) -> bool:
         """Upload a single sample to Eyrie."""
         if not self._authenticated and (self.username and self.password):
             if not self.authenticate():
                 return False
 
-        return self.upload_handler.upload_sample(parsed_sample.sample_data, config)
+        return self.upload_handler.upload_sample(parsed_sample.sample_data, config, pipeline_datetime_suffix)
 
     def _convert_to_eyrie_format(self, sample_data, config):
         """Convert sample data to Eyrie database format."""
