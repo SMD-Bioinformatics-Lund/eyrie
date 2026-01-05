@@ -5,11 +5,14 @@ A modern web-based application for managing 16S and ITS sequencing classificatio
 ## Features
 
 - **Sample Management**: View, search, and manage sequencing samples with detailed metadata
+- **Sequencing Runs Management**: Dedicated view for managing sequencing runs with aggregated statistics and filtered sample views
+- **Negative Controls Display**: Automatic detection and display of negative control samples from the same sequencing run in classification view
 - **Sample processing tool**: eyrie-popup CLI tool for processing and uploading sample data
 - **Sample QC curation**: Update sample QC status (`passed`/`failed`/`unprocessed`) with comments
 - **Sample contamination flagging**: Interactive flagging system for flagging contaminant hits
 - **Sample top hit flagging**: Interactive flagging system for flagging top hits
 - **Multi-tabbed sample view**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
+- **Context-aware navigation**: Smart back navigation that preserves user's origin page when navigating between samples and sequencing runs
 - **Trends analysis**: Interactive data visualization with Plotly charts for sample metrics over time
 - **Simple UI**: Clean Bootstrap-based interface with responsive design and server-side rendering
 - **Server-side authentication**: Flask decorator-based authentication with role-based access control (admin, uploader, user)
@@ -180,6 +183,7 @@ eyrie/
 │   │   │   ├── login/          # Login page
 │   │   │   ├── sample/         # Sample detail view
 │   │   │   ├── samples/        # Sample list view
+│   │   │   ├── seqruns/        # Sequencing runs management
 │   │   │   └── trends/         # Trends analysis view
 │   │   ├── shared/             # Shared templates and assets
 │   │   │   ├── static/css/     # Stylesheets
@@ -214,12 +218,18 @@ eyrie/
 ### Sample Endpoints (Authentication required)
 - `GET /api/samples` - List all samples
 - `GET /api/samples/{sample_id}` - Get sample details
+- `GET /api/sample/{sample_id}/negative-controls` - Get negative control samples from the same sequencing run
 - `POST /api/samples` - Create new sample (admin/uploader only)
 - `PUT /api/samples/{sample_id}` - Create or update sample (admin/uploader only)
 - `PATCH /api/samples/{sample_id}` - Partially update sample (admin/uploader only)
 - `PUT /api/samples/{sample_id}/qc` - Update QC status (authentication required)
 - `PUT /api/samples/{sample_id}/comment` - Update comments (authentication required)
 - `PUT /api/samples/{sample_id}/species-flags` - Update species flags (authentication required)
+
+### Seqrun Endpoints (Authentication required)
+- `GET /api/seqruns` - List all sequencing runs with statistics
+- `GET /api/seqruns/{seqrun_id}` - Get sequencing run details with samples and pipeline data
+- `PUT /api/seqruns/{seqrun_id}` - Create or update sequencing run data (admin/uploader only)
 
 ### Trends Endpoints (Authentication required)
 - `GET /api/trends/data` - Get trends analysis data with filtering and grouping options
@@ -331,6 +341,9 @@ The application supports environment-based configuration through the `environmen
 **Database:**
 - `MONGO_URI`: MongoDB connection string
 - `ENVIRONMENT`: Application environment (production)
+
+**File System Paths:**
+- `EYRIE_ANALYSIS_FILES_PATH`: Base path for analysis files (default: `/app/analysis-files`). Used by eyrie-popup for dynamic analysis directory construction
 
 ## Contributing
 

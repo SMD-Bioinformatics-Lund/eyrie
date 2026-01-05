@@ -27,6 +27,15 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added `sequencing_run_date` extraction from sequencing run IDs
  - Added sequencing run dates for more accurate temporal grouping in trends analysis
  - Added GA workflows to publish eyrie-popup to PyPI and dockerhub on tag push
+ - Added sequencing runs table view with statistics (total samples, approved, true hits, spikes detected)
+ - Added individual sequencing run pages with tabbed interface (samples and information tabs)
+ - Added filtered samples view for each sequencing run showing only samples from that run
+ - Added context-aware back navigation that stores user's origin page when viewing samples (return sequencing run or samples)
+ - Added pipeline file discovery and serving for sequencing run information display
+ - Added structured pipeline data parsing and storage (parameters JSON, execution trace TSV, software versions YAML)
+ - Added Pipeline Files interface with server-side rendering for structured data display as interactive tables
+ - Added `EYRIE_ANALYSIS_FILES_PATH` environment variable for configurable analysis file paths
+ - Added standardized analysis path construction using `get_analysis_path()` function for both samples and seqruns
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
