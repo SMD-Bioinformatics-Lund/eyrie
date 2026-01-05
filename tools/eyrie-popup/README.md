@@ -163,6 +163,27 @@ Samples are uploaded to Eyrie with:
 - Taxonomic classification data
 - Contamination flags
 
+## Configuration
+
+### Environment Variables
+
+eyrie-popup supports configuration through environment variables:
+
+- `EYRIE_ANALYSIS_FILES_PATH`: Base directory path for analysis files (default: `/app/analysis-files`)
+  - Used for dynamic analysis directory construction during upload
+  - Example: `/path/to/your/analysis-files`
+
+### Analysis Directory Structure
+
+The tool expects analysis files to be organized as:
+```
+{EYRIE_ANALYSIS_FILES_PATH}/
+└── results/
+    └── {pipeline_software}/     # e.g., trana, metaval
+        ├── {sample_id}_*.html    # analysis output files
+        └── pipeline files...     # execution_report.html, params.json, etc.
+```
+
 ## Development
 
 Install development dependencies:
