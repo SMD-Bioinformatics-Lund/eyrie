@@ -1,9 +1,9 @@
+import os
+import jwt
+from datetime import datetime, timedelta
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from werkzeug.security import check_password_hash, generate_password_hash
-from datetime import datetime, timedelta
-import jwt
-import os
 
 from ..models.auth import LoginRequest, UserCreate
 from ..database.async_user_operations import find_user, find_user_by_id
@@ -36,7 +36,7 @@ def verify_jwt_token(token: str) -> dict:
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired"
         )
-    except jwt.JWTError:
+    except (jwt.InvalidTokenError, jwt.DecodeError, jwt.ExpiredSignatureError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token"
@@ -127,7 +127,7 @@ async def get_user_profile(current_user: dict = Depends(get_current_user)):
 
 @router.post("/create-uploader")
 async def create_uploader_user(
-    user_data: UserCreate, 
+    user_data: UserCreate,
     current_user: dict = Depends(require_admin)
 ):
     """Create a new uploader user (admin only)"""
