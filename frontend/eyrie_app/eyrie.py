@@ -227,6 +227,31 @@ def get_sample_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> Dic
 
 
 @api_authentication
+def get_seqrun_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Optional[Dict[str, Any]]:
+    """Get specific sequencing run from backend API"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}"
+        print(f"🌐 DEBUG: Making API call to: {url}")
+        print(f"🔑 DEBUG: Using headers: {dict(headers)}")
+        resp = requests.get(url, headers=headers, timeout=10)
+        print(f"📡 DEBUG: API response status: {resp.status_code}")
+        if resp.status_code == 200:
+            data = resp.json()
+            print(f"✅ DEBUG: API returned data with keys: {list(data.keys())}")
+            return data
+        elif resp.status_code == 404:
+            print(f"❌ DEBUG: API returned 404 - seqrun not found")
+            return None
+        else:
+            print(f"❌ DEBUG: API returned error status: {resp.status_code}")
+            print(f"❌ DEBUG: API error response: {resp.text}")
+            resp.raise_for_status()
+    except Exception as e:
+        print(f"❌ DEBUG: API call exception: {type(e).__name__}: {e}")
+        return None
+
+
+@api_authentication
 def get_negative_controls_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> List[Dict[str, Any]]:
     """Get negative control samples from the same sequencing run"""
     url = f"{backend_url}/api/sample/{sample_id}/negative-controls"
@@ -392,20 +417,19 @@ def health_check() -> Dict[str, Any]:
         }
 
 
-def get_analysis_path_for_sample(sample_data: Dict[str, Any]) -> str:
-    """Get the correct analysis results path for a sample based on pipeline_software"""
-    
-    pipeline_software = sample_data.get('pipeline_software', 'trana')
-    analysis_path = settings.analysis_results_paths.get(pipeline_software, 
+def get_analysis_path(data: Dict[str, Any]) -> str:
+    """Get the correct analysis results path based on pipeline_software (works for both samples and seqruns)"""
+
+    pipeline_software = data.get('pipeline_software', 'trana')
+    analysis_path = settings.analysis_results_paths.get(pipeline_software,
                                                        settings.analysis_results_paths['trana'])
-    
-    # Return path without /app/analysis-files prefixes for URL construction  
+
     if analysis_path.startswith('/app/analysis-files/'):
         result_path = analysis_path[len('/app/analysis-files/'):]
     else:
         # Fallback for unexpected paths
         result_path = 'results/trana' if pipeline_software == 'trana' else f'results/{pipeline_software}'
-    
+
     return result_path
 
 

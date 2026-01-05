@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, jsonify, request
 from flask_login import login_required, current_user
 from ...eyrie import (
     get_sample_from_backend, get_negative_controls_from_backend, update_sample_qc, update_sample_comment,
-    update_sample_species_flags, serve_analysis_file, get_analysis_path_for_sample
+    update_sample_species_flags, serve_analysis_file, get_analysis_path
 )
 
 bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
@@ -13,10 +13,10 @@ def sample_overview(sample_id):
     try:
         # Get return_to parameter if provided
         return_to = request.args.get('return_to')
-        
+
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
-        analysis_base_path = get_analysis_path_for_sample(sample)
+        analysis_base_path = get_analysis_path(sample)
         return render_template('sample_overview.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path, return_to=return_to)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
@@ -33,10 +33,10 @@ def sample_classification(sample_id):
     try:
         # Get return_to parameter if provided
         return_to = request.args.get('return_to')
-        
+
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
-        analysis_base_path = get_analysis_path_for_sample(sample)
+        analysis_base_path = get_analysis_path(sample)
 
         # Get negative controls from the same sequencing run
         negative_controls = []
@@ -61,7 +61,7 @@ def sample_nanoplot(sample_id):
 
         # Get sample data for server-side rendering
         sample = get_sample_from_backend(sample_id)
-        analysis_base_path = get_analysis_path_for_sample(sample)
+        analysis_base_path = get_analysis_path(sample)
         return render_template('sample_nanoplot.html', sample_id=sample_id, sample=sample, current_user=current_user, analysis_base_path=analysis_base_path, return_to=return_to)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample

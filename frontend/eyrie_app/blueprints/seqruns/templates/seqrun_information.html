@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ seqrun.sequencing_run_id }} Information - Eyrie{% endblock %}
+{% block title %}{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Seqrun{% endif %} Information - Eyrie{% endblock %}
 
 {% block content %}
     <div class="container-fluid mt-4">
@@ -12,20 +12,47 @@
                         <i class="bi bi-cpu me-1"></i>Sequencing runs
                     </a>
                 </li>
-                <li class="breadcrumb-item active" aria-current="page">{{ seqrun.sequencing_run_id }}</li>
+                <li class="breadcrumb-item active" aria-current="page">{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Unknown{% endif %}</li>
             </ol>
         </nav>
 
-        <!-- Header with Sequencing Run Info -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h2>
-                    <i class="bi bi-cpu me-2"></i>{{ seqrun.sequencing_run_id }}
-                    <small class="text-muted">Sequencing Run</small>
-                </h2>
+        {% if error %}
+            <!-- Error Message -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-danger" role="alert">
+                        <h4 class="alert-heading">Error</h4>
+                        <p>{{ error }}</p>
+                        <hr>
+                        <p class="mb-0">Please check the sequencing run ID and try again, or <a href="{{ url_for('seqruns.seqruns_page') }}" class="alert-link">return to the sequencing runs page</a>.</p>
+                    </div>
+                </div>
             </div>
-        </div>
+        {% elif seqrun %}
+            <!-- Header with Sequencing Run Info -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2>
+                        <i class="bi bi-cpu me-2"></i>{{ seqrun.sequencing_run_id }}
+                        <small class="text-muted">Sequencing Run</small>
+                    </h2>
+                </div>
+            </div>
+        {% else %}
+            <!-- Unknown Error -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="alert alert-warning" role="alert">
+                        <h4 class="alert-heading">Sequencing Run Not Found</h4>
+                        <p>The requested sequencing run could not be found.</p>
+                        <hr>
+                        <p class="mb-0"><a href="{{ url_for('seqruns.seqruns_page') }}" class="alert-link">Return to the sequencing runs page</a>.</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
+        {% if seqrun %}
         <!-- Tab Navigation -->
         <ul class="nav nav-tabs mb-4">
             <li class="nav-item">
@@ -82,50 +109,127 @@
             </div>
         </div>
 
-        <!-- Pipeline Files -->
         <div class="row mb-4">
             <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-file-earmark-text me-2"></i>Pipeline Files
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <h6>Reports</h6>
-                                <div class="list-group">
-                                    <a href="{{ url_for('seqruns.seqrun_execution_report', seqrun_id=seqrun.sequencing_run_id) }}" 
-                                       class="list-group-item list-group-item-action" target="_blank">
-                                        <i class="bi bi-file-earmark-bar-graph me-2"></i>Execution Report
-                                        <small class="text-muted ms-2">(latest)</small>
-                                    </a>
-                                    <a href="{{ url_for('seqruns.seqrun_execution_timeline', seqrun_id=seqrun.sequencing_run_id) }}" 
-                                       class="list-group-item list-group-item-action" target="_blank">
-                                        <i class="bi bi-clock-history me-2"></i>Execution Timeline
-                                        <small class="text-muted ms-2">(latest)</small>
-                                    </a>
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-file-earmark-text me-2"></i>Pipeline Files
+                                </h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="list-group list-group-flush">
+                                    {% if seqrun and seqrun.pipeline_files and seqrun.pipeline_files.execution_report %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineFile('execution_report', '{{ url_for('sample.serve_data_file_endpoint', file_path=analysis_base_path ~ '/' ~ seqrun.pipeline_files.execution_report) }}')" 
+                                            id="btn-execution-report"
+                                            data-new-tab-url="{{ url_for('seqruns.seqrun_pipeline_file', seqrun_id=seqrun.sequencing_run_id, file_type='execution-report') }}">
+                                        <i class="bi bi-file-earmark-bar-graph me-3 text-primary"></i>
+                                        <div>
+                                            <div class="fw-semibold">Execution Report</div>
+                                            <small class="text-muted">Pipeline execution overview</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
+                                    {% if seqrun and seqrun.pipeline_files and seqrun.pipeline_files.execution_timeline %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineFile('execution_timeline', '{{ url_for('sample.serve_data_file_endpoint', file_path=analysis_base_path ~ '/' ~ seqrun.pipeline_files.execution_timeline) }}')" 
+                                            id="btn-execution-timeline"
+                                            data-new-tab-url="{{ url_for('seqruns.seqrun_pipeline_file', seqrun_id=seqrun.sequencing_run_id, file_type='execution-timeline') }}">
+                                        <i class="bi bi-clock-history me-3 text-success"></i>
+                                        <div>
+                                            <div class="fw-semibold">Execution Timeline</div>
+                                            <small class="text-muted">Process timeline visualization</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
+                                    {% if seqrun and seqrun.pipeline_files and seqrun.pipeline_files.pipeline_dag %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineFile('pipeline_dag', '{{ url_for('sample.serve_data_file_endpoint', file_path=analysis_base_path ~ '/' ~ seqrun.pipeline_files.pipeline_dag) }}')" 
+                                            id="btn-pipeline-dag"
+                                            data-new-tab-url="{{ url_for('seqruns.seqrun_pipeline_file', seqrun_id=seqrun.sequencing_run_id, file_type='pipeline-dag') }}">
+                                        <i class="bi bi-diagram-3 me-3 text-info"></i>
+                                        <div>
+                                            <div class="fw-semibold">Pipeline DAG</div>
+                                            <small class="text-muted">Workflow dependency graph</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
+                                    <!-- Structured Data Buttons -->
+                                    {% if seqrun and seqrun.pipeline_parameters %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineStructuredData('parameters')" 
+                                            id="btn-pipeline-parameters">
+                                        <i class="bi bi-gear me-3 text-warning"></i>
+                                        <div>
+                                            <div class="fw-semibold">Pipeline Parameters</div>
+                                            <small class="text-muted">Pipeline configuration parameters</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
+                                    {% if seqrun and seqrun.execution_trace %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineStructuredData('execution_trace')" 
+                                            id="btn-execution-trace">
+                                        <i class="bi bi-list-ul me-3 text-danger"></i>
+                                        <div>
+                                            <div class="fw-semibold">Execution Trace</div>
+                                            <small class="text-muted">Task execution performance data</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
+                                    {% if seqrun and seqrun.software_versions %}
+                                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                                            onclick="loadPipelineStructuredData('software_versions')" 
+                                            id="btn-software-versions">
+                                        <i class="bi bi-code-square me-3 text-secondary"></i>
+                                        <div>
+                                            <div class="fw-semibold">Software Versions</div>
+                                            <small class="text-muted">Pipeline software tool versions</small>
+                                        </div>
+                                    </button>
+                                    {% endif %}
+
                                 </div>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <h6>Configuration & Logs</h6>
-                                <div class="list-group">
-                                    <a href="{{ url_for('seqruns.seqrun_params', seqrun_id=seqrun.sequencing_run_id) }}" 
-                                       class="list-group-item list-group-item-action" target="_blank">
-                                        <i class="bi bi-gear me-2"></i>Parameters JSON
-                                        <small class="text-muted ms-2">(latest)</small>
-                                    </a>
-                                    <a href="{{ url_for('seqruns.seqrun_execution_trace', seqrun_id=seqrun.sequencing_run_id) }}" 
-                                       class="list-group-item list-group-item-action" target="_blank">
-                                        <i class="bi bi-list-ul me-2"></i>Execution Trace
-                                        <small class="text-muted ms-2">(latest)</small>
-                                    </a>
-                                    <a href="{{ url_for('seqruns.seqrun_software_versions', seqrun_id=seqrun.sequencing_run_id) }}" 
-                                       class="list-group-item list-group-item-action" target="_blank">
-                                        <i class="bi bi-code-square me-2"></i>Software Versions
-                                        <small class="text-muted ms-2">(YAML)</small>
-                                    </a>
+                            <div class="card-footer bg-light">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Select a file to view content
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel - Pipeline File Display -->
+                    <div class="col-lg-9">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0" id="pipeline-file-title">
+                                    <i class="bi bi-file-earmark me-2"></i>Select a pipeline file
+                                </h6>
+                                <button type="button" class="btn btn-outline-light btn-sm" onclick="openInNewTab()" id="btn-open-new-tab" style="display: none;">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>Open in New Tab
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="pipelineFileContainer" class="w-100" style="min-height: 600px;">
+                                    <!-- Default placeholder -->
+                                    <div id="pipeline-placeholder" class="d-flex justify-content-center align-items-center h-100">
+                                        <div class="text-center">
+                                            <i class="bi bi-file-earmark-text text-muted" style="font-size: 4rem;"></i>
+                                            <p class="text-muted mt-3">Select a pipeline file from the left panel to view its content</p>
+                                        </div>
+                                    </div>
+
+
                                 </div>
                             </div>
                         </div>
@@ -159,7 +263,7 @@
                                                 {% set _ = qc_counts.__setitem__(sample.qc, qc_counts[sample.qc] + 1) %}
                                             {% endif %}
                                         {% endfor %}
-                                        
+
                                         <div class="d-flex justify-content-between">
                                             <span>Approved:</span>
                                             <span class="badge bg-success">{{ qc_counts.approved }}</span>
@@ -182,7 +286,7 @@
                                             {% set classification = sample.classification or 'Unknown' %}
                                             {% set _ = class_counts.__setitem__(classification, class_counts.get(classification, 0) + 1) %}
                                         {% endfor %}
-                                        
+
                                         {% for classification, count in class_counts.items() %}
                                             <div class="d-flex justify-content-between">
                                                 <span>{{ classification }}:</span>
@@ -230,5 +334,380 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
+
+    <!-- Pipeline Files JavaScript -->
+    <script>
+    let currentPipelineFileUrl = null;
+    let currentNewTabUrl = null;
+
+    // Make seqrun data available to JavaScript
+    const currentSeqrun = {% if seqrun %}{{ seqrun | tojson }}{% else %}null{% endif %};
+
+    function loadPipelineFile(fileType, fileUrl) {
+        // Update the title
+        const titleMap = {
+            'execution_report': 'Execution Report',
+            'execution_timeline': 'Execution Timeline', 
+            'pipeline_dag': 'Pipeline DAG',
+            'params': 'Parameters JSON',
+            'execution_trace': 'Execution Trace',
+            'software_versions': 'Software Versions'
+        };
+
+        const title = titleMap[fileType] || 'Pipeline File';
+        document.getElementById('pipeline-file-title').innerHTML = `<i class="bi bi-file-earmark me-2"></i>${title}`;
+
+        // Store current URLs for "Open in New Tab" button  
+        currentPipelineFileUrl = fileUrl;
+
+        // Get the new tab URL from the button's data attribute
+        const activeBtn = document.getElementById(`btn-${fileType.replace('_', '-')}`);
+        if (activeBtn) {
+            currentNewTabUrl = activeBtn.getAttribute('data-new-tab-url');
+        }
+
+        // Show the "Open in New Tab" button
+        document.getElementById('btn-open-new-tab').style.display = 'inline-block';
+
+        // Clear active state from all buttons
+        document.querySelectorAll('.list-group-item').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Set active state on clicked button
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        // Load the file content in the iframe
+        const container = document.getElementById('pipelineFileContainer');
+        if (!container) {
+            console.error('Pipeline file container not found');
+            return;
+        }
+
+        console.log(`Loading pipeline file: ${fileType} from ${fileUrl}`);
+
+        // All remaining files are HTML files for iframe display
+        container.innerHTML = `
+            <iframe style="width: 100%; height: 600px; border: none;" 
+                    src="${fileUrl}"
+                    onload="console.log('Iframe loaded successfully: ${fileType}')"
+                    onerror="console.error('Iframe failed to load: ${fileType}')">
+                <p>Your browser does not support iframes. <a href="${fileUrl}" target="_blank">Click here to view the file</a>.</p>
+            </iframe>
+        `;
+    }
+
+    function loadPipelineStructuredData(dataType) {
+        const container = document.getElementById('pipelineFileContainer');
+        if (!container) return;
+
+        // Update the title
+        const titleMap = {
+            'parameters': 'Pipeline Parameters',
+            'execution_trace': 'Execution Trace',
+            'software_versions': 'Software Versions'
+        };
+
+        const iconMap = {
+            'parameters': 'bi-gear',
+            'execution_trace': 'bi-list-ul',
+            'software_versions': 'bi-code-square'
+        };
+
+        const title = titleMap[dataType] || 'Pipeline Data';
+        const icon = iconMap[dataType] || 'bi-file-earmark';
+        document.getElementById('pipeline-file-title').innerHTML = `<i class="${icon} me-2"></i>${title}`;
+
+        // Hide the "Open in New Tab" button for structured data
+        document.getElementById('btn-open-new-tab').style.display = 'none';
+        currentPipelineFileUrl = null;
+        currentNewTabUrl = null;
+
+        // Clear active state from all buttons
+        document.querySelectorAll('.list-group-item').forEach(btn => {
+            btn.classList.remove('active');
+        });
+
+        // Set active state on clicked button
+        const buttonId = `btn-${dataType === 'execution_trace' ? 'execution-trace' : dataType.replace('_', '-')}`;
+        const activeBtn = document.getElementById(buttonId);
+        if (activeBtn) {
+            activeBtn.classList.add('active');
+        }
+
+        // Generate content based on data type using nanoplot pattern (container.innerHTML)
+        if (!currentSeqrun) {
+            container.innerHTML = displayError('No seqrun data available');
+            return;
+        }
+
+        switch (dataType) {
+            case 'parameters':
+                container.innerHTML = generateParametersTable();
+                break;
+            case 'execution_trace':
+                container.innerHTML = generateExecutionTraceTable();
+                break;
+            case 'software_versions':
+                container.innerHTML = generateSoftwareVersionsTable();
+                break;
+            default:
+                container.innerHTML = displayError(`Unknown data type: ${dataType}`);
+        }
+    }
+
+    // Helper functions for generating structured data tables (following nanoplot pattern)
+    function displayError(message) {
+        return `
+            <div class="d-flex justify-content-center align-items-center h-100">
+                <div class="text-center">
+                    <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                    <p class="text-muted mt-3">${escapeHtml(message)}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateParametersTable() {
+        const params = currentSeqrun?.pipeline_parameters;
+        if (!params) {
+            return displayError('No pipeline parameters available');
+        }
+
+        let tableRows = '';
+        if (params.categories) {
+            for (const [categoryKey, category] of Object.entries(params.categories)) {
+                if (category.parameters) {
+                    for (const [paramName, paramData] of Object.entries(category.parameters)) {
+                        let value = paramData.value;
+                        if (value === null || value === undefined) {
+                            value = '<span class="text-muted">null</span>';
+                        } else if (paramData.type === 'bool') {
+                            value = `<span class="badge bg-${value ? 'success' : 'danger'}">${value}</span>`;
+                        } else if (paramData.type === 'str' && value.length > 50) {
+                            value = `<span title="${escapeHtml(value)}">${escapeHtml(value.substring(0, 50))}...</span>`;
+                        } else {
+                            value = escapeHtml(value);
+                        }
+
+                        tableRows += `
+                            <tr>
+                                <td><span class="badge bg-secondary">${escapeHtml(category.name)}</span></td>
+                                <td><code>${escapeHtml(paramName)}</code></td>
+                                <td>${value}</td>
+                                <td><small class="text-muted">${escapeHtml(paramData.type)}</small></td>
+                            </tr>
+                        `;
+                    }
+                }
+            }
+        }
+
+        return `
+            <div class="p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th>Parameter</th>
+                                <th>Value</th>
+                                <th>Type</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateExecutionTraceTable() {
+        const trace = currentSeqrun?.execution_trace;
+        if (!trace) {
+            return displayError('No execution trace data available');
+        }
+
+        let taskRows = '';
+        if (trace.tasks) {
+            for (const task of trace.tasks) {
+                const statusBadge = task.status === 'COMPLETED' ? 'success' : 'danger';
+                taskRows += `
+                    <tr>
+                        <td>
+                            <div><strong>${escapeHtml(task.name)}</strong></div>
+                            <small class="text-muted">${escapeHtml(task.task_id)}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-${statusBadge}">${escapeHtml(task.status)}</span>
+                        </td>
+                        <td>${task.duration_seconds}s</td>
+                        <td>${task.cpu_percentage}%</td>
+                        <td>${task.peak_memory_mb}MB</td>
+                        <td>${task.exit_code}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        const summary = trace.summary || {};
+        return `
+            <div class="p-3">
+                <!-- Summary Stats -->
+                <div class="row mb-3">
+                    <div class="col-md-3 text-center">
+                        <div class="h5 text-success">${summary.completed_tasks || 0}</div>
+                        <small class="text-muted">Completed</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h5 text-danger">${summary.failed_tasks || 0}</div>
+                        <small class="text-muted">Failed</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h5 text-info">${summary.avg_duration_seconds || 0}s</div>
+                        <small class="text-muted">Avg Duration</small>
+                    </div>
+                    <div class="col-md-3 text-center">
+                        <div class="h5 text-warning">${summary.max_memory_mb || 0}MB</div>
+                        <small class="text-muted">Max Memory</small>
+                    </div>
+                </div>
+
+                <!-- Tasks Table -->
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Task</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>CPU %</th>
+                                <th>Memory</th>
+                                <th>Exit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${taskRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    function generateSoftwareVersionsTable() {
+        const versions = currentSeqrun?.software_versions;
+        if (!versions) {
+            return displayError('No software versions data available');
+        }
+
+        let versionRows = '';
+
+        // Add workflow information first
+        if (versions.workflow) {
+            for (const [key, value] of Object.entries(versions.workflow)) {
+                versionRows += `
+                    <tr>
+                        <td><span class="badge bg-primary">Workflow</span></td>
+                        <td>${escapeHtml(key)}</td>
+                        <td><code>${escapeHtml(value)}</code></td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Add tool categories
+        if (versions.categories) {
+            for (const [categoryKey, category] of Object.entries(versions.categories)) {
+                if (category.tools) {
+                    for (const [toolName, toolData] of Object.entries(category.tools)) {
+                        if (typeof toolData === 'object' && toolData !== null) {
+                            // Handle complex tool data (e.g., multiple components)
+                            for (const [component, version] of Object.entries(toolData)) {
+                                versionRows += `
+                                    <tr>
+                                        <td><span class="badge bg-info">${escapeHtml(category.name)}</span></td>
+                                        <td>${escapeHtml(toolName)}.${escapeHtml(component)}</td>
+                                        <td><code>${escapeHtml(version)}</code></td>
+                                    </tr>
+                                `;
+                            }
+                        } else {
+                            // Handle simple tool data (single version)
+                            versionRows += `
+                                <tr>
+                                    <td><span class="badge bg-info">${escapeHtml(category.name)}</span></td>
+                                    <td>${escapeHtml(toolName)}</td>
+                                    <td><code>${escapeHtml(toolData)}</code></td>
+                                </tr>
+                            `;
+                        }
+                    }
+                }
+            }
+        }
+
+        return `
+            <div class="p-3">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th>Tool</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${versionRows}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+
+    function openInNewTab() {
+        if (currentNewTabUrl) {
+            // Use the new template route for proper favicon and branding
+            window.open(currentNewTabUrl, '_blank');
+        } else if (currentPipelineFileUrl) {
+            // Fallback to direct file URL if new tab URL not available
+            window.open(currentPipelineFileUrl, '_blank');
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Auto-load the first available file on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        // Try to load HTML files first, then structured data
+        const autoLoadOrder = [
+            'execution-report', 
+            'execution-timeline', 
+            'pipeline-dag',
+            'pipeline-parameters',
+            'execution-trace', 
+            'software-versions'
+        ];
+
+        for (const fileType of autoLoadOrder) {
+            const button = document.getElementById(`btn-${fileType}`);
+            if (button && !button.classList.contains('disabled')) {
+                button.click();
+                break;
+            }
+        }
+    });
+    </script>
 {% endblock %}

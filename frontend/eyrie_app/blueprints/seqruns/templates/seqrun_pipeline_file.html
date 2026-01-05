@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}{{ file_title }} - {{ seqrun_id }} | Eyrie{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-file-earmark-bar-graph text-primary me-2"></i>
+                        {{ file_title }}
+                    </h2>
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-collection me-1"></i>
+                        Sequencing Run: {{ seqrun_id }}
+                    </p>
+                </div>
+                <div>
+                    <a href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun_id) }}" 
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>Back to Pipeline Files
+                    </a>
+                </div>
+            </div>
+
+            {% if error %}
+                <div class="card border-danger">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                        <h5 class="text-danger mt-3">Failed to Load Pipeline File</h5>
+                        <p class="text-muted">{{ error }}</p>
+                        <a href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun_id) }}" 
+                           class="btn btn-primary">
+                            <i class="bi bi-arrow-left me-1"></i>Return to Pipeline Files
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Pipeline File Content -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="pipeline-file-wrapper" style="min-height: 600px;">
+                            {{ html_content | safe }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Footer -->
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        This pipeline file is served with Eyrie branding and navigation. 
+                        <a href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun_id) }}">View other pipeline files</a>
+                    </small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.pipeline-file-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Ensure pipeline HTML content fits properly */
+.pipeline-file-wrapper > html,
+.pipeline-file-wrapper > body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Style tables in pipeline content */
+.pipeline-file-wrapper table {
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.pipeline-file-wrapper img {
+    max-width: 100%;
+    height: auto;
+}
+</style>
+{% endblock %}

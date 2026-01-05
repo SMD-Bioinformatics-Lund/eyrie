@@ -1,47 +1,32 @@
-// Sequencing runs table search functionality
+/**
+ * Sequencing runs page JavaScript
+ */
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('tableSearch');
-    const tableBody = document.getElementById('seqrunsTableBody');
-
-    if (searchInput && tableBody) {
-        searchInput.addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const rows = tableBody.getElementsByTagName('tr');
-            
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchValue) ? '' : 'none';
-            }
-        });
-    }
-
-    // Refresh table data periodically (every 30 seconds)
-    setInterval(function() {
-        if (window.location.pathname.includes('/seqruns') && !window.location.pathname.includes('/seqrun/')) {
-            refreshSeqRunsTable();
-        }
-    }, 30000);
+    searchInput.addEventListener('input', filterTable);
 });
 
-// Function to refresh sequencing runs table
-function refreshSeqRunsTable() {
-    fetch('/seqruns')
-        .then(response => response.text())
-        .then(html => {
-            // Extract the table body content from the response
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newTableBody = doc.getElementById('seqrunsTableBody');
-            
-            if (newTableBody) {
-                const currentTableBody = document.getElementById('seqrunsTableBody');
-                if (currentTableBody) {
-                    currentTableBody.innerHTML = newTableBody.innerHTML;
-                }
+function filterTable() {
+    const searchTerm = document.getElementById('tableSearch').value.toLowerCase();
+    const tbody = document.getElementById('seqrunsTableBody');
+    const rows = tbody.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        const cells = row.getElementsByTagName('td');
+        let shouldShow = false;
+
+        if (cells.length === 1) continue;
+
+        for (let j = 0; j < cells.length; j++) {
+            const cellText = cells[j].textContent.toLowerCase();
+            if (cellText.includes(searchTerm)) {
+                shouldShow = true;
+                break;
             }
-        })
-        .catch(error => {
-            console.error('Error refreshing sequencing runs table:', error);
-        });
+        }
+
+        row.style.display = shouldShow ? '' : 'none';
+    }
 }
