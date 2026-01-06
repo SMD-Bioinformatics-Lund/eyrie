@@ -1,6 +1,5 @@
 """Upload handling for Eyrie API."""
 
-import os
 from typing import Optional, Dict, Any
 
 from ..models import SampleResults, SampleConfig, SampleInfo
@@ -107,12 +106,9 @@ class UploadHandler:
         except:
             return None
 
-    def upload_pipeline_files_only(self, sequencing_run_id: str, pipeline_software: str, pipeline_datetime_suffix: str) -> bool:
+    def upload_pipeline_files_only(self, sequencing_run_id: str, pipeline_software: str, pipeline_datetime_suffix: str, analysis_output_path: str) -> bool:
         """Upload only pipeline files for a sequencing run."""
         try:
-            # Create a minimal config for file discovery
-            
-
             # Create minimal sample data for pipeline discovery
             sample_info = SampleInfo(
                 sample_id="dummy",
@@ -134,10 +130,8 @@ class UploadHandler:
                 metadata=None
             )
 
-            # Construct analysis directory path dynamically based on pipeline_software
-            # Use configurable base path (default: /app/analysis-files) + results/{pipeline_software}
-            base_analysis_path = os.getenv('EYRIE_ANALYSIS_FILES_PATH', '/app/analysis-files')
-            analysis_output_dirpath = f"{base_analysis_path}/results/{pipeline_software}"
+            # Construct analysis directory path: analysis_output_path + /{pipeline_software}
+            analysis_output_dirpath = f"{analysis_output_path}/{pipeline_software}"
 
             config = SampleConfig(
                 sample=sample_info,

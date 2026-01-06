@@ -111,6 +111,9 @@ cd ../..
 # Using conda environment
 conda run -n eyrie-popup popup upload --sample data/test/barcode01_config.yaml --api http://localhost:8000/api --username admin --password admin #Once you have created other admin users - REMOVE admin/admin
 
+# Upload pipeline files only (for sequencing run-level data)
+conda run -n eyrie-popup popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
+
 # Test connection if upload doesn't work
 conda run -n eyrie-popup popup test-connection --username admin --password admin --api http://localhost:8000/api
 ```
@@ -343,7 +346,8 @@ The application supports environment-based configuration through the `environmen
 - `ENVIRONMENT`: Application environment (production)
 
 **File System Paths:**
-- `EYRIE_ANALYSIS_FILES_PATH`: Base path for analysis files (default: `/app/analysis-files`). Used by eyrie-popup for dynamic analysis directory construction
+- `ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software subdirectories (e.g., `/path/to/analysis-files/results`). Used by eyrie-popup for pipeline file discovery
+- `EYRIE_ANALYSIS_FILES_PATH`: Legacy base path for analysis files (default: `/app/analysis-files`). Used by eyrie-popup for dynamic analysis directory construction
 
 ## Contributing
 
