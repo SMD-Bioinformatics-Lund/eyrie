@@ -31,10 +31,10 @@ Auto-generate a configuration file for a sample:
 
 ```bash
 # Basic usage with TRANA pipeline
-popup generate-config --analysis-output-dirpath /path/to/analysis/results --sample-id barcode01 --output config.yaml
+popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --output config.yaml
 
 # Specify different pipeline software
-popup generate-config --analysis-output-dirpath /path/to/analysis/results --sample-id barcode01 --pipeline-software metaval --output config.yaml
+popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --pipeline-software metaval --output config.yaml
 ```
 
 ### Upload Sample and Metadata
@@ -52,7 +52,7 @@ popup upload --metadata metadata.tsv --api http://localhost:8000/api --username 
 popup upload --sample config.yaml --metadata metadata.tsv --api http://localhost:8000/api --username admin --password admin
 
 # Upload pipeline files only (for sequencing run-level data)
-popup upload --analysis-output-dirpath /path/to/analysis --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --pipeline-software trana --api http://localhost:8000/api --username admin --password admin
+popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --pipeline-software trana --api http://localhost:8000/api --username admin --password admin
 ```
 
 Use `--dry-run` to parse without uploading:
@@ -89,14 +89,14 @@ Upload structured pipeline data (parameters, execution trace, software versions)
 
 ```bash
 # Upload pipeline files with specific datetime suffix
-popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
+popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
 
 # Specify different pipeline software
-popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-software metaval --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
+popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-software metaval --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
 ```
 
 **Required arguments for pipeline upload:**
-- `--analysis-output-dirpath`: Path to analysis results directory containing pipeline software subdirectories (e.g., `/path/to/analysis-files/results`). `ANALYSIS_OUTPUT_DIRPATH` can be added to environment instead of providing `--analysis-output-dirpath` argument.
+- `--analysis-output-dirpath`: Path to analysis results directory containing pipeline software output subdirectories (e.g. `/path/to/analysis-files/results/trana`). `EYRIE_ANALYSIS_OUTPUT_DIRPATH` can be added to environment instead of providing `--analysis-output-dirpath` argument.
 - `--pipeline-datetime-suffix`: Datetime suffix to identify specific pipeline files
 - `--sequencing-run-id`: Sequencing run identifier
 
@@ -118,7 +118,7 @@ sample:
   classification_type: "16S"  # or "ITS"
 
 # Analysis output directory containing pipeline output directories (fastqc, krona, nanoplot_processed, etc.)
-analysis_output_dirpath: "/path/to/analysis/results"
+analysis_output_dirpath: "/path/to/analysis-files/results/trana"
 
 # Pipeline software used for analysis (trana, metaval, etc.)
 pipeline_software: "trana"
@@ -192,29 +192,25 @@ Samples are uploaded to Eyrie with:
 
 eyrie-popup supports configuration through environment variables:
 
-- `ANALYSIS_OUTPUT_DIRPATH`: Analysis results directory path containing pipeline software subdirectories
+- `EYRIE_ANALYSIS_OUTPUT_DIRPATH`: Analysis results directory path containing pipeline software output subdirectories
   - Used for pipeline file discovery during upload
-  - Example: `/path/to/analysis-files/results`
-- `EYRIE_ANALYSIS_FILES_PATH`: Legacy base directory path for analysis files (default: `/app/analysis-files`)
-  - Used for dynamic analysis directory construction during upload
-  - Example: `/path/to/your/analysis-files`
+  - Example: `/path/to/analysis-files/results/trana`
 
 ### Analysis Directory Structure
 
 The tool expects analysis files to be organized as:
 ```
-{ANALYSIS_OUTPUT_DIRPATH}/       # e.g., /path/to/analysis-files/results  
-└── {pipeline_software}/         # e.g., trana, metaval
-    ├── pipeline_info/           # pipeline files directory
-    │   ├── params_*.json
-    │   ├── execution_trace_*.txt
-    │   ├── software_versions.yml
-    │   ├── execution_report_*.html
-    │   └── ...
-    ├── fastqc/                  # sample analysis files
-    ├── krona/
-    ├── nanoplot_processed/
-    └── results/
+{ANALYSIS_OUTPUT_DIRPATH}/     # e.g., /path/to/analysis-files/results/trana 
+├── pipeline_info/             # pipeline files directory
+│   ├── params_*.json
+│   ├── execution_trace_*.txt
+│   ├── software_versions.yml
+│   ├── execution_report_*.html
+│   └── ...
+├── fastqc/
+├── krona/
+├── nanoplot_processed/
+└── results/
 ```
 
 ## Development
@@ -224,4 +220,3 @@ Install development dependencies:
 ```bash
 pip install -e ".[dev]"
 ```
-

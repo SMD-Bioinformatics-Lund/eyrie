@@ -278,7 +278,7 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
         password: Password for authentication  
         dry_run: If True, parse files but don't upload to database
         verbose: Enable detailed output
-        analysis_output_dirpath: Path to analysis results directory
+        analysis_output_dirpath: Path to analysis results directory containing pipeline software output directories (e.g. fastqc, krona, nanoplot_processed, etc.)
         pipeline_software: Pipeline software used (trana, metaval, etc.)
         
     Returns:
@@ -311,24 +311,23 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
 
         # Determine analysis output directory path
         if analysis_output_dirpath:
-            analysis_output_path = str(analysis_output_dirpath)
+            analysis_output_dirpath = str(analysis_output_dirpath)
         else:
             # Check environment variables as fallback (in order of preference)
-            env_analysis_path = os.getenv('ANALYSIS_OUTPUT_DIRPATH')
+            env_analysis_path = os.getenv('EYRIE_ANALYSIS_OUTPUT_DIRPATH')
             if env_analysis_path:
-                analysis_output_path = env_analysis_path
+                analysis_output_dirpath = env_analysis_path
             else:
                 click.echo("❌ Error: Analysis output directory must be specified.")
                 click.echo("Please provide either:")
                 click.echo("  --analysis-output-dirpath argument, OR")
-                click.echo("  Set ANALYSIS_OUTPUT_DIRPATH environment variable, OR")
-                click.echo("  Set EYRIE_ANALYSIS_FILES_PATH environment variable (legacy)")
+                click.echo("  Set EYRIE_ANALYSIS_OUTPUT_DIRPATH environment variable")
                 click.echo("")
-                click.echo("Example: popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 ...")
+                click.echo("Example: popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 ...")
                 return False
 
         # Upload pipeline files only
-        if api_client.upload_handler.upload_pipeline_files_only(sequencing_run_id, pipeline_software, pipeline_datetime_suffix, analysis_output_path):
+        if api_client.upload_handler.upload_pipeline_files_only(sequencing_run_id, pipeline_software, pipeline_datetime_suffix, analysis_output_dirpath):
             click.echo("✅ Successfully uploaded pipeline files!")
             return True
         else:
@@ -354,7 +353,7 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (metadata only)')
 @click.option('--sequencing-run-id', help='Sequencing run identifier (required for pipeline-only uploads)')
 @click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to match specific pipeline files by timestamp')
-@click.option('--analysis-output-dirpath', type=click.Path(exists=True, path_type=Path), help='Path to analysis results directory containing pipeline software subdirectories (e.g., /path/to/analysis-files/results)')
+@click.option('--analysis-output-dirpath', type=click.Path(exists=True, path_type=Path), help='Path to analysis results directory containing pipeline software output results subdirectories (e.g., /path/to/analysis-files/results/trana)')
 @click.option('--pipeline-software', default='trana', help='Pipeline software used for analysis (default: trana). Options: trana, metaval, etc.')
 def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
           username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool,
@@ -381,7 +380,7 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
       popup upload -s config.yaml -m metadata.tsv
       
       # Upload pipeline files only (sequencing run-level data)
-      popup upload --analysis-output-dirpath /path/to/analysis-files/results \\
+      popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana \\
                    --pipeline-datetime-suffix 2025-09-30_09-46-56 \\
                    --sequencing-run-id RUN123 \\
                    --pipeline-software trana
@@ -484,7 +483,7 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
       popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/metaval --sample-id barcode01 --pipeline-software metaval
       
       # Generate config with custom output file and metadata
-      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 \\
+      popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 \\
                            --output my_config.yaml --sample-name "Sample_001" \\
                            --sequencing-run-id "RUN_20250930"
     """
