@@ -3,6 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import os
 import yaml
 import click
 
@@ -16,13 +17,41 @@ from .__version__ import __version__
 @click.group()
 @click.version_option(version=__version__, prog_name="eyrie-popup")
 def cli():
-    """Eyrie POPUP - Pipeline Output Processor and UPloader for sequencing analysis results."""
+    """Eyrie POPUP - Pipeline Output Processor and UPloader for sequencing analysis results.
+    
+    POPUP processes and uploads sequencing analysis data to the Eyrie database, supporting:
+    - Sample-level data (FastQC, Krona plots, NanoPlot, taxonomic abundances) 
+    - Metadata (sample information from TSV/CSV files)
+    - Pipeline data (parameters, execution traces, software versions, HTML reports)
+    
+    Use 'popup COMMAND --help' for detailed information about each command.
+    """
     pass
 
 
 def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str], 
                        dry_run: bool, verbose: bool, pipeline_datetime_suffix: Optional[str] = None) -> bool:
-    """Upload sample analysis data from YAML configuration."""
+    """Upload sample analysis data from YAML configuration.
+    
+    Processes and uploads sample-level sequencing analysis data including:
+    - Quality control reports (FastQC HTML files)
+    - Taxonomic classification plots (Krona HTML files)  
+    - Quality plots (NanoPlot HTML and stats files)
+    - Taxonomic abundance data (TSV files)
+    - Associated metadata
+    
+    Args:
+        sample_cnf: Path to YAML configuration file describing sample data
+        api: Eyrie API base URL
+        username: Username for authentication
+        password: Password for authentication
+        dry_run: If True, parse data but don't upload to database
+        verbose: Enable detailed output
+        pipeline_datetime_suffix: Optional timestamp to include matching pipeline data
+        
+    Returns:
+        bool: True if upload successful, False otherwise
+    """
 
     click.echo(f"📁 Sample config: {sample_cnf}")
 
@@ -231,8 +260,30 @@ def _upload_metadata(metadata_file: Path, api: str, username: Optional[str], pas
 
 
 def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix: str, api: str, 
-                                username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool) -> bool:
-    """Upload pipeline files only for a sequencing run."""
+                                username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool,
+                                analysis_output_dirpath: Optional[Path], pipeline_software: str) -> bool:
+    """Upload structured pipeline data and HTML reports for a sequencing run.
+    
+    This function uploads sequencing run-level data including:
+    - Pipeline parameters (parsed from params_*.json)
+    - Execution trace (parsed from execution_trace_*.txt) 
+    - Software versions (parsed from software_versions.yml)
+    - HTML reports (execution_report_*.html, execution_timeline_*.html, pipeline_dag_*.html)
+    
+    Args:
+        sequencing_run_id: Unique identifier for the sequencing run
+        pipeline_datetime_suffix: Timestamp suffix to match specific pipeline files
+        api: Eyrie API base URL
+        username: Username for authentication
+        password: Password for authentication  
+        dry_run: If True, parse files but don't upload to database
+        verbose: Enable detailed output
+        analysis_output_dirpath: Path to analysis results directory
+        pipeline_software: Pipeline software used (trana, metaval, etc.)
+        
+    Returns:
+        bool: True if upload successful, False otherwise
+    """
 
     try:
         click.echo(f"🏃 Sequencing run: {sequencing_run_id}")
@@ -258,11 +309,26 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
                 click.echo("❌ Authentication failed")
                 return False
 
-        # Use default pipeline software and current directory for analysis output
-        pipeline_software = 'trana'  # Default to trana
+        # Determine analysis output directory path
+        if analysis_output_dirpath:
+            analysis_output_path = str(analysis_output_dirpath)
+        else:
+            # Check environment variables as fallback (in order of preference)
+            env_analysis_path = os.getenv('ANALYSIS_OUTPUT_DIRPATH')
+            if env_analysis_path:
+                analysis_output_path = env_analysis_path
+            else:
+                click.echo("❌ Error: Analysis output directory must be specified.")
+                click.echo("Please provide either:")
+                click.echo("  --analysis-output-dirpath argument, OR")
+                click.echo("  Set ANALYSIS_OUTPUT_DIRPATH environment variable, OR")
+                click.echo("  Set EYRIE_ANALYSIS_FILES_PATH environment variable (legacy)")
+                click.echo("")
+                click.echo("Example: popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 ...")
+                return False
 
         # Upload pipeline files only
-        if api_client.upload_handler.upload_pipeline_files_only(sequencing_run_id, pipeline_software, pipeline_datetime_suffix):
+        if api_client.upload_handler.upload_pipeline_files_only(sequencing_run_id, pipeline_software, pipeline_datetime_suffix, analysis_output_path):
             click.echo("✅ Successfully uploaded pipeline files!")
             return True
         else:
@@ -286,27 +352,42 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
 @click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (metadata only)')
-@click.option('--sequencing-run-id', help='Sequencing run identifier (required when using --pipeline-datetime-suffix without sample config)')
-@click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to upload specific pipeline files')
+@click.option('--sequencing-run-id', help='Sequencing run identifier (required for pipeline-only uploads)')
+@click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to match specific pipeline files by timestamp')
+@click.option('--analysis-output-dirpath', type=click.Path(exists=True, path_type=Path), help='Path to analysis results directory containing pipeline software subdirectories (e.g., /path/to/analysis-files/results)')
+@click.option('--pipeline-software', default='trana', help='Pipeline software used for analysis (default: trana). Options: trana, metaval, etc.')
 def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
           username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool,
-          sequencing_run_id: Optional[str], pipeline_datetime_suffix: Optional[str]):
-    """Upload sample analysis data and/or metadata to Eyrie.
+          sequencing_run_id: Optional[str], pipeline_datetime_suffix: Optional[str],
+          analysis_output_dirpath: Optional[Path], pipeline_software: str):
+    """Upload sample analysis data, metadata, and/or pipeline files to Eyrie.
 
-    Specify at least one of:
-      -s, --sample PATH     Upload sample analysis results from YAML config
-      -m, --metadata PATH   Upload metadata from TSV/CSV file
+    Upload modes:
+      1. Sample data: -s/--sample (YAML config file)
+      2. Metadata: -m/--metadata (TSV/CSV file) 
+      3. Pipeline files: --pipeline-datetime-suffix + --sequencing-run-id + --analysis-output-dirpath
   
-    Pipeline file management:
-      --pipeline-datetime-suffix   Upload specific pipeline files by datetime suffix
-      --sequencing-run-id          Required when using --pipeline-datetime-suffix without sample config
+    Pipeline files include structured data (parameters JSON, execution trace TSV, software versions YAML) 
+    and HTML reports (execution report, timeline, DAG) for sequencing run-level analysis.
 
     Examples:
-      popup upload -s sample_config.yaml                                     # Upload analysis data only
-      popup upload -m metadata.tsv --create-missing                          # Upload metadata only  
-      popup upload -s config.yaml -m metadata.tsv                            # Upload both together
-      popup upload -s config.yaml --pipeline-datetime-suffix 2025-09-30_09-46-56  # Upload with specific pipeline files
-      popup upload --sequencing-run-id 20250930_1234 --pipeline-datetime-suffix 2025-09-30_09-46-56  # Update pipeline files only
+      # Upload sample analysis data only
+      popup upload -s sample_config.yaml
+      
+      # Upload metadata only (create missing samples)
+      popup upload -m metadata.tsv --create-missing
+      
+      # Upload both sample data and metadata together  
+      popup upload -s config.yaml -m metadata.tsv
+      
+      # Upload pipeline files only (sequencing run-level data)
+      popup upload --analysis-output-dirpath /path/to/analysis-files/results \\
+                   --pipeline-datetime-suffix 2025-09-30_09-46-56 \\
+                   --sequencing-run-id RUN123 \\
+                   --pipeline-software trana
+      
+      # Upload sample data with matching pipeline files
+      popup upload -s config.yaml --pipeline-datetime-suffix 2025-09-30_09-46-56
     """
 
     try:
@@ -350,7 +431,7 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
         pipeline_success = True
         if pipeline_datetime_suffix and not sample_cnf and sequencing_run_id:
             click.echo(f"\n🔧 Processing pipeline files only...")
-            pipeline_success = _upload_pipeline_files_only(sequencing_run_id, pipeline_datetime_suffix, api, username, password, dry_run, verbose)
+            pipeline_success = _upload_pipeline_files_only(sequencing_run_id, pipeline_datetime_suffix, api, username, password, dry_run, verbose, analysis_output_dirpath, pipeline_software)
         elif pipeline_datetime_suffix and not sample_cnf:
             if verbose:
                 click.echo(f"\n🔍 Debug: pipeline_datetime_suffix={pipeline_datetime_suffix}, sample_cnf={sample_cnf}, sequencing_run_id={sequencing_run_id}")
@@ -377,7 +458,7 @@ def upload(sample_cnf: Optional[Path], metadata_file: Optional[Path], api: str,
 
 @cli.command()
 @click.option('--analysis-output-dirpath', required=True, type=click.Path(exists=True, path_type=Path), 
-              help='Analysis output directory path containing pipeline output directories (fastqc, krona, nanoplot_processed, etc.)')
+              help='Path to analysis output directory containing pipeline subdirectories (fastqc, krona, nanoplot_processed, etc.)')
 @click.option('--sample-id', required=True, help='Sample identifier')
 @click.option('--output', '-o', type=click.Path(path_type=Path), 
               help='Output YAML file (default: {sample_id}_config.yaml)')
@@ -391,10 +472,21 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
                    sample_name: Optional[str], lims_id: Optional[str], 
                    sequencing_run_id: Optional[str], classification: str, pipeline_software: str):
     """Generate a YAML configuration file for a single sample.
-
+    
+    Creates a YAML config file that can be used with 'popup upload -s' to upload sample analysis data.
+    The analysis-output-dirpath should point to the directory containing analysis subdirectories.
+    
     Examples:
-      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01
-      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 --pipeline-software metaval
+      # Generate config for sample with TRANA pipeline
+      popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01
+      
+      # Generate config for sample with different pipeline
+      popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/metaval --sample-id barcode01 --pipeline-software metaval
+      
+      # Generate config with custom output file and metadata
+      popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 \\
+                           --output my_config.yaml --sample-name "Sample_001" \\
+                           --sequencing-run-id "RUN_20250930"
     """
 
     click.echo(f"🔍 Generating config for sample: {sample_id}")
