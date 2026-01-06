@@ -84,12 +84,12 @@ The application will be available at `/eyrie` on your domain with the backend AP
 
 ### Data files
 
-Place/mount your pipeline output files in the `data/` directory:
-- `data/test/krona/` - Krona taxonomic plots (HTML)
-- `data/test/fastqc/` - FastQC quality reports (HTML)
-- `data/test/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
-- `data/test/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
-- `data/test/results/` - Pipeline results and TSV abundance files
+Place/mount your pipeline output files in the `analysis-files/` directory:
+- `analysis-files/results/trana/krona/` - Krona taxonomic plots (HTML)
+- `analysis-files/results/trana/fastqc/` - FastQC quality reports (HTML)
+- `analysis-files/results/trana/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
+- `analysis-files/results/trana/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
+- `analysis-files/results/trana/results/` - Pipeline results and TSV abundance files
 
 ### Sample processing & uploading with eyrie-popup
 
@@ -112,7 +112,7 @@ cd ../..
 conda run -n eyrie-popup popup upload --sample data/test/barcode01_config.yaml --api http://localhost:8000/api --username admin --password admin #Once you have created other admin users - REMOVE admin/admin
 
 # Upload pipeline files only (for sequencing run-level data)
-conda run -n eyrie-popup popup upload --analysis-output-dirpath /path/to/analysis-files/results --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
+conda run -n eyrie-popup popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
 
 # Test connection if upload doesn't work
 conda run -n eyrie-popup popup test-connection --username admin --password admin --api http://localhost:8000/api
@@ -124,10 +124,10 @@ Generate YAML configuration files for sample processing:
 
 ```bash
 # Generate config with explicit flags
-conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01
+conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01
 
 # Generate config with custom output file
-conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis --sample-id barcode01 --output custom_config.yaml
+conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --output custom_config.yaml
 
 # See all options
 conda run -n eyrie-popup popup generate-config --help
@@ -138,14 +138,14 @@ conda run -n eyrie-popup popup generate-config --help
 Eyrie-popup searches for analysis files using a simplified directory structure:
 
 ```yaml
-analysis_output_dirpath: "/path/to/analysis"
+analysis_output_dirpath: "/path/to/analysis-files/results/trana"
 ```
 
-Files are searched in: `/path/to/analysis/{component_directory}/{sample_id}_file.ext`
+Files are searched in: `{analysis_output_dirpath}/{component_directory}/{sample_id}_file.ext`
 
 **Example directory structure:**
 ```
-/path/to/analysis/
+{analysis_output_dirpath}
 ├── fastqc/
 │   └── barcode01_fastqc.html
 ├── krona/
@@ -346,8 +346,7 @@ The application supports environment-based configuration through the `environmen
 - `ENVIRONMENT`: Application environment (production)
 
 **File System Paths:**
-- `ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software subdirectories (e.g., `/path/to/analysis-files/results`). Used by eyrie-popup for pipeline file discovery
-- `EYRIE_ANALYSIS_FILES_PATH`: Legacy base path for analysis files (default: `/app/analysis-files`). Used by eyrie-popup for dynamic analysis directory construction
+- `ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software output subdirectories (e.g., `/path/to/analysis-files/results/trana`). Used by eyrie-popup for pipeline file discovery.
 
 ## Contributing
 

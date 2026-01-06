@@ -106,7 +106,7 @@ class UploadHandler:
         except:
             return None
 
-    def upload_pipeline_files_only(self, sequencing_run_id: str, pipeline_software: str, pipeline_datetime_suffix: str, analysis_output_path: str) -> bool:
+    def upload_pipeline_files_only(self, sequencing_run_id: str, pipeline_software: str, pipeline_datetime_suffix: str, analysis_output_dirpath: str) -> bool:
         """Upload only pipeline files for a sequencing run."""
         try:
             # Create minimal sample data for pipeline discovery
@@ -129,9 +129,6 @@ class UploadHandler:
                 fastqc_file=None,
                 metadata=None
             )
-
-            # Construct analysis directory path: analysis_output_path + /{pipeline_software}
-            analysis_output_dirpath = f"{analysis_output_path}/{pipeline_software}"
 
             config = SampleConfig(
                 sample=sample_info,
