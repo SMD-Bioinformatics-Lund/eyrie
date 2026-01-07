@@ -5,7 +5,5 @@
 SPIKE = [
     "Agrobacterium tumefaciens",
     "Agrobacterium fabrum",
-    "Salinibacter ruber",
-    "Bacillus subtilis",
-    "Bacillus cereus"
+    "Salinibacter ruber"
 ]
