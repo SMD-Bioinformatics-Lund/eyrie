@@ -20,7 +20,7 @@ MONGO_HOST_PORT=27017
 # =====================================================
 # External URLs (local development)
 # =====================================================
-EXTERNAL_BASE_PATH=/eyrie
+EXTERNAL_BASE_PATH=
 EXTERNAL_API_URL=http://localhost:${BACKEND_HOST_PORT}/api
 
 # =====================================================

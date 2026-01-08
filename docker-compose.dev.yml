@@ -45,13 +45,13 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-development}
       TRANA_ANALYSIS_RESULTS: ${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}
       METAVAL_ANALYSIS_RESULTS: ${METAVAL_ANALYSIS_RESULTS:-/app/analysis-files/results/metaval}
-      EYRIE_ANALYSIS_OUTPUT_DIRPATH: ${EYRIE_ANALYSIS_OUTPUT_DIRPATH:-./analysis-files/results/trana:}
+      EYRIE_ANALYSIS_OUTPUT_DIRPATH: ${EYRIE_ANALYSIS_OUTPUT_DIRPATH:-./analysis-files/results/trana}
     ports:
       - "${FRONTEND_HOST_PORT:-3000}:5000"
     depends_on:
       - eyrie-backend
     volumes:
-      - ${EYRIE_ANALYSIS_OUTPUT_DIRPATH:-./analysis-files/results/trana:}:${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}:ro
+      - ${EYRIE_ANALYSIS_OUTPUT_DIRPATH:-./analysis-files/results/trana}:${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}:ro
     networks:
       - eyrie-network
 
