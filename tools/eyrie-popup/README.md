@@ -200,7 +200,7 @@ eyrie-popup supports configuration through environment variables:
 
 The tool expects analysis files to be organized as:
 ```
-{ANALYSIS_OUTPUT_DIRPATH}/     # e.g., /path/to/analysis-files/results/trana 
+{analysis_output_dirpath}/     # e.g., /path/to/analysis-files/results/trana 
 ├── pipeline_info/             # pipeline files directory
 │   ├── params_*.json
 │   ├── execution_trace_*.txt

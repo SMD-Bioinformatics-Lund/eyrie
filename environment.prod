@@ -55,6 +55,7 @@ DEBUG=false
 # =====================================================
 # Analysis Results Paths
 # =====================================================
+EYRIE_ANALYSIS_OUTPUT_DIRPATH=./analysis-files/results/trana
 TRANA_ANALYSIS_RESULTS=/app/analysis-files/results/trana
 METAVAL_ANALYSIS_RESULTS=/app/analysis-files/results/metaval
 
