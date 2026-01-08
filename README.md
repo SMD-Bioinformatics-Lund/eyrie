@@ -346,7 +346,7 @@ The application supports environment-based configuration through the `environmen
 - `ENVIRONMENT`: Application environment (production)
 
 **File System Paths:**
-- `ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software output subdirectories (e.g., `/path/to/analysis-files/results/trana`). Used by eyrie-popup for pipeline file discovery.
+- `EYRIE_ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software output subdirectories (e.g., `/path/to/analysis-files/results/trana`). Used by eyrie-popup for pipeline file discovery.
 
 ## Contributing
 
