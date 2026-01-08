@@ -223,8 +223,8 @@ def seqrun_pipeline_file(seqrun_id, file_type):
                 seqrun = get_seqrun_by_id(all_samples, seqrun_id)
 
         if not seqrun or not seqrun.get('pipeline_files'):
-            return render_template('seqrun_pipeline_file.html', 
-                                 seqrun_id=decoded_seqrun_id, 
+            return render_template('seqrun_pipeline_file.html',
+                                 seqrun_id=decoded_seqrun_id,
                                  file_type=file_type,
                                  error='Pipeline files not available for this sequencing run')
 
@@ -246,31 +246,7 @@ def seqrun_pipeline_file(seqrun_id, file_type):
         analysis_base_path = get_analysis_path(seqrun)
         full_file_path = f"{analysis_base_path}/{file_path}"
 
-        # Get the HTML content
-        try:
-            file_response = serve_analysis_file(full_file_path)
-            if hasattr(file_response, 'get_data'):
-                html_content = file_response.get_data(as_text=True)
-            else:
-                html_content = str(file_response.data, 'utf-8') if hasattr(file_response, 'data') else str(file_response)
-        except Exception as file_error:
-            return render_template('seqrun_pipeline_file.html',
-                                 seqrun_id=decoded_seqrun_id,
-                                 file_type=file_type,
-                                 error=f'Failed to load file: {str(file_error)}')
-
-        # Render the HTML content within Eyrie template
-        title_map = {
-            'execution-report': 'Execution Report',
-            'execution-timeline': 'Execution Timeline',
-            'pipeline-dag': 'Pipeline DAG'
-        }
-
-        return render_template('seqrun_pipeline_file.html',
-                             seqrun_id=decoded_seqrun_id,
-                             file_type=file_type,
-                             file_title=title_map.get(file_type, 'Pipeline File'),
-                             html_content=html_content)
+        return serve_analysis_file(full_file_path)
 
     except Exception as e:
         print(f"❌ Error serving pipeline file: {e}")
