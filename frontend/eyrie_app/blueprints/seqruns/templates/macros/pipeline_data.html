@@ -1,0 +1,198 @@
+{# Macros for rendering pipeline structured data server-side #}
+
+{% macro render_parameters_table(pipeline_parameters) %}
+    <div class="p-3">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Category</th>
+                        <th>Parameter</th>
+                        <th>Value</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if pipeline_parameters and pipeline_parameters.categories %}
+                        {% for category_key, category in pipeline_parameters.categories.items() %}
+                            {% if category.parameters %}
+                                {% for param_name, param_data in category.parameters.items() %}
+                                    <tr>
+                                        <td><span class="badge bg-secondary">{{ category.name }}</span></td>
+                                        <td><code>{{ param_name }}</code></td>
+                                        <td>
+                                            {% if param_data.value is none %}
+                                                <span class="text-muted">null</span>
+                                            {% elif param_data.type == 'bool' %}
+                                                <span class="badge bg-{{ 'success' if param_data.value else 'danger' }}">{{ param_data.value }}</span>
+                                            {% elif param_data.type == 'str' and param_data.value|length > 50 %}
+                                                <span title="{{ param_data.value }}">{{ param_data.value[:50] }}...</span>
+                                            {% else %}
+                                                {{ param_data.value }}
+                                            {% endif %}
+                                        </td>
+                                        <td><small class="text-muted">{{ param_data.type }}</small></td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">No pipeline parameters available</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_execution_trace_table(execution_trace) %}
+    {% if execution_trace %}
+        {% set summary = execution_trace.summary or {} %}
+        <div class="p-3">
+            <!-- Summary Stats -->
+            <div class="row mb-3">
+                <div class="col-md-3 text-center">
+                    <div class="h5 text-success">{{ summary.completed_tasks or 0 }}</div>
+                    <small class="text-muted">Completed</small>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="h5 text-danger">{{ summary.failed_tasks or 0 }}</div>
+                    <small class="text-muted">Failed</small>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="h5 text-info">{{ summary.avg_duration_seconds or 0 }}s</div>
+                    <small class="text-muted">Avg Duration</small>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="h5 text-warning">{{ summary.max_memory_mb or 0 }}MB</div>
+                    <small class="text-muted">Max Memory</small>
+                </div>
+            </div>
+
+            <!-- Tasks Table -->
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                <table class="table table-sm table-hover">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th>Task</th>
+                            <th>Status</th>
+                            <th>Duration</th>
+                            <th>CPU %</th>
+                            <th>Memory</th>
+                            <th>Exit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if execution_trace.tasks %}
+                            {% for task in execution_trace.tasks %}
+                                <tr>
+                                    <td>
+                                        <div><strong>{{ task.name }}</strong></div>
+                                        <small class="text-muted">{{ task.task_id }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if task.status == 'COMPLETED' else 'danger' }}">{{ task.status }}</span>
+                                    </td>
+                                    <td>{{ task.duration_seconds }}s</td>
+                                    <td>{{ task.cpu_percentage }}%</td>
+                                    <td>{{ task.peak_memory_mb }}MB</td>
+                                    <td>{{ task.exit_code }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No execution trace tasks available</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-center">
+                <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">No execution trace data available</p>
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_software_versions_table(software_versions) %}
+    {% if software_versions %}
+        <div class="p-3">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Category</th>
+                            <th>Tool</th>
+                            <th>Version</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {# Add workflow information first #}
+                        {% if software_versions.workflow %}
+                            {% for key, value in software_versions.workflow.items() %}
+                                <tr>
+                                    <td><span class="badge bg-primary">Workflow</span></td>
+                                    <td>{{ key }}</td>
+                                    <td><code>{{ value }}</code></td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+
+                        {# Add tool categories #}
+                        {% if software_versions.categories %}
+                            {% for category_key, category in software_versions.categories.items() %}
+                                {% if category.tools %}
+                                    {% for tool_name, tool_data in category.tools.items() %}
+                                        {% if tool_data is mapping %}
+                                            {# Handle complex tool data (multiple components) #}
+                                            {% for component, version in tool_data.items() %}
+                                                <tr>
+                                                    <td><span class="badge bg-info">{{ category.name }}</span></td>
+                                                    <td>{{ tool_name }}.{{ component }}</td>
+                                                    <td><code>{{ version }}</code></td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            {# Handle simple tool data (single version) #}
+                                            <tr>
+                                                <td><span class="badge bg-info">{{ category.name }}</span></td>
+                                                <td>{{ tool_name }}</td>
+                                                <td><code>{{ tool_data }}</code></td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No tool categories available</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <div class="d-flex justify-content-center align-items-center h-100">
+            <div class="text-center">
+                <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+                <p class="text-muted mt-3">No software versions data available</p>
+            </div>
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{% macro render_structured_data_placeholder(message) %}
+    <div class="d-flex justify-content-center align-items-center h-100">
+        <div class="text-center">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 4rem;"></i>
+            <p class="text-muted mt-3">{{ message }}</p>
+        </div>
+    </div>
+{% endmacro %}
