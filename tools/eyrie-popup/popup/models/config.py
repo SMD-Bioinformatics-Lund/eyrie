@@ -13,7 +13,6 @@ class SampleInfo(BaseModel):
     classification_type: str = Field(..., regex="^(16S|ITS)$")
     pipeline_software: str = "trana"
     barcode: Optional[str] = None
-    sequencing_run_date: Optional[str] = None
 
 
 class FastQCConfig(BaseModel):

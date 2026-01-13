@@ -70,11 +70,29 @@ class UploadHandler:
             return False
 
     def _upload_seqrun(self, seqrun_data: Dict[str, Any]) -> bool:
-        """Upload/update sequencing run data."""
+        """Upload/update sequencing run data, preserving existing sequencing_metadata."""
         try:
+            sequencing_run_id = seqrun_data['sequencing_run_id']
+
+            # Check if seqrun already exists and get existing data
+            try:
+                existing_response = self.client.session.get(f"{self.client.api_url}/seqruns/{sequencing_run_id}")
+                if existing_response.status_code == 200:
+                    existing_data = existing_response.json()
+
+                    # Preserve existing sequencing_metadata if new data doesn't have it
+                    if 'sequencing_metadata' not in seqrun_data and existing_data.get('sequencing_metadata'):
+                        seqrun_data['sequencing_metadata'] = existing_data['sequencing_metadata']
+                        print(f"ℹ️ Preserving existing sequencing_metadata for {sequencing_run_id}")
+                    elif 'sequencing_metadata' in seqrun_data:
+                        print(f"ℹ️ Updating sequencing_metadata for {sequencing_run_id}")
+
+            except Exception as e:
+                print(f"ℹ️ Could not check existing seqrun data (may be new): {e}")
+
             # Use PUT for upsert operation (create if doesn't exist, update if exists)
             response = self.client.session.put(
-                f"{self.client.api_url}/seqruns/{seqrun_data['sequencing_run_id']}",
+                f"{self.client.api_url}/seqruns/{sequencing_run_id}",
                 json=seqrun_data
             )
 
