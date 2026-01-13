@@ -8,7 +8,7 @@ EYRIE_VERSION=0.3.0
 POPUP_VERSION=0.2.0
 FRONTEND_VERSION=${EYRIE_VERSION}
 BACKEND_VERSION=${EYRIE_VERSION}
-MONGODB_VERSION=5.0
+MONGODB_VERSION=5.0.32
 
 # =====================================================
 # Host Ports (mapped to Apache proxy)
