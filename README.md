@@ -2,163 +2,114 @@
 
 A modern web-based application for managing 16S and ITS sequencing classification sample results. Built with FastAPI backend, Flask frontend, and MongoDB database.
 
-## Features
+## Quick Start
 
-- **Sample Management**: View, search, and manage sequencing samples with detailed metadata
-- **Sequencing Runs Management**: Dedicated view for managing sequencing runs with aggregated statistics and filtered sample views
-- **Negative Controls Display**: Automatic detection and display of negative control samples from the same sequencing run in classification view
-- **Sample processing tool**: eyrie-popup CLI tool for processing and uploading sample data
-- **Sample QC curation**: Update sample QC status (`passed`/`failed`/`unprocessed`) with comments
-- **Sample contamination flagging**: Interactive flagging system for flagging contaminant hits
-- **Sample top hit flagging**: Interactive flagging system for flagging top hits
-- **Multi-tabbed sample view**: Overview, Classification, and Nanoplot views for comprehensive sample analysis
-- **Context-aware navigation**: Smart back navigation that preserves user's origin page when navigating between samples and sequencing runs
-- **Trends analysis**: Interactive data visualization with Plotly charts for sample metrics over time
-- **Simple UI**: Clean Bootstrap-based interface with responsive design and server-side rendering
-- **Server-side authentication**: Flask decorator-based authentication with role-based access control (admin, uploader, user)
-- **Admin dashboard**: User management and administrative functions with role-based visibility
-- **Docker deployment**: Full containerized deployment with Docker Compose
+### 1. Installation
+
+Clone and start the application using Docker:
+
+```bash
+# Clone the repository
+git clone https://github.com/SMD-Bioinformatics-Lund/eyrie
+cd eyrie
+
+# Start the application
+docker-compose -f docker-compose.dev.yml --env-file environment.dev up -d --build
+```
+
+### 2. Access the Application
+
+- **Web Interface**: http://localhost:3000
+- **Backend API**: http://localhost:8000/api
+- **Login**: Username `admin` / Password `admin`
+
+### 3. Upload Sample Data
+
+Install and use the eyrie-popup tool to upload sample data:
+
+```bash
+# Install eyrie-popup
+cd tools/eyrie-popup
+pip install -e .
+cd ../..
+
+# Upload sample data
+popup upload --sample data/test/barcode01_config.yaml --api http://localhost:8000/api --username admin --password admin
+
+# Upload sequencing run data
+popup upload --sequencing-run-metadata report.md --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
+```
+
+**For detailed eyrie-popup usage, configuration, and examples**, see [tools/eyrie-popup/README.md](tools/eyrie-popup/README.md)
+
+### 4. Stop the Application
+
+```bash
+docker-compose -f docker-compose.dev.yml down
+```
+
+## Key Features
+
+- **Sample Management**: View, search, and manage sequencing samples with comprehensive metadata
+- **Sequencing Run Management**: Aggregated statistics and pipeline data for sequencing runs
+- **Quality Control**: Interactive QC status updates with comment tracking
+- **Contamination Flagging**: Automated detection and manual flagging of contaminant species
+- **Trends Analysis**: Time-based visualization of sample metrics and quality trends
+- **Negative Controls**: Automatic display of negative controls from the same sequencing run
+- **Multi-view Sample Analysis**: Overview, Classification, and Quality Control views
+- **Role-based Access**: Admin, uploader, and user roles with appropriate permissions
+- **Data Upload Tool**: CLI tool (eyrie-popup) for processing and uploading analysis results
+
+## Production Deployment
+
+### Apache Reverse Proxy
+
+For production deployment behind Apache:
+
+```bash
+# Enable required modules
+sudo a2enmod proxy proxy_http headers
+
+# Include proxy configuration in virtual host
+Include /path/to/eyrie/apache-proxy.conf
+
+# Start production containers
+docker-compose -f docker-compose.yml --env-file environment.prod up -d
+```
+
+Application will be available at `/eyrie` on your domain.
 
 ## Architecture
 
-The application consists of three main components:
-
-- **Frontend** (Flask): Web interface and static file serving
+- **Frontend** (Flask): Web interface with server-side rendering
 - **Backend** (FastAPI): REST API for data operations
 - **Database** (MongoDB): Sample data and user management
+- **Upload Tool** (eyrie-popup): CLI tool for data processing and upload
 
-## Quick Start
+## Data Structure
 
-### Using Docker
+### Analysis Files
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/SMD-Bioinformatics-Lund/eyrie
-   cd eyrie
-   ```
+Mount your pipeline output files in `analysis-files/`:
 
-2. **Start the application**:
-   ```bash
-   docker-compose -f docker-compose.dev.yml --env-file environment.dev up -d --build
-   ```
-
-3. **Access the application**:
-   - Web Interface: http://localhost:3000
-   - Backend API: http://localhost:8000/api
-   - MongoDB: localhost:27017
-
-4. **Login with default credentials**:
-   - Username: `admin`
-   - Password: `admin`
-
-5. **Stop the application**:
-   ```bash
-   docker-compose -f docker-compose.dev.yml down
-   ```
-
-### Production Deployment with Apache Proxy
-
-For production deployment behind an Apache reverse proxy:
-
-1. **Configure Apache**:
-   ```bash
-   # Enable required modules
-   sudo a2enmod proxy proxy_http headers
-   
-   # Include the proxy configuration in your virtual host
-   Include /path/to/eyrie/apache-proxy.conf
-   ```
-
-2. **Start the application in production**:
-   ```bash
-   docker-compose -f docker-compose.yml --env-file environment.prod up -d
-   ```
-
-3. **Access the application**:
-   - Application: http://your-domain.com/eyrie
-   - API: http://your-domain.com/eyrie/api
-
-The application will be available at `/eyrie` on your domain with the backend API at `/eyrie/api`.
-
-## Uploading samples
-
-### Data files
-
-Place/mount your pipeline output files in the `analysis-files/` directory:
-- `analysis-files/results/trana/krona/` - Krona taxonomic plots (HTML)
-- `analysis-files/results/trana/fastqc/` - FastQC quality reports (HTML)
-- `analysis-files/results/trana/nanoplot_processed/` - Processed NanoPlot quality plots (HTML)
-- `analysis-files/results/trana/nanoplot_unprocessed/` - Unprocessed NanoPlot quality plots (HTML)
-- `analysis-files/results/trana/results/` - Pipeline results and TSV abundance files
-
-### Sample processing & uploading with eyrie-popup
-
-Conda installation of eyrie-popup
-
-```bash
-cd tools/eyrie-popup
-conda create -n eyrie-popup
-conda activate eyrie-popup
-pip install -e .
+```
+analysis-files/results/trana/
+├── fastqc/              # Quality control reports  
+├── krona/               # Taxonomic classification plots
+├── nanoplot_processed/  # Quality plots (processed reads)
+├── nanoplot_unprocessed/# Quality plots (raw reads)
+├── results/             # Abundance data (TSV files)
+└── pipeline_info/       # Pipeline execution data
 ```
 
-The eyrie-popup tool processes sample data and uploads it to the Eyrie system (**replace the api url if in production**):
+### Sample Upload Workflow
 
-```bash
-# Change directory back to eyrie
-cd ../..
+1. **Generate Config**: Create YAML configuration for sample
+2. **Upload Sample Data**: Process and upload analysis results
+3. **Upload Metadata**: Add sample metadata (TSV/CSV)
+4. **Upload Pipeline Data**: Add sequencing run pipeline information
 
-# Using conda environment
-conda run -n eyrie-popup popup upload --sample data/test/barcode01_config.yaml --api http://localhost:8000/api --username admin --password admin #Once you have created other admin users - REMOVE admin/admin
-
-# Upload pipeline files only (for sequencing run-level data)
-conda run -n eyrie-popup popup upload --analysis-output-dirpath /path/to/analysis-files/results/trana --pipeline-datetime-suffix 2025-09-30_09-46-56 --sequencing-run-id RUN123 --api http://localhost:8000/api --username admin --password admin
-
-# Test connection if upload doesn't work
-conda run -n eyrie-popup popup test-connection --username admin --password admin --api http://localhost:8000/api
-```
-
-### Creating configuration files
-
-Generate YAML configuration files for sample processing:
-
-```bash
-# Generate config with explicit flags
-conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01
-
-# Generate config with custom output file
-conda run -n eyrie-popup popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --output custom_config.yaml
-
-# See all options
-conda run -n eyrie-popup popup generate-config --help
-```
-
-### File path behavior
-
-Eyrie-popup searches for analysis files using a simplified directory structure:
-
-```yaml
-analysis_output_dirpath: "/path/to/analysis-files/results/trana"
-```
-
-Files are searched in: `{analysis_output_dirpath}/{component_directory}/{sample_id}_file.ext`
-
-**Example directory structure:**
-```
-{analysis_output_dirpath}
-├── fastqc/
-│   └── barcode01_fastqc.html
-├── krona/
-│   └── barcode01_krona.html
-├── nanoplot_processed/
-│   ├── barcode01_nanoplot_processed_NanoStats.txt
-│   └── barcode01_nanoplot_processed_NanoPlot-report.html
-├── nanoplot_unprocessed/
-└── results/
-    └── barcode01_filtered.fastq_rel-abundance.tsv
-```
-
-The `analysis_output_dirpath` should point directly to the directory containing the analysis output directories (`fastqc/`, `krona/`, etc.).
+See [tools/eyrie-popup/README.md](tools/eyrie-popup/README.md) for detailed documentation.
 
 ## Project Structure
 
@@ -167,48 +118,22 @@ eyrie/
 ├── backend/                     # FastAPI backend
 │   ├── eyrie_api/
 │   │   ├── auth/               # Authentication middleware
-│   │   ├── config/             # Configuration settings
 │   │   ├── database/           # Database operations
 │   │   ├── models/             # Pydantic data models
-│   │   ├── routes/             # API route handlers
-│   │   │   ├── auth.py         # Authentication endpoints
-│   │   │   ├── admin.py        # Admin endpoints
-│   │   │   ├── samples.py      # Sample endpoints
-│   │   │   └── trends.py       # Trends analysis endpoints
-│   │   ├── utils/              # Utility functions
+│   │   ├── routes/             # API endpoints
 │   │   └── main.py             # FastAPI application
-│   ├── Dockerfile              # Backend container
-│   └── pyproject.toml          # Python dependencies
 ├── frontend/                   # Flask frontend
 │   ├── eyrie_app/
-│   │   ├── blueprints/         # Flask blueprints for pages
-│   │   │   ├── admin/          # Admin dashboard
-│   │   │   ├── login/          # Login page
-│   │   │   ├── sample/         # Sample detail view
-│   │   │   ├── samples/        # Sample list view
-│   │   │   ├── seqruns/        # Sequencing runs management
-│   │   │   └── trends/         # Trends analysis view
-│   │   ├── shared/             # Shared templates and assets
-│   │   │   ├── static/css/     # Stylesheets
-│   │   │   ├── static/js/      # Shared JavaScript functions
-│   │   │   └── templates/      # Base templates
+│   │   ├── blueprints/         # Page components
+│   │   ├── shared/             # Templates and assets
 │   │   └── app.py              # Flask application
-│   ├── Dockerfile              # Frontend container
-│   └── pyproject.toml          # Python dependencies
 ├── tools/                      # Processing tools
-│   └── eyrie-popup/            # Sample processing CLI tool
-│       ├── popup/              # Tool source code
-│       ├── Dockerfile          # Tool container
-│       ├── setup.py            # Tool installation
-│       └── requirements.txt    # Tool dependencies
-├── data/                       # Sample data files
-├── docker-compose.yml          # Multi-container deployment
-├── docker-compose.dev.yml      # Multi-container deployment (dev mode)
-├── environment.prod            # Production environment template
-├── environment.dev             # Dev environment template
-├── apache-proxy.conf           # Apache reverse proxy configuration
-├── init-mongo.js               # MongoDB initialization
-└── .github/workflows/          # CI/CD workflows
+│   └── eyrie-popup/            # Sample upload CLI tool
+├── docker-compose.yml          # Production deployment
+├── docker-compose.dev.yml      # Development deployment
+├── environment.prod            # Production environment
+├── environment.dev             # Development environment
+└── apache-proxy.conf           # Apache configuration
 ```
 
 ## API Documentation
@@ -221,13 +146,13 @@ eyrie/
 ### Sample Endpoints (Authentication required)
 - `GET /api/samples` - List all samples
 - `GET /api/samples/{sample_id}` - Get sample details
-- `GET /api/sample/{sample_id}/negative-controls` - Get negative control samples from the same sequencing run
+- `GET /api/sample/{sample_id}/negative-controls` - Get negative control samples
 - `POST /api/samples` - Create new sample (admin/uploader only)
 - `PUT /api/samples/{sample_id}` - Create or update sample (admin/uploader only)
 - `PATCH /api/samples/{sample_id}` - Partially update sample (admin/uploader only)
-- `PUT /api/samples/{sample_id}/qc` - Update QC status (authentication required)
-- `PUT /api/samples/{sample_id}/comment` - Update comments (authentication required)
-- `PUT /api/samples/{sample_id}/species-flags` - Update species flags (authentication required)
+- `PUT /api/samples/{sample_id}/qc` - Update QC status
+- `PUT /api/samples/{sample_id}/comment` - Update comments
+- `PUT /api/samples/{sample_id}/species-flags` - Update species flags
 
 ### Seqrun Endpoints (Authentication required)
 - `GET /api/seqruns` - List all sequencing runs with statistics
@@ -248,113 +173,55 @@ eyrie/
 
 ## Security
 
-### Authentication Architecture
-- **Server-side authentication**: All routes protected with Flask decorators (`@login_required`, `@admin_required_view`)
-- **Session-based**: Uses secure HTTP-only cookies for session management
-- **API protection**: All API endpoints require valid authentication before processing
-- **Role-based access control**: Admin, uploader, and user roles with appropriate permissions
+### Authentication
+- **Application-level authentication**: Users stored in MongoDB collections, not MongoDB root users
+- **JWT-based session management**: Secure token-based sessions
+- **Role-based access control**: Three user roles (admin, uploader, user)
+- **Protected API endpoints**: Authentication required for most operations
+- **Session timeout management**: Configurable token expiration
+- **Pre-configured users**: Default users created via init-mongo.js (admin/admin, uploader/uploader, user/user)
 
-### Security Features
-- **Server-side template rendering**: Admin buttons and UI elements conditionally rendered based on user role
-- **Cannot be bypassed**: Authentication happens server-side before page load
-- **API endpoint protection**: All sample and trends data requires authentication
+### Data Protection
+- Input validation and sanitization
+- SQL injection protection via MongoDB
+- File upload restrictions
+- CORS configuration
 
-### View Protection
-- **Samples & Trends**: `@login_required` - authenticated users only
-- **Admin dashboard**: `@admin_required_view` - admin users only
-- **Sample details**: `@login_required` - authenticated users only
-- **Login page**: Public access for authentication
+### Best Practices
+- **Change default credentials immediately**: Default users (admin/admin, uploader/uploader, user/user) should be changed or removed in production
+- **Use environment variables for sensitive configuration**: Store secrets in environment files, not code
+- **Enable HTTPS in production**: Configure Apache proxy with SSL/TLS
+- **Regular security updates**: Keep Docker images and dependencies current
+- **Monitor application logs**: Watch for failed authentication attempts and suspicious activity
+- **Network isolation**: MongoDB runs on Docker internal network, not exposed externally
 
-## Database Schema
-
-### Users Collection
-- `username`: Unique username
-- `email`: User email address
-- `password_hash`: Hashed password
-- `role`: User role (admin, user, uploader)
-- `is_active`: Account status
-- `created_date`: Account creation date
-
-### Samples Collection
-- `sample_name`: Human-readable sample name
-- `sample_id`: Unique sample identifier
-- `sequencing_run_id`: Sequencing run identifier
-- `lims_id`: LIMS system identifier
-- `classification`: "16S" or "ITS"
-- `qc`: "passed", "failed", or "unprocessed"
-- `comments`: User comments
-- `created_date`: Sample creation date
-- `updated_date`: Last modification date
-- `krona_file`: Krona plot HTML filename
-- `quality_plot`: Quality plot HTML filename
-- `pipeline_files`: Array of pipeline output filenames
-- `statistics`: Read statistics and quality metrics
-- `flagged_contaminants`: Array of flagged contamination species
-- `taxonomic_data`: Taxonomic classification results with species abundance
-- `nano_stats_processed`: Processed NanoStats quality metrics
-- `nano_stats_unprocessed`: Unprocessed NanoStats quality metrics
-
-## Development
-
-### Local development setup
-
-1. **Backend development**:
-   ```bash
-   cd backend
-   pip install -e .[development]
-   uvicorn eyrie_api.main:app --reload --host 0.0.0.0 --port 8000
-   ```
-
-2. **Frontend development**:
-   ```bash
-   cd frontend
-   pip install -e .[development]
-   python -m eyrie_app.wsgi
-   ```
-
-3. **MongoDB**:
-   Use Docker or local MongoDB instance on port 27017
-
-4. **Eyrie-popup tool**:
-   ```bash
-   cd tools/eyrie-popup
-   pip install -e .
-   popup --help
-   ```
+## Configuration
 
 ### Environment Variables
 
-The application supports environment-based configuration through the `environment.prod` file:
-
-**Version Management:**
-- `EYRIE_VERSION`: Application version
-- `MONGODB_VERSION`: MongoDB image version
-
-**Host Ports (Apache Proxy):**
-- `FRONTEND_HOST_PORT`: Frontend container port
-- `BACKEND_HOST_PORT`: Backend container port
-- `MONGO_HOST_PORT`: MongoDB container port
-
-**URL Configuration:**
-- `EXTERNAL_BASE_PATH`: Base path served by Apache (/eyrie)
-- `EXTERNAL_API_URL`: External API URL through Apache proxy
-- `INTERNAL_BACKEND_URL`: Internal container-to-container backend URL
-- `BACKEND_BASE_PATH`: Backend API base path (/eyrie/api)
+Key configuration options:
 
 **Database:**
-- `MONGO_URI`: MongoDB connection string
-- `ENVIRONMENT`: Application environment (production)
+- `MONGO_INITDB_DATABASE`: Initial database name (default: eyrie)
+- `MONGO_URI`: MongoDB connection string (default: mongodb://mongodb:27017/eyrie)
 
-**File System Paths:**
-- `EYRIE_ANALYSIS_OUTPUT_DIRPATH`: Analysis output directory path containing pipeline software output subdirectories (e.g., `/path/to/analysis-files/results/trana`). Used by eyrie-popup for pipeline file discovery.
+**Authentication:**
+- `JWT_SECRET_KEY`: JWT signing key
+- `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time
+
+**Application:**
+- `BACKEND_HOST`: Backend server host
+- `FRONTEND_HOST`: Frontend server host
+- `API_URL`: Backend API base URL
+
+Edit values as needed for your deployment.
 
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test your changes with the provided sample data
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make changes and test thoroughly
+4. Submit a pull request with clear description
 
 ## License
 
