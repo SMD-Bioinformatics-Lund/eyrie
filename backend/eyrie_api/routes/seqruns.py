@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Dict, Any
 import json
 from eyrie_api.database.async_sample_operations import get_all_samples
-from eyrie_api.database.async_seqrun_operations import upsert_seqrun, find_seqrun
+from eyrie_api.database.async_seqrun_operations import upsert_seqrun, find_seqrun, get_all_seqruns
 from eyrie_api.models.seqruns import SeqrunCreate
 from eyrie_api.routes.auth import get_current_user
 from eyrie_api.utils.json_encoder import JSONEncoder
@@ -50,24 +50,47 @@ async def get_sequencing_runs(current_user: dict = Depends(get_current_user)):
 
         all_seqrun_ids = sample_seqrun_ids
 
+        # Get seqrun metadata from MongoDB collection for richer data
+        all_seqrun_docs = await get_all_seqruns()
+        seqruns_dict = {doc.get('sequencing_run_id'): doc for doc in all_seqrun_docs}
+
         # Build sequencing run data
         seqruns = []
         for seqrun_id in all_seqrun_ids:
             samples = sample_data.get(seqrun_id, [])
             stats = await calculate_seqrun_stats(samples)
 
-            # Get run metadata from first sample or use defaults
             first_sample = samples[0] if samples else None
-            run_date = first_sample.get('sequencing_run_date') if first_sample else None
             created_date = first_sample.get('created_date') if first_sample else None
 
-            seqrun_data = {
-                'sequencing_run_id': seqrun_id,
-                'run_date': run_date,
-                'created_date': created_date,
-                'pipeline_status': 'completed',
-                **stats
-            }
+            # Get seqrun document if available
+            seqrun_doc = seqruns_dict.get(seqrun_id)
+
+            if seqrun_doc and isinstance(seqrun_doc, dict):
+                # Extract metadata from nested structure for compatibility
+                sequencing_metadata = seqrun_doc.get('sequencing_metadata', {})
+                if not isinstance(sequencing_metadata, dict):
+                    sequencing_metadata = {}
+
+                seqrun_data = {
+                    'sequencing_run_id': seqrun_id,
+                    'created_date': seqrun_doc.get('created_date', created_date),
+                    'pipeline_status': 'completed',
+                    'pipeline_software': seqrun_doc.get('pipeline_software'),
+                    'exp_start_time': sequencing_metadata.get('exp_start_time'),
+                    'device_id': sequencing_metadata.get('device_id'),
+                    'flow_cell_id': sequencing_metadata.get('flow_cell_id'),
+                    'hostname': sequencing_metadata.get('hostname'),
+                    **stats
+                }
+            else:
+                # Fallback for seqruns without metadata documents
+                seqrun_data = {
+                    'sequencing_run_id': seqrun_id,
+                    'created_date': created_date,
+                    'pipeline_status': 'completed',
+                    **stats
+                }
 
             seqruns.append(seqrun_data)
 
@@ -95,11 +118,16 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
         # Calculate stats from samples
         stats = await calculate_seqrun_stats(samples)
 
-        if seqrun_doc:
+        if seqrun_doc and isinstance(seqrun_doc, dict):
             # Use seqrun data from MongoDB collection
+            # Extract sequencing metadata for compatibility
+            sequencing_metadata = seqrun_doc.get('sequencing_metadata', {})
+            if not isinstance(sequencing_metadata, dict):
+                sequencing_metadata = {}
+
             seqrun = {
                 'sequencing_run_id': seqrun_doc.get('sequencing_run_id', seqrun_id),
-                'run_date': seqrun_doc.get('run_date'),
+                'exp_start_time': sequencing_metadata.get('exp_start_time'),
                 'created_date': seqrun_doc.get('created_date'),
                 'pipeline_status': 'completed',
                 'pipeline_software': seqrun_doc.get('pipeline_software'),
@@ -107,15 +135,18 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
                 'pipeline_parameters': seqrun_doc.get('pipeline_parameters'),
                 'execution_trace': seqrun_doc.get('execution_trace'),
                 'software_versions': seqrun_doc.get('software_versions'),
+                'device_id': sequencing_metadata.get('device_id'),
+                'flow_cell_id': sequencing_metadata.get('flow_cell_id'),
+                'hostname': sequencing_metadata.get('hostname'),
+                'protocol_group_id': sequencing_metadata.get('protocol_group_id'),
+                'sequencing_metadata': sequencing_metadata,
                 'samples': samples,
                 **stats
             }
         else:
-            # Fallback to sample-based data
             first_sample = samples[0] if samples else {}
             seqrun = {
                 'sequencing_run_id': seqrun_id,
-                'run_date': first_sample.get('sequencing_run_date'),
                 'created_date': first_sample.get('created_date'),
                 'pipeline_status': 'completed',
                 'samples': samples,
@@ -137,8 +168,8 @@ async def upsert_sequencing_run(seqrun_id: str, seqrun_data: SeqrunCreate, curre
         if seqrun_data.sequencing_run_id != seqrun_id:
             raise HTTPException(status_code=400, detail="Sequencing run ID mismatch")
 
-        # Convert Pydantic model to dict and upsert
-        seqrun_dict = seqrun_data.dict()
+        # Convert Pydantic model to dict with proper nested serialization
+        seqrun_dict = seqrun_data.dict(by_alias=True, exclude_unset=False)
         result_id, was_created = await upsert_seqrun(seqrun_dict)
 
         status_code = 201 if was_created else 200

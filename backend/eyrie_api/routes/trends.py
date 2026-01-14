@@ -2,9 +2,7 @@
 
 from datetime import datetime, timedelta
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, Query, Depends, Request
-from pymongo import MongoClient
-from pymongo.database import Database
+from fastapi import APIRouter, HTTPException, Query, Request
 
 from ..database.utils import get_db_connection
 from ..auth.middleware import get_current_user
@@ -66,8 +64,25 @@ async def get_trends_data(
 
         async with get_db_connection() as db:
             samples_collection = db.samples
+            seqruns_collection = db.seqruns
             cursor = samples_collection.find(match_filter)
             samples = await cursor.to_list(length=None)
+
+            # Get seqruns data and join with samples
+            seqrun_ids = list(set(sample.get("sequencing_run_id") for sample in samples if sample.get("sequencing_run_id")))
+            seqruns_cursor = seqruns_collection.find({"sequencing_run_id": {"$in": seqrun_ids}})
+            seqruns = await seqruns_cursor.to_list(length=None)
+
+            # Create seqrun lookup dict
+            seqruns_dict = {seqrun["sequencing_run_id"]: seqrun for seqrun in seqruns}
+
+            # Add seqrun exp_start_time to samples for processing
+            for sample in samples:
+                seqrun_id = sample.get("sequencing_run_id")
+                if seqrun_id and seqrun_id in seqruns_dict:
+                    seqrun = seqruns_dict[seqrun_id]
+                    sequencing_metadata = seqrun.get("sequencing_metadata", {})
+                    sample["_seqrun_exp_start_time"] = sequencing_metadata.get("exp_start_time")
 
         # Apply genus filter for dominant species analysis
         if genus != "all":
@@ -268,9 +283,16 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
         elif category == "sequencing_run_id":
             # Sequencing run identifier
             key = sample.get("sequencing_run_id", "Unknown")
-        elif category == "sequencing_run_date":
-            # Sequencing run date in YYMMDD format
-            key = sample.get("sequencing_run_date", "Unknown")
+        elif category == "exp_start_time":
+            # Sequencing run start time from seqruns collection
+            exp_start_time = sample.get("_seqrun_exp_start_time")
+            if exp_start_time:
+                # Format datetime with full timestamp for grouping
+                if isinstance(exp_start_time, str):
+                    exp_start_time = datetime.fromisoformat(exp_start_time.replace('Z', '+00:00'))
+                key = exp_start_time.strftime("%Y-%m-%dT%H:%M:%S")
+            else:
+                key = "Unknown"
         elif category == "dominant_species":
             # Dominant species from taxonomic data for proportion analysis
             taxonomic_data = sample.get("taxonomic_data", {})
@@ -298,11 +320,18 @@ def group_by_time_period(samples: List[Dict], group_by: str) -> Dict[str, List[D
         # Handle sequencing run ID or date grouping
         if group_by == "sequencing_run_id":
             period_key = sample.get("sequencing_run_id", "Unknown")
-        elif group_by == "sequencing_run_date":
-            period_key = sample.get("sequencing_run_date", "Unknown")
+        elif group_by == "exp_start_time":
+            exp_start_time = sample.get("_seqrun_exp_start_time")
+            if exp_start_time:
+                # Format datetime with full timestamp for grouping
+                if isinstance(exp_start_time, str):
+                    exp_start_time = datetime.fromisoformat(exp_start_time.replace('Z', '+00:00'))
+                period_key = exp_start_time.strftime("%Y-%m-%dT%H:%M:%S")
+            else:
+                period_key = "Unknown"
         else:
-            # Get sample date for time-based grouping
-            sample_date = sample.get("sequencing_run_date") or sample.get("created_date")
+            # Get sample date for time-based grouping (prefer seqrun exp_start_time, fallback to created_date)
+            sample_date = sample.get("_seqrun_exp_start_time") or sample.get("created_date")
             if not sample_date:
                 continue
 

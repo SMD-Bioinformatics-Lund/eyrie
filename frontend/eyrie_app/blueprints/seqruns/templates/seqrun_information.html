@@ -313,10 +313,10 @@
                                     <h6>Run Information</h6>
                                     <div class="mb-3">
                                         <div class="d-flex justify-content-between">
-                                            <span>Run Date:</span>
+                                            <span>Run Start Time:</span>
                                             <span class="text-muted">
-                                                {% if seqrun.run_date %}
-                                                    {{ seqrun.run_date | format_date }}
+                                                {% if seqrun.exp_start_time %}
+                                                    {{ seqrun.exp_start_time | format_date }}
                                                 {% else %}
                                                     -
                                                 {% endif %}
@@ -338,6 +338,38 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                {% if seqrun.device_id or seqrun.flow_cell_id or seqrun.hostname or seqrun.protocol_group_id %}
+                                <div class="col-md-4">
+                                    <h6>Device & Flow Cell</h6>
+                                    <div class="mb-3">
+                                        {% if seqrun.device_id %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Device ID:</span>
+                                            <span class="text-muted">{{ seqrun.device_id }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if seqrun.flow_cell_id %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Flow Cell ID:</span>
+                                            <span class="text-muted">{{ seqrun.flow_cell_id }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if seqrun.hostname %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Hostname:</span>
+                                            <span class="text-muted">{{ seqrun.hostname }}</span>
+                                        </div>
+                                        {% endif %}
+                                        {% if seqrun.protocol_group_id %}
+                                        <div class="d-flex justify-content-between">
+                                            <span>Protocol:</span>
+                                            <span class="text-muted">{{ seqrun.protocol_group_id }}</span>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         {% else %}
                             <div class="text-center text-muted py-4">
@@ -359,13 +391,13 @@
                     {{ render_parameters_table(seqrun.pipeline_parameters) }}
                 </div>
             {% endif %}
-            
+
             {% if seqrun.execution_trace %}
                 <div id="pipeline-data-execution_trace">
                     {{ render_execution_trace_table(seqrun.execution_trace) }}
                 </div>
             {% endif %}
-            
+
             {% if seqrun.software_versions %}
                 <div id="pipeline-data-software_versions">
                     {{ render_software_versions_table(seqrun.software_versions) }}

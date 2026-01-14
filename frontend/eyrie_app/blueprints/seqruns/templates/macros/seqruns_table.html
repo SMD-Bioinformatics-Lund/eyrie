@@ -22,8 +22,8 @@
                 </td>
                 <td>{{ seqrun.sequencing_run_id }}</td>
                 <td>
-                    {% if seqrun.run_date %}
-                        {{ seqrun.run_date | format_date }}
+                    {% if seqrun.exp_start_time %}
+                        {{ seqrun.exp_start_time | format_date }}
                     {% else %}
                         <span class="text-muted">-</span>
                     {% endif %}
