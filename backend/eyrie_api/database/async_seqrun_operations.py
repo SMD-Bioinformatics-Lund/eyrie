@@ -11,6 +11,13 @@ async def find_seqrun(sequencing_run_id: str) -> Optional[Dict[str, Any]]:
         return await db.seqruns.find_one({'sequencing_run_id': sequencing_run_id})
 
 
+async def get_all_seqruns() -> list[Dict[str, Any]]:
+    """Get all sequencing runs from the database."""
+    async with get_db_connection() as db:
+        cursor = db.seqruns.find({})
+        return await cursor.to_list(length=None)
+
+
 async def create_seqrun(seqrun_data: Dict[str, Any]) -> str:
     """Create a new sequencing run."""
     async with get_db_connection() as db:
@@ -28,7 +35,14 @@ async def create_seqrun(seqrun_data: Dict[str, Any]) -> str:
 async def update_seqrun(sequencing_run_id: str, update_data: Dict[str, Any]) -> bool:
     """Update an existing sequencing run."""
     async with get_db_connection() as db:
-        filtered_data = {k: v for k, v in update_data.items() if v is not None}
+        # Filter out None values but preserve nested structures like sequencing_metadata
+        filtered_data = {}
+        for k, v in update_data.items():
+            if k == 'sequencing_metadata':
+                # Always include sequencing_metadata, even if it has None fields
+                filtered_data[k] = v
+            elif v is not None:
+                filtered_data[k] = v
 
         if not filtered_data:
             return False
@@ -48,7 +62,18 @@ async def upsert_seqrun(seqrun_data: Dict[str, Any]) -> Tuple[str, bool]:
         existing = await db.seqruns.find_one({'sequencing_run_id': seqrun_data['sequencing_run_id']})
 
         if existing:
-            update_data = {k: v for k, v in seqrun_data.items() if k != 'sequencing_run_id'}
+            # Prepare update data, excluding the sequencing_run_id (used as key)
+            raw_update_data = {k: v for k, v in seqrun_data.items() if k != 'sequencing_run_id'}
+
+            # Filter out None values but preserve nested structures like sequencing_metadata
+            update_data = {}
+            for k, v in raw_update_data.items():
+                if k == 'sequencing_metadata':
+                    # Always include sequencing_metadata, even if it has None fields
+                    update_data[k] = v
+                elif v is not None:
+                    update_data[k] = v
+
             update_data['updated_date'] = datetime.now()
 
             await db.seqruns.update_one(

@@ -16,7 +16,6 @@ def group_samples_by_seqrun(samples):
         'true_hits': 0,
         'spikes_detected': 0,
         'pipeline_status': 'completed',
-        'run_date': None,
         'created_date': None,
         'pipeline_software': None,
         'pipeline_files': {}
@@ -40,10 +39,6 @@ def group_samples_by_seqrun(samples):
 
         if sample.get('spike'):
             seqrun_data['spikes_detected'] += 1
-
-        # Set metadata from first sample or most recent
-        if not seqrun_data['run_date'] or sample.get('sequencing_run_date'):
-            seqrun_data['run_date'] = sample.get('sequencing_run_date')
 
         if not seqrun_data['created_date'] or sample.get('created_date'):
             seqrun_data['created_date'] = sample.get('created_date')

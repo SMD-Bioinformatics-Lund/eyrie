@@ -68,7 +68,6 @@ class Settings:
         return {
             'categories': [
                 {'value': 'sample_id', 'label': 'Sample ID'},
-                {'value': 'sequencing_run_id', 'label': 'Sequencing Run ID'},
                 {'value': 'dominant_species', 'label': 'Dominant Species'},
                 {'value': 'sample_type', 'label': 'Sample Type'},
                 {'value': 'tissue', 'label': 'Tissue'},
@@ -110,7 +109,7 @@ class Settings:
                 {'value': 'day', 'label': 'Daily', 'selected': True},
                 {'value': 'week', 'label': 'Weekly'},
                 {'value': 'month', 'label': 'Monthly'},
-                {'value': 'sequencing_run_id', 'label': 'Sequencing Run ID'}
+                {'value': 'exp_start_time', 'label': 'Sequencing Run Start Time'}
             ],
             'predefined_filters': {
                 'sample_types': [

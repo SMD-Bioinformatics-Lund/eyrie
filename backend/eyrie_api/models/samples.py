@@ -17,7 +17,6 @@ class SampleCreate(BaseModel):
     sample_name: str
     sample_id: str
     sequencing_run_id: str
-    sequencing_run_date: Optional[datetime] = None
     lims_id: str
     classification: str = "16S"
     pipeline_software: Optional[str] = "trana"
