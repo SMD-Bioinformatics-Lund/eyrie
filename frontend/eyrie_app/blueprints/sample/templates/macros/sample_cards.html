@@ -145,7 +145,13 @@
                 <tr><td><strong>Tissue:</strong></td><td>{{ sample.metadata.tissue or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Dilution:</strong></td><td>{{ sample.metadata.dilution or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Library Concentration:</strong></td><td>{{ sample.metadata.library_concentration or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Multiple Finds:</strong></td><td>{{ sample.metadata.multiple_finds or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Multiple Finds:</strong></td><td>
+  {% if sample and sample.metadata and sample.metadata.multiple_finds is not none %}
+    {{ 'True' if sample.metadata.multiple_finds else 'False' }}
+  {% else %}
+    --
+  {% endif %}
+</td></tr>
                 <tr><td><strong>Sanger Expected Species:</strong></td><td>{{ sample.metadata.sanger_expected_species or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Extraction Kit:</strong></td><td>{{ sample.metadata.extraction_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Library Prep Kit:</strong></td><td>{{ sample.metadata.library_prep_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
