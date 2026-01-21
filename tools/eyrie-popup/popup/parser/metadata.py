@@ -109,6 +109,7 @@ class MetadataParser:
             library_concentration=get_value('library_concentration'),
             multiple_finds=get_value('multiple_finds'),
             spike_concentration=get_value('spike_concentration'),
+            sanger_expected_species=get_value('sanger_expected_species'),
             extraction_kit=get_value('extraction_kit'),
             library_prep_kit=get_value('library_prep_kit')
         )

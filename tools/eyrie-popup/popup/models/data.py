@@ -12,8 +12,9 @@ class SampleMetadata(BaseModel):
     tissue: Optional[str] = None
     dilution: Optional[str] = Field(None, regex="^(1:1|1:10)$")
     library_concentration: Optional[str] = None
-    multiple_finds: Optional[str] = None
+    multiple_finds: Optional[bool] = None
     spike_concentration: Optional[str] = Field(None, regex="^(IC3|IC4)$")
+    sanger_expected_species: Optional[str] = None
     extraction_kit: Optional[str] = None
     library_prep_kit: Optional[str] = None
 
