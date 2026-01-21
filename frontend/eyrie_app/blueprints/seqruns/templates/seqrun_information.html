@@ -3,10 +3,17 @@
 
 {% block title %}{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Seqrun{% endif %} Information - Eyrie{% endblock %}
 
+{% block extra_css %}
+    <!-- Plotly CDN for contamination analysis -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
 {% block head %}
     {{ super() }}
     {% if seqrun %}
         <!-- Meta tags for JavaScript title/icon mappings -->
+        <meta name="pipeline-title-contamination" content="Contamination Analysis">
+        <meta name="pipeline-icon-contamination" content="bi-exclamation-triangle">
         <meta name="pipeline-title-parameters" content="Pipeline Parameters">
         <meta name="pipeline-icon-parameters" content="bi-gear">
         <meta name="pipeline-title-execution_trace" content="Execution Trace">
@@ -73,6 +80,11 @@
                 <a class="nav-link" href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}">
                     <i class="bi bi-table me-2"></i>Samples
                     <span class="badge bg-primary ms-2">{{ seqrun.total_samples or 0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('seqruns.seqrun_quality_control', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-shield-check me-2"></i>Quality Control
                 </a>
             </li>
             <li class="nav-item">
