@@ -61,14 +61,43 @@ class MetadataParser:
     def _detect_delimiter(self) -> str:
         """Detect if file uses tabs or commas as delimiter."""
         with open(self.file_path, 'r', encoding='utf-8') as f:
-                sample = f.read(1024)
+            sample = f.read(1024)
 
         try:
             sniffer = csv.Sniffer()
+            # Only allow tabs and commas as valid delimiters
             delimiter = sniffer.sniff(sample, delimiters='\t,').delimiter
+
+            # Double-check that the detected delimiter is actually tab or comma
+            if delimiter not in ['\t', ',']:
+                # Fallback: count occurrences of tabs vs commas in the first line
+                first_line = sample.split('\n')[0] if sample else ''
+                tab_count = first_line.count('\t')
+                comma_count = first_line.count(',')
+
+                if tab_count > comma_count:
+                    return '\t'
+                elif comma_count > 0:
+                    return ','
+                else:
+                    return '\t'  # Default to tab
+
             return delimiter
         except:
-            return '\t'
+            # Fallback: count occurrences of tabs vs commas in the first line
+            try:
+                first_line = sample.split('\n')[0] if sample else ''
+                tab_count = first_line.count('\t')
+                comma_count = first_line.count(',')
+
+                if tab_count > comma_count:
+                    return '\t'
+                elif comma_count > 0:
+                    return ','
+                else:
+                    return '\t'
+            except:
+                return '\t'
 
     def _normalize_fieldnames(self, fieldnames: List[str]) -> Dict[str, str]:
         """Normalize field names to standard column names."""
