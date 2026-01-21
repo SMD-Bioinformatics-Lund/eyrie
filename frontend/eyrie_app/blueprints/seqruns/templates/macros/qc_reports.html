@@ -86,7 +86,7 @@
         </div>
 
         <!-- Sample Type Distribution -->
-        <div class="row">
+        <div class="row mb-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header bg-secondary text-white">
@@ -116,6 +116,35 @@
                 </div>
             </div>
         </div>
+
+        <!-- Tissue Type Distribution -->
+        {% if qc_overview_data.tissue_type_counts %}
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-layers me-2"></i>Tissue Type Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for tissue_type, count in qc_overview_data.tissue_type_counts.items() %}
+                                {% if count > 0 %}
+                                <div class="col-md-3 col-6 mb-3">
+                                    <div class="text-center">
+                                        <div class="h4 mb-1 text-dark">{{ count }}</div>
+                                        <small class="text-muted text-capitalize">{{ tissue_type.replace('_', ' ') }}</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     {% endif %}
 </div>
 {% endmacro %}
