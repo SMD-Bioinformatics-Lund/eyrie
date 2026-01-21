@@ -261,6 +261,21 @@ def get_negative_controls_from_backend(headers: CaseInsensitiveDict, sample_id: 
 
 
 @api_authentication
+def get_contamination_analysis_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get contamination analysis for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/contamination"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            data = resp.json()
+            return data
+        else:
+            return {'message': 'Unable to retrieve contamination analysis data', 'contaminating_species': []}
+    except Exception as e:
+        return {'message': f'Error analyzing contamination: {str(e)}', 'contaminating_species': []}
+
+
+@api_authentication
 def update_sample_qc(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample QC status"""
     url = f"{backend_url}/api/sample/{sample_id}/qc"
@@ -462,3 +477,68 @@ def health_check_base_path() -> Dict[str, Any]:
             'container_name': os.getenv('HOSTNAME', 'unknown'),
             'base_path': settings.external_base_path
         }
+
+
+@api_authentication
+def get_qc_overview_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get QC overview analysis for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/overview"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return {'message': 'Unable to retrieve QC overview data'}
+    except Exception as e:
+        return {'message': 'Unable to retrieve QC overview data'}
+
+
+@api_authentication  
+def get_read_quality_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get read quality analysis for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/read-quality"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return {'message': 'Unable to retrieve read quality data'}
+    except Exception as e:
+        return {'message': 'Unable to retrieve read quality data'}
+
+
+@api_authentication
+def get_taxonomic_diversity_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get taxonomic diversity analysis for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/taxonomic-diversity"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return {'message': 'Unable to retrieve taxonomic diversity data'}
+    except Exception as e:
+        return {'message': 'Unable to retrieve taxonomic diversity data'}
+
+
+@api_authentication
+def get_outlier_detection_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get outlier detection analysis for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/outlier-detection"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return {'message': 'Unable to retrieve outlier detection data'}
+    except Exception as e:
+        return {'message': 'Unable to retrieve outlier detection data'}
+
+
+@api_authentication
+def get_positive_control_validation_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
+    """Get positive control validation for a specific sequencing run"""
+    try:
+        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/positive-controls"
+        resp = requests.get(url, headers=headers, timeout=10)
+        if resp.status_code == 200:
+            return resp.json()
+        return {'message': 'Unable to retrieve positive control validation data'}
+    except Exception as e:
+        return {'message': 'Unable to retrieve positive control validation data'}

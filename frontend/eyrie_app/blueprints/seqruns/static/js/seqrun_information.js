@@ -77,7 +77,7 @@ function loadPipelineStructuredData(dataType) {
     const titleElement = document.getElementById('pipeline-file-title');
     const titleMeta = document.querySelector(`meta[name="pipeline-title-${dataType}"]`);
     const iconMeta = document.querySelector(`meta[name="pipeline-icon-${dataType}"]`);
-    
+
     if (titleMeta && iconMeta) {
         const title = titleMeta.getAttribute('content');
         const icon = iconMeta.getAttribute('content');
@@ -121,8 +121,6 @@ function displayError(message) {
         </div>
     `;
 }
-
-// Table generation functions moved to server-side rendering
 
 function openInNewTab() {
     if (currentNewTabUrl) {

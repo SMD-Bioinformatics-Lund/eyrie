@@ -36,6 +36,11 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('seqruns.seqrun_quality_control', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <i class="bi bi-shield-check me-2"></i>Quality Control
+                </a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{ url_for('seqruns.seqrun_information', seqrun_id=seqrun.sequencing_run_id) }}">
                     <i class="bi bi-info-circle me-2"></i>Information
                 </a>

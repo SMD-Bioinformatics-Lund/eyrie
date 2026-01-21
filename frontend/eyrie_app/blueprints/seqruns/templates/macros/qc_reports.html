@@ -1,0 +1,595 @@
+{% macro render_qc_overview(qc_overview_data) %}
+<div class="container-fluid p-4">
+    {% if qc_overview_data.message %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ qc_overview_data.message }}</h5>
+        </div>
+    {% else %}
+        <!-- Summary Cards Row -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-1">{{ qc_overview_data.total_samples }}</h3>
+                        <small>Total Samples</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-1">{{ qc_overview_data.sanger_analysis.species_matches }}</h3>
+                        <small>Species Matches</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-info text-white h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-1">{{ qc_overview_data.sanger_analysis.genus_matches }}</h3>
+                        <small>Genus Matches</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-dark h-100">
+                    <div class="card-body text-center">
+                        <h3 class="mb-1">{{ qc_overview_data.sanger_analysis.total_analyzed }}</h3>
+                        <small>Samples Analyzed</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sanger Species Matching Analysis -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-check-circle me-2"></i>Sanger Expected Species Validation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="fw-semibold">Species-Level Matches:</span>
+                                    <span class="badge bg-success fs-6">
+                                        {{ qc_overview_data.sanger_analysis.species_matches }}/{{ qc_overview_data.sanger_analysis.total_analyzed }}
+                                        {% if qc_overview_data.sanger_analysis.total_analyzed > 0 %}
+                                            ({{ "%.1f"|format((qc_overview_data.sanger_analysis.species_matches / qc_overview_data.sanger_analysis.total_analyzed) * 100) }}%)
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold">Genus-Level Matches:</span>
+                                    <span class="badge bg-info fs-6">
+                                        {{ qc_overview_data.sanger_analysis.genus_matches }}/{{ qc_overview_data.sanger_analysis.total_analyzed }}
+                                        {% if qc_overview_data.sanger_analysis.total_analyzed > 0 %}
+                                            ({{ "%.1f"|format((qc_overview_data.sanger_analysis.genus_matches / qc_overview_data.sanger_analysis.total_analyzed) * 100) }}%)
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Only samples with single expected findings (multiple_finds = False) are analyzed for Sanger validation.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sample Type Distribution -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pie-chart me-2"></i>Sample Type Distribution
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            {% for sample_type, count in qc_overview_data.sample_type_counts.items() %}
+                                {% if count > 0 %}
+                                <div class="col-md-3 col-6 mb-3">
+                                    <div class="text-center">
+                                        <div class="h4 mb-1 
+                                            {% if sample_type == 'validation' %}text-primary
+                                            {% elif sample_type == 'patient' %}text-success
+                                            {% elif sample_type == 'negative control' %}text-warning
+                                            {% elif sample_type == 'positive control' %}text-info
+                                            {% endif %}">{{ count }}</div>
+                                        <small class="text-muted text-capitalize">{{ sample_type.replace('_', ' ') }}</small>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_read_quality_analysis(read_quality_data, read_quality_plot_config) %}
+<div class="container-fluid p-4">
+    {% if read_quality_data.message %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ read_quality_data.message }}</h5>
+        </div>
+    {% elif read_quality_plot_config %}
+        <!-- Read Quality Box Plot -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="read-quality-plot" style="height: 600px;"></div>
+            </div>
+        </div>
+
+        <!-- Analysis Summary -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>Analysis Summary
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-between">
+                                    <span>Samples Analyzed:</span>
+                                    <span class="badge bg-primary">{{ read_quality_data.samples_analyzed }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Processed Samples:</span>
+                                    <span class="badge bg-success">{{ read_quality_data.sample_ids.processed|length }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span>Unprocessed Samples:</span>
+                                    <span class="badge bg-warning text-dark">{{ read_quality_data.sample_ids.unprocessed|length }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Box plots show distribution of quality metrics across all samples in the sequencing run, comparing processed vs unprocessed reads.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hidden server-side rendered plot configuration for JavaScript loading -->
+        <div style="display: none;">
+            <div id="read-quality-plot-config">
+                {{ read_quality_plot_config | tojson }}
+            </div>
+        </div>
+
+        <!-- Read Quality Analysis JavaScript -->
+        <script>
+            // Function to initialize read quality plot when visible
+            function initializeReadQualityPlot() {
+                try {
+                    const plotConfigElement = document.getElementById('read-quality-plot-config');
+                    const plotElement = document.getElementById('read-quality-plot');
+
+                    if (plotConfigElement && plotElement && plotElement.offsetParent !== null) {
+                        const plotConfig = JSON.parse(plotConfigElement.textContent);
+                        Plotly.newPlot('read-quality-plot', plotConfig.data, plotConfig.layout, plotConfig.config);
+                        return true; // Successfully initialized
+                    }
+                    return false; // Not ready yet
+                } catch (error) {
+                    console.error('Error loading read quality plot:', error);
+                    const plotElement = document.getElementById('read-quality-plot');
+                    if (plotElement) {
+                        plotElement.innerHTML = '<div class="alert alert-danger">Error loading read quality analysis plot</div>';
+                    }
+                    return true; // Don't retry on error
+                }
+            }
+
+            // Store the initialization function globally for the main QC page to call
+            window.initReadQualityPlot = initializeReadQualityPlot;
+        </script>
+
+    {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">No read quality data available for visualization</h5>
+            <p class="text-muted">Please check if samples have nanoplot data</p>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_taxonomic_diversity_analysis(diversity_data) %}
+<div class="container-fluid p-4">
+    {% if diversity_data.message %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ diversity_data.message }}</h5>
+        </div>
+    {% else %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-graph-up me-2"></i>Taxonomic Diversity Analysis
+                            <span class="badge bg-light text-dark ms-2">{{ diversity_data.samples_analyzed }} samples</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Sample Type</th>
+                                        <th class="text-center">Total Species</th>
+                                        <th class="text-center">Shannon Diversity</th>
+                                        <th class="text-center">Top Species Abundance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sample in diversity_data.diversity_data %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ sample.sample_id }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if sample.sample_type == 'validation' %}bg-primary
+                                                {% elif sample.sample_type == 'patient' %}bg-success
+                                                {% elif sample.sample_type == 'negative control' %}bg-warning text-dark
+                                                {% elif sample.sample_type == 'positive control' %}bg-info
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ sample.sample_type or 'Unknown' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">{{ sample.total_species }}</td>
+                                        <td class="text-center">{{ "%.3f"|format(sample.shannon_diversity) }}</td>
+                                        <td class="text-center">{{ "%.2f"|format(sample.top_species_abundance) }}%</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_outlier_detection_analysis(outlier_data) %}
+<div class="container-fluid p-4">
+    {% if outlier_data.message %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ outlier_data.message }}</h5>
+        </div>
+    {% else %}
+        <!-- Outliers Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert {% if outlier_data.outliers_detected > 0 %}alert-warning{% else %}alert-success{% endif %}" role="alert">
+                    <h5 class="alert-heading">
+                        <i class="bi bi-{% if outlier_data.outliers_detected > 0 %}exclamation-triangle{% else %}check-circle{% endif %} me-2"></i>
+                        Outlier Detection Results
+                    </h5>
+                    <p class="mb-0">
+                        {% if outlier_data.outliers_detected > 0 %}
+                            Found {{ outlier_data.outliers_detected }} outlier(s) among {{ outlier_data.samples_analyzed }} samples analyzed.
+                        {% else %}
+                            No outliers detected among {{ outlier_data.samples_analyzed }} samples analyzed.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        {% if outlier_data.outliers %}
+        <!-- Outliers Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Detected Outliers
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Sample Type</th>
+                                        <th>Outlier Type</th>
+                                        <th class="text-center">Value</th>
+                                        <th class="text-center">Expected Range</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for outlier in outlier_data.outliers %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ outlier.sample_id }}</td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ outlier.sample_type or 'Unknown' }}</span>
+                                        </td>
+                                        <td>{{ outlier.outlier_type.replace('_', ' ').title() }}</td>
+                                        <td class="text-center">{{ '{:,}'.format(outlier.value) }}</td>
+                                        <td class="text-center text-muted">{{ outlier.expected_range }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Metrics Summary Table -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-table me-2"></i>Sample Metrics Summary
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Sample Type</th>
+                                        <th class="text-center">Read Count</th>
+                                        <th class="text-center">Mean Quality</th>
+                                        <th class="text-center">Total Species</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for metric in outlier_data.metrics_summary %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ metric.sample_id }}</td>
+                                        <td>
+                                            <span class="badge 
+                                                {% if metric.sample_type == 'validation' %}bg-primary
+                                                {% elif metric.sample_type == 'patient' %}bg-success
+                                                {% elif metric.sample_type == 'negative control' %}bg-warning text-dark
+                                                {% elif metric.sample_type == 'positive control' %}bg-info
+                                                {% else %}bg-secondary
+                                                {% endif %}">
+                                                {{ metric.sample_type or 'Unknown' }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">{{ '{:,}'.format(metric.read_count) if metric.read_count > 0 else '-' }}</td>
+                                        <td class="text-center">{{ "%.1f"|format(metric.mean_quality) if metric.mean_quality > 0 else '-' }}</td>
+                                        <td class="text-center">{{ metric.total_species }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_positive_control_validation(validation_data) %}
+<div class="container-fluid p-4">
+    {% if validation_data.message %}
+        <div class="text-center py-5">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ validation_data.message }}</h5>
+        </div>
+    {% else %}
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-shield-check me-2"></i>Positive Control Validation
+                            <span class="badge bg-light text-dark ms-2">{{ validation_data.positive_controls_count }} controls</span>
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Sample ID</th>
+                                        <th>Expected Species</th>
+                                        <th>Top Detected Species</th>
+                                        <th class="text-center">Expected Found</th>
+                                        <th class="text-center">Total Species</th>
+                                        <th>Spike Concentration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for result in validation_data.validation_results %}
+                                    <tr>
+                                        <td class="fw-semibold">{{ result.sample_id }}</td>
+                                        <td>{{ result.expected_species or '-' }}</td>
+                                        <td>{{ result.top_detected_species or '-' }}</td>
+                                        <td class="text-center">
+                                            {% if result.expected_species_detected %}
+                                                <span class="badge bg-success">
+                                                    <i class="bi bi-check-circle me-1"></i>Yes
+                                                </span>
+                                            {% elif result.expected_species %}
+                                                <span class="badge bg-danger">
+                                                    <i class="bi bi-x-circle me-1"></i>No
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">{{ result.total_species_detected }}</td>
+                                        <td>{{ result.spike_concentration or '-' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endmacro %}
+
+{% macro render_contamination_analysis(contamination_data, contamination_plot_config) %}
+<div class="container-fluid p-4">
+    {% if contamination_data and contamination_plot_config %}
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <h6>Analysis Summary</h6>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Contaminating Species Found:</span>
+                        <span class="badge bg-danger">{{ contamination_data.contaminating_species|length }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Normal Samples Analyzed:</span>
+                        <span class="badge bg-primary">{{ contamination_data.normal_samples_count }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Negative Controls Used:</span>
+                        <span class="badge bg-secondary">{{ contamination_data.negative_controls_count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contamination Plot -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div id="contamination-plot" style="height: 500px;"></div>
+            </div>
+        </div>
+
+        <!-- Species Details -->
+        {% if contamination_data.species_analysis %}
+        <div class="mt-4">
+            <h6>Detected Contaminating Species</h6>
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>Detected in Samples</th>
+                            <th>Detection Rate</th>
+                            <th>Abundance Range (%)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for species, analysis in contamination_data.species_analysis.items() %}
+                        <tr>
+                            <td><small>{{ species }}</small></td>
+                            <td>{{ analysis.detected_in_samples|length }}</td>
+                            <td>{{ "%.1f"|format(analysis.detection_rate) }}%</td>
+                            <td>
+                                {% if analysis.abundances %}
+                                    {{ "%.2f"|format(analysis.abundances|min) }} - {{ "%.2f"|format(analysis.abundances|max) }}%
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('seqruns.flag_contamination', seqrun_id=contamination_data.sequencing_run_id, species_name=species) }}" 
+                                   class="btn btn-warning btn-sm"
+                                   onclick="return confirm('Flag \'{{ species }}\' as contamination across all samples in this sequencing run?')"
+                                   title="Flag this species as contamination in all samples where it appears">
+                                    <i class="bi bi-flag-fill me-1"></i>Flag as Contaminant
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+    {% elif contamination_data and contamination_data.message %}
+        <!-- No Contamination or Error Message -->
+        <div class="text-center py-4">
+            <i class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">{{ contamination_data.message }}</h5>
+            {% if contamination_data.normal_samples_count %}
+                <p class="text-muted">Analyzed {{ contamination_data.normal_samples_count }} normal sample(s)</p>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Loading or Error State -->
+        <div class="text-center py-4">
+            <i class="bi bi-exclamation-circle text-warning" style="font-size: 3rem;"></i>
+            <h5 class="mt-3">Unable to perform contamination analysis</h5>
+            <p class="text-muted">Please check the authentication and try again</p>
+        </div>
+    {% endif %}
+
+    {% if contamination_plot_config %}
+        <!-- Hidden server-side rendered plot configuration for JavaScript loading -->
+        <div style="display: none;">
+            <div id="contamination-plot-config">
+                {{ contamination_plot_config | tojson }}
+            </div>
+        </div>
+
+        <!-- Contamination Analysis JavaScript -->
+        <script>
+            // Function to initialize contamination plot when visible
+            function initializeContaminationPlot() {
+                try {
+                    const plotConfigElement = document.getElementById('contamination-plot-config');
+                    const plotElement = document.getElementById('contamination-plot');
+
+                    if (plotConfigElement && plotElement && plotElement.offsetParent !== null) {
+                        const plotConfig = JSON.parse(plotConfigElement.textContent);
+                        Plotly.newPlot('contamination-plot', plotConfig.data, plotConfig.layout, plotConfig.config);
+                        return true; // Successfully initialized
+                    }
+                    return false; // Not ready yet
+                } catch (error) {
+                    console.error('Error loading contamination plot:', error);
+                    const plotElement = document.getElementById('contamination-plot');
+                    if (plotElement) {
+                        plotElement.innerHTML = '<div class="alert alert-danger">Error loading contamination analysis plot</div>';
+                    }
+                    return true; // Don't retry on error
+                }
+            }
+
+            // Store the initialization function globally for the main QC page to call
+            window.initContaminationPlot = initializeContaminationPlot;
+        </script>
+    {% endif %}
+</div>
+{% endmacro %}
