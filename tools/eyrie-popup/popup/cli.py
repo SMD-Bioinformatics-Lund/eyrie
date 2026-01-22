@@ -603,7 +603,7 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
         "results": {
             "enabled": True,
             "directory": "results",
-            "rel_abundance_file": f"{sample_id}_filtered.fastq_rel-abundance.tsv"
+            "rel_abundance_file": f"{sample_id}*.fastq_rel-abundance.tsv"
         }
     }
 
