@@ -40,9 +40,7 @@ class SeqrunMetadataParser:
                     # Handle ISO string with or without 'Z' suffix
                     if dt_string.endswith('Z'):
                         dt_string = dt_string[:-1] + '+00:00'
-                    # Convert to datetime object for backend
-                    dt_obj = datetime.fromisoformat(dt_string)
-                    metadata['exp_start_time'] = dt_obj
+                    metadata['exp_start_time'] = dt_string
                 except (ValueError, AttributeError) as e:
                     print(f"⚠ Warning: Could not parse exp_start_time: {metadata.get('exp_start_time')} - {e}")
                     metadata['exp_start_time'] = None
