@@ -1,6 +1,7 @@
 """Taxonomic abundance parsing functionality."""
 
 import csv
+import glob
 from pathlib import Path
 from typing import List
 
@@ -18,10 +19,15 @@ class TaxonomicParser:
         if not results_config:
             return []
 
-        abundance_file = self.seqrun_path / results_config.directory / results_config.rel_abundance_file
-
-        if not abundance_file.exists():
+        # Handle glob patterns for file discovery
+        pattern = str(self.seqrun_path / results_config.directory / results_config.rel_abundance_file)
+        matching_files = glob.glob(pattern)
+        
+        if not matching_files:
             return []
+        
+        # Use first match if multiple files found
+        abundance_file = Path(matching_files[0])
 
         abundances = []
 
