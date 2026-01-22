@@ -100,5 +100,6 @@
 {% endblock %}
 
 {% block extra_js %}
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/seqrun_samples.js') }}"></script>
 {% endblock %}

@@ -160,7 +160,7 @@
         <!-- Read Quality Box Plot -->
         <div class="row mb-3">
             <div class="col-12">
-                <div id="read-quality-plot" style="height: 600px;"></div>
+                <div id="read-quality-plot" style="height: 600px;" data-sequencing-run-id="{{ read_quality_data.sequencing_run_id | default('unknown') }}"></div>
             </div>
         </div>
 
@@ -208,33 +208,6 @@
             </div>
         </div>
 
-        <!-- Read Quality Analysis JavaScript -->
-        <script>
-            // Function to initialize read quality plot when visible
-            function initializeReadQualityPlot() {
-                try {
-                    const plotConfigElement = document.getElementById('read-quality-plot-config');
-                    const plotElement = document.getElementById('read-quality-plot');
-
-                    if (plotConfigElement && plotElement && plotElement.offsetParent !== null) {
-                        const plotConfig = JSON.parse(plotConfigElement.textContent);
-                        Plotly.newPlot('read-quality-plot', plotConfig.data, plotConfig.layout, plotConfig.config);
-                        return true; // Successfully initialized
-                    }
-                    return false; // Not ready yet
-                } catch (error) {
-                    console.error('Error loading read quality plot:', error);
-                    const plotElement = document.getElementById('read-quality-plot');
-                    if (plotElement) {
-                        plotElement.innerHTML = '<div class="alert alert-danger">Error loading read quality analysis plot</div>';
-                    }
-                    return true; // Don't retry on error
-                }
-            }
-
-            // Store the initialization function globally for the main QC page to call
-            window.initReadQualityPlot = initializeReadQualityPlot;
-        </script>
 
     {% else %}
         <div class="text-center py-5">
@@ -518,7 +491,7 @@
         <!-- Contamination Plot -->
         <div class="row mb-3">
             <div class="col-12">
-                <div id="contamination-plot" style="height: 500px;"></div>
+                <div id="contamination-plot" style="height: 500px;" data-sequencing-run-id="{{ contamination_data.sequencing_run_id | default('unknown') }}"></div>
             </div>
         </div>
 
@@ -592,33 +565,6 @@
             </div>
         </div>
 
-        <!-- Contamination Analysis JavaScript -->
-        <script>
-            // Function to initialize contamination plot when visible
-            function initializeContaminationPlot() {
-                try {
-                    const plotConfigElement = document.getElementById('contamination-plot-config');
-                    const plotElement = document.getElementById('contamination-plot');
-
-                    if (plotConfigElement && plotElement && plotElement.offsetParent !== null) {
-                        const plotConfig = JSON.parse(plotConfigElement.textContent);
-                        Plotly.newPlot('contamination-plot', plotConfig.data, plotConfig.layout, plotConfig.config);
-                        return true; // Successfully initialized
-                    }
-                    return false; // Not ready yet
-                } catch (error) {
-                    console.error('Error loading contamination plot:', error);
-                    const plotElement = document.getElementById('contamination-plot');
-                    if (plotElement) {
-                        plotElement.innerHTML = '<div class="alert alert-danger">Error loading contamination analysis plot</div>';
-                    }
-                    return true; // Don't retry on error
-                }
-            }
-
-            // Store the initialization function globally for the main QC page to call
-            window.initContaminationPlot = initializeContaminationPlot;
-        </script>
     {% endif %}
 </div>
 {% endmacro %}

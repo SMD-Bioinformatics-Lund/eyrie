@@ -55,5 +55,6 @@
 {% from 'macros/seqruns_table.html' import seqruns_table_rows %}
 
 {% block extra_js %}
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/seqruns.js') }}"></script>
 {% endblock %}
