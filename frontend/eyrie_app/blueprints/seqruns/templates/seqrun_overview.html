@@ -205,18 +205,6 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // Search functionality for samples in run
-        document.getElementById('runSamplesSearch').addEventListener('keyup', function() {
-            const searchValue = this.value.toLowerCase();
-            const tableBody = document.getElementById('runSamplesTableBody');
-            const rows = tableBody.getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchValue) ? '' : 'none';
-            }
-        });
-    </script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/seqrun_overview.js') }}"></script>
 {% endblock %}

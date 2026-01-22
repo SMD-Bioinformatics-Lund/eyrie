@@ -111,6 +111,11 @@ def generate_read_quality_plot_config(read_quality_data):
     # Collect all values for each metric to calculate ranges
     metric_ranges = {}
 
+    # Get sample IDs for hover text
+    sample_ids = read_quality_data.get('sample_ids', {})
+    unprocessed_sample_ids = sample_ids.get('unprocessed', [])
+    processed_sample_ids = sample_ids.get('processed', [])
+
     for i, (metric_key, y_label, unit) in enumerate(metric_configs):
         metric_data = metrics.get(metric_key, {})
 
@@ -133,7 +138,8 @@ def generate_read_quality_plot_config(read_quality_data):
                 'showlegend': i == 0,  # Only show legend for first subplot
                 'xaxis': f'x{i+1}',
                 'yaxis': f'y{i+1}',
-                'hovertemplate': f'<b>Unprocessed</b><br>{y_label}: %{{y:,.0f}} {unit}<extra></extra>'
+                'text': [f"Sample: {sample_id}" for sample_id in unprocessed_sample_ids],
+                'hovertemplate': f'<b>Unprocessed</b><br>{y_label}: %{{y:,.0f}} {unit}<br>%{{text}}<extra></extra>'
             })
 
         # Add processed data second (right position)
@@ -152,7 +158,8 @@ def generate_read_quality_plot_config(read_quality_data):
                 'showlegend': i == 0,  # Only show legend for first subplot
                 'xaxis': f'x{i+1}',
                 'yaxis': f'y{i+1}',
-                'hovertemplate': f'<b>Processed</b><br>{y_label}: %{{y:,.0f}} {unit}<extra></extra>'
+                'text': [f"Sample: {sample_id}" for sample_id in processed_sample_ids],
+                'hovertemplate': f'<b>Processed</b><br>{y_label}: %{{y:,.0f}} {unit}<br>%{{text}}<extra></extra>'
             })
 
         # Calculate padded range for this metric
@@ -242,6 +249,9 @@ def generate_contamination_plot_config(contamination_data):
         abundances = analysis.get('abundances', [])
         if abundances:  # Only include species with actual abundance data
             all_abundances.extend(abundances)
+            # Get sample IDs that correspond to each abundance value
+            detected_sample_ids = analysis.get('detected_in_samples', [])
+
             plot_data.append({
                 'y': abundances,
                 'name': species,
@@ -249,7 +259,7 @@ def generate_contamination_plot_config(contamination_data):
                 'boxpoints': 'all',  # Show all data points
                 'jitter': 0.3,
                 'pointpos': -1.8,
-                'text': [f"Sample: {sample_id}" for sample_id in analysis.get('detected_samples', [])],
+                'text': [f"Sample: {sample_id}" for sample_id in detected_sample_ids],
                 'hovertemplate': f'<b>{species}</b><br>Abundance: %{{y:.2f}}%<br>%{{text}}<extra></extra>'
             })
 
