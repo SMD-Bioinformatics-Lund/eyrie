@@ -159,15 +159,22 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                 'message': 'No negative control samples found for this sequencing run'
             }
 
-        # Extract unique species from negative controls
-        contaminating_species = set()
+        # Extract unique species from negative controls, tracking which controls they came from
+        species_to_negative_controls = {}  # species -> list of negative control sample_ids
         for negative_sample in negative_controls:
+            sample_id = negative_sample.get('sample_id', 'Unknown')
             taxonomic_data = negative_sample.get('taxonomic_data', {})
             hits = taxonomic_data.get('hits', [])
             for hit in hits:
                 species = hit.get('species')
                 if species and species.strip():
-                    contaminating_species.add(species.strip())
+                    species = species.strip()
+                    if species not in species_to_negative_controls:
+                        species_to_negative_controls[species] = []
+                    if sample_id not in species_to_negative_controls[species]:
+                        species_to_negative_controls[species].append(sample_id)
+
+        contaminating_species = set(species_to_negative_controls.keys())
 
         if not contaminating_species:
             return {
@@ -225,7 +232,8 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                 'abundances': abundances,
                 'detected_in_samples': detected_samples,
                 'detection_rate': len(abundances) / len(normal_samples) * 100 if normal_samples else 0,
-                'average_abundance': avg_abundance
+                'average_abundance': avg_abundance,
+                'source_negative_controls': species_to_negative_controls.get(species, [])
             }
 
         # Sort species by average abundance (highest first)
