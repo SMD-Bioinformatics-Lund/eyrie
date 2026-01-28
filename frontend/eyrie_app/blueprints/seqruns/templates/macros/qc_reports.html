@@ -504,6 +504,7 @@
                     <thead>
                         <tr>
                             <th>Species</th>
+                            <th>Negative Control(s)</th>
                             <th>Detected in Samples</th>
                             <th>Detection Rate</th>
                             <th>Abundance Range (%)</th>
@@ -514,6 +515,7 @@
                         {% for species, analysis in contamination_data.species_analysis.items() %}
                         <tr>
                             <td><small>{{ species }}</small></td>
+                            <td><small>{{ analysis.source_negative_controls | join(', ') }}</small></td>
                             <td>{{ analysis.detected_in_samples|length }}</td>
                             <td>{{ "%.1f"|format(analysis.detection_rate) }}%</td>
                             <td>
