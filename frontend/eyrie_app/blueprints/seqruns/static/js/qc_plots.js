@@ -41,44 +41,5 @@ function initializeReadQualityPlot() {
     }
 }
 
-// Function to initialize contamination plot when visible
-function initializeContaminationPlot() {
-    try {
-        const plotConfigElement = document.getElementById('contamination-plot-config');
-        const plotElement = document.getElementById('contamination-plot');
-
-        if (plotConfigElement && plotElement && plotElement.offsetParent !== null) {
-            const plotConfig = JSON.parse(plotConfigElement.textContent);
-
-            // Get sequencing run ID from data attribute or fallback to 'unknown'
-            const sequencingRunId = plotElement.dataset.sequencingRunId || 'unknown';
-
-            // Add export configuration for contamination plot
-            const exportConfig = {
-                ...plotConfig.config,
-                toImageButtonOptions: {
-                    format: 'png',
-                    filename: `eyrie_qc_contamination_${sequencingRunId}_${new Date().toISOString().split('T')[0]}`,
-                    height: 500,
-                    width: 1000,
-                    scale: 2
-                }
-            };
-
-            Plotly.newPlot('contamination-plot', plotConfig.data, plotConfig.layout, exportConfig);
-            return true; // Successfully initialized
-        }
-        return false; // Not ready yet
-    } catch (error) {
-        console.error('Error loading contamination plot:', error);
-        const plotElement = document.getElementById('contamination-plot');
-        if (plotElement) {
-            plotElement.innerHTML = '<div class="alert alert-danger">Error loading contamination analysis plot</div>';
-        }
-        return true; // Don't retry on error
-    }
-}
-
 // Store the initialization functions globally for the main QC page to call
 window.initReadQualityPlot = initializeReadQualityPlot;
-window.initContaminationPlot = initializeContaminationPlot;

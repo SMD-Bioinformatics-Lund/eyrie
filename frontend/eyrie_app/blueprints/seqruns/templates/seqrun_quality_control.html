@@ -4,7 +4,7 @@
 {% block title %}{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Seqrun{% endif %} Quality Control - Eyrie{% endblock %}
 
 {% block extra_css %}
-    <!-- Plotly CDN for contamination analysis (using latest stable version) -->
+    <!-- Plotly CDN for read quality analysis -->
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 {% endblock %}
 
@@ -247,7 +247,7 @@
             {% endif %}
             {% if contamination_data %}
                 <div id="qc-data-contamination">
-                    {{ render_contamination_analysis(contamination_data, contamination_plot_config) }}
+                    {{ render_contamination_analysis(contamination_data) }}
                 </div>
             {% endif %}
         </div>

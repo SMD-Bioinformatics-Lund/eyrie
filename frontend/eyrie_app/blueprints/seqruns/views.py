@@ -9,7 +9,8 @@ from ...eyrie import (
     get_samples_from_backend, serve_analysis_file, get_seqrun_from_backend, get_analysis_path,
     get_contamination_analysis_from_backend, get_qc_overview_from_backend,
     get_read_quality_from_backend, get_taxonomic_diversity_from_backend,
-    get_outlier_detection_from_backend, get_positive_control_validation_from_backend
+    get_outlier_detection_from_backend, get_positive_control_validation_from_backend,
+    get_seqruns_from_backend
 )
 
 bp = Blueprint('seqruns', __name__, template_folder='templates')
@@ -233,91 +234,6 @@ def generate_read_quality_plot_config(read_quality_data):
     }
 
 
-def generate_contamination_plot_config(contamination_data):
-    """Generate Plotly configuration for contamination analysis."""
-    if not contamination_data or contamination_data.get('message'):
-        return None
-
-    species_analysis = contamination_data.get('species_analysis', {})
-    if not species_analysis:
-        return None
-
-    # Create box plot data and collect all abundance values for range calculation
-    plot_data = []
-    all_abundances = []
-    for species, analysis in species_analysis.items():
-        abundances = analysis.get('abundances', [])
-        if abundances:  # Only include species with actual abundance data
-            all_abundances.extend(abundances)
-            # Get sample IDs that correspond to each abundance value
-            detected_sample_ids = analysis.get('detected_in_samples', [])
-
-            plot_data.append({
-                'y': abundances,
-                'name': species,
-                'type': 'box',
-                'boxpoints': 'all',  # Show all data points
-                'jitter': 0.3,
-                'pointpos': -1.8,
-                'text': [f"Sample: {sample_id}" for sample_id in detected_sample_ids],
-                'hovertemplate': f'<b>{species}</b><br>Abundance: %{{y:.2f}}%<br>%{{text}}<extra></extra>'
-            })
-
-    if not plot_data:
-        return None
-
-    # Calculate y-axis range with padding
-    if all_abundances:
-        y_min = min(all_abundances)
-        y_max = max(all_abundances)
-        y_range = y_max - y_min
-
-        # Add 15% padding above max and 10% below min (or at least 0.5% for very small values)
-        padding_below = max(y_range * 0.1, 0.5)
-        padding_above = max(y_range * 0.15, 0.5)
-
-        y_min_padded = y_min - padding_below
-        y_max_padded = y_max + padding_above
-
-        # Only enforce 0 minimum if the data actually contains very low values (< 1%)
-        if y_min < 1.0:
-            y_min_padded = max(0, y_min_padded)
-    else:
-        y_min_padded, y_max_padded = 0, 10
-
-    # Layout configuration
-    layout = {
-        'title': {
-            'text': 'Contamination Analysis - Species from Negative Controls',
-            'x': 0.5,
-            'font': {'size': 16}
-        },
-        'xaxis': {
-            'title': 'Species',
-            'tickangle': -45 if len(plot_data) > 3 else 0
-        },
-        'yaxis': {
-            'title': 'Abundance (%)',
-            'type': 'log' if any(max(trace['y']) > 100 for trace in plot_data if trace['y']) else 'linear',
-            'range': [y_min_padded, y_max_padded]
-        },
-        'margin': {'l': 80, 'r': 50, 'b': 120, 't': 80, 'pad': 10},
-        'showlegend': False,
-        'plot_bgcolor': '#f8f9fa',
-        'paper_bgcolor': 'white'
-    }
-
-    return {
-        'data': plot_data,
-        'layout': layout,
-        'config': {
-            'displayModeBar': True,
-            'modeBarButtonsToRemove': ['pan2d', 'select2d', 'lasso2d', 'autoScale2d'],
-            'responsive': True
-        }
-    }
-
-
 def get_contamination_data_for_seqrun(seqrun_id):
     """Get contamination analysis data for a sequencing run via API."""
     try:
@@ -332,9 +248,8 @@ def get_contamination_data_for_seqrun(seqrun_id):
 def seqruns_page():
     """Display list of sequencing runs"""
     try:
-        # Get all samples and group by sequencing run
-        samples = get_samples_from_backend()
-        seqruns = group_samples_by_seqrun(samples)
+        # Fetch seqruns directly from backend API (includes exp_start_time)
+        seqruns = get_seqruns_from_backend()
         return render_template('seqruns.html', seqruns=seqruns)
     except ValueError as e:
         # Authentication error
@@ -530,10 +445,9 @@ def seqrun_quality_control(seqrun_id):
                 contamination_data = get_contamination_data_for_seqrun(decoded_seqrun_id)
 
                 # Generate plot configurations
-                contamination_plot_config = generate_contamination_plot_config(contamination_data)
                 read_quality_plot_config = generate_read_quality_plot_config(read_quality_data)
 
-                return render_template('seqrun_quality_control.html', 
+                return render_template('seqrun_quality_control.html',
                                      seqrun=seqrun,
                                      qc_overview_data=qc_overview_data,
                                      read_quality_data=read_quality_data,
@@ -541,7 +455,6 @@ def seqrun_quality_control(seqrun_id):
                                      outlier_detection_data=outlier_detection_data,
                                      positive_control_data=positive_control_data,
                                      contamination_data=contamination_data,
-                                     contamination_plot_config=contamination_plot_config,
                                      read_quality_plot_config=read_quality_plot_config)
         except Exception as api_error:
             print(f"⚠️ Backend API call failed: {api_error}")
@@ -565,10 +478,9 @@ def seqrun_quality_control(seqrun_id):
             contamination_data = get_contamination_data_for_seqrun(decoded_seqrun_id)
 
             # Generate plot configurations
-            contamination_plot_config = generate_contamination_plot_config(contamination_data)
             read_quality_plot_config = generate_read_quality_plot_config(read_quality_data)
 
-            return render_template('seqrun_quality_control.html', 
+            return render_template('seqrun_quality_control.html',
                                  seqrun=seqrun,
                                  qc_overview_data=qc_overview_data,
                                  read_quality_data=read_quality_data,
@@ -576,7 +488,6 @@ def seqrun_quality_control(seqrun_id):
                                  outlier_detection_data=outlier_detection_data,
                                  positive_control_data=positive_control_data,
                                  contamination_data=contamination_data,
-                                 contamination_plot_config=contamination_plot_config,
                                  read_quality_plot_config=read_quality_plot_config)
 
         # If we get here, seqrun truly not found

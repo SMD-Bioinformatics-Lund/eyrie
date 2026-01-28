@@ -252,6 +252,15 @@ def get_seqrun_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Opt
 
 
 @api_authentication
+def get_seqruns_from_backend(headers: CaseInsensitiveDict) -> List[Dict[str, Any]]:
+    """Get all sequencing runs from backend API"""
+    url = f"{backend_url}/api/seqruns"
+    resp = requests.get(url, headers=headers, timeout=30)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@api_authentication
 def get_negative_controls_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> List[Dict[str, Any]]:
     """Get negative control samples from the same sequencing run"""
     url = f"{backend_url}/api/sample/{sample_id}/negative-controls"
