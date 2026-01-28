@@ -3,7 +3,6 @@
 {% block title %}Trends Analysis - Eyrie{% endblock %}
 
 {% block extra_css %}
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -14,28 +13,19 @@
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header bg-primary text-white">
                         <h5 class="mb-0">
-                            <i class="bi bi-graph-up me-2"></i>Trends Analysis
+                            <i class="bi bi-graph-up me-2"></i>Quality Control Trends
                         </h5>
+                        <small class="opacity-75">Track metrics over time grouped by experimental variables</small>
                     </div>
                     <div class="card-body">
                         <!-- Controls Row -->
                         <div class="row mb-4">
                             <div class="col-md-4">
-                                <label for="categorySelect" class="form-label">Category</label>
-                                <select class="form-select" id="categorySelect">
-                                    {% for category in config.categories %}
-                                    <option value="{{ category.value }}"{% if category.get('selected') %} selected{% endif %}>
-                                        {{ category.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="chartTypeSelect" class="form-label">Chart Type</label>
-                                <select class="form-select" id="chartTypeSelect">
-                                    {% for chart_type in config.chart_types %}
-                                    <option value="{{ chart_type.value }}"{% if chart_type.get('selected') %} selected{% endif %}>
-                                        {{ chart_type.label }}
+                                <label for="groupBySelect" class="form-label">Group By</label>
+                                <select class="form-select" id="groupBySelect">
+                                    {% for group_option in config.group_by_options %}
+                                    <option value="{{ group_option.value }}"{% if group_option.get('selected') %} selected{% endif %}>
+                                        {{ group_option.label }}
                                     </option>
                                     {% endfor %}
                                 </select>
@@ -50,135 +40,44 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="col-md-4">
+                                <label for="readQualityFilteringSelect" class="form-label">Read Quality</label>
+                                <select class="form-select" id="readQualityFilteringSelect">
+                                    {% for quality_option in config.read_quality_filtering %}
+                                    <option value="{{ quality_option.value }}"{% if quality_option.get('selected') %} selected{% endif %}>
+                                        {{ quality_option.label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
                         </div>
 
-                        <!-- Additional Filters Row -->
+                        <!-- Filters Row -->
                         <div class="row mb-4">
-                            <div class="col-md-3">
-                                <label for="timeRangeSelect" class="form-label">Time Range</label>
-                                <select class="form-select" id="timeRangeSelect">
-                                    {% for time_range in config.time_ranges %}
-                                    <option value="{{ time_range.value }}"{% if time_range.get('selected') %} selected{% endif %}>
-                                        {{ time_range.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="groupBySelect" class="form-label">Group By</label>
-                                <select class="form-select" id="groupBySelect">
-                                    {% for group_option in config.group_by_options %}
-                                    <option value="{{ group_option.value }}"{% if group_option.get('selected') %} selected{% endif %}>
-                                        {{ group_option.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="classificationFilter" class="form-label">Classification Filter</label>
+                            <div class="col-md-4">
+                                <label for="classificationFilter" class="form-label">Classification</label>
                                 <select class="form-select" id="classificationFilter">
-                                    <option value="all">All Classifications</option>
+                                    <option value="all" selected>All Classifications</option>
                                     {% for classification in config.predefined_filters.classifications %}
                                     <option value="{{ classification.value }}">{{ classification.label }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                            <div class="col-md-3">
-                                <label for="qcFilter" class="form-label">QC Filter</label>
+                            <div class="col-md-4">
+                                <label for="qcFilter" class="form-label">QC Status</label>
                                 <select class="form-select" id="qcFilter">
-                                    <option value="all">All QC</option>
+                                    <option value="all" selected>All QC Status</option>
                                     {% for qc_option in config.predefined_filters.qc %}
                                     <option value="{{ qc_option.value }}">{{ qc_option.label }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                        </div>
-
-                        <!-- Metadata Filters Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <label for="sampleTypeFilter" class="form-label">Sample Type Filter</label>
+                            <div class="col-md-4">
+                                <label for="sampleTypeFilter" class="form-label">Sample Type</label>
                                 <select class="form-select" id="sampleTypeFilter">
-                                    <option value="all">All Sample Types</option>
+                                    <option value="all" selected>All Sample Types</option>
                                     {% for sample_type in config.predefined_filters.sample_types %}
                                     <option value="{{ sample_type.value }}">{{ sample_type.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="tissueFilter" class="form-label">Tissue Filter</label>
-                                <select class="form-select" id="tissueFilter">
-                                    <option value="all">All Tissues</option>
-                                    {% for tissue in dynamic_filters.tissues %}
-                                    <option value="{{ tissue }}">{{ tissue|title }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="dilutionFilter" class="form-label">Dilution Filter</label>
-                                <select class="form-select" id="dilutionFilter">
-                                    <option value="all">All Dilutions</option>
-                                    {% for dilution in config.predefined_filters.dilutions %}
-                                    <option value="{{ dilution.value }}">{{ dilution.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="spikeConcentrationFilter" class="form-label">Spike Concentration Filter</label>
-                                <select class="form-select" id="spikeConcentrationFilter">
-                                    <option value="all">All Spike Concentrations</option>
-                                    {% for spike in config.predefined_filters.spike_concentrations %}
-                                    <option value="{{ spike.value }}">{{ spike.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Kit Filters Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label for="readQualityFilteringFilter" class="form-label">Read Quality Filtering</label>
-                                <select class="form-select" id="readQualityFilteringFilter">
-                                    <option value="all">All Read Quality Filtering</option>
-                                    {% for filter_option in config.predefined_filters.read_quality_filtering %}
-                                    <option value="{{ filter_option.value }}"{% if filter_option.get('selected') %} selected{% endif %}>{{ filter_option.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="extractionKitFilter" class="form-label">Extraction Kit Filter</label>
-                                <select class="form-select" id="extractionKitFilter">
-                                    <option value="all">All Extraction Kits</option>
-                                    {% for kit in dynamic_filters.extraction_kits %}
-                                    <option value="{{ kit }}">{{ kit }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="libraryKitFilter" class="form-label">Library Prep Kit Filter</label>
-                                <select class="form-select" id="libraryKitFilter">
-                                    <option value="all">All Library Prep Kits</option>
-                                    {% for kit in dynamic_filters.library_prep_kits %}
-                                    <option value="{{ kit }}">{{ kit }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Genus Filter Row (for species proportion analysis) -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label for="genusFilter" class="form-label">
-                                    Genus Filter 
-                                    <i class="bi bi-info-circle-fill text-muted ms-1" 
-                                       data-bs-toggle="tooltip" 
-                                       data-bs-placement="top" 
-                                       title="Filter samples by dominant species genus for stacked area/bar charts"></i>
-                                </label>
-                                <select class="form-select" id="genusFilter">
-                                    <option value="all">All Genera</option>
-                                    {% for genus in dynamic_filters.genera %}
-                                    <option value="{{ genus }}">{{ genus }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -207,16 +106,14 @@
                         <h6 class="mb-0">
                             <i class="bi bi-bar-chart me-2"></i>Trend Visualisation
                         </h6>
-                        <div class="badge bg-light text-dark" id="chartStatus">
-                            Ready
-                        </div>
+                        <div class="badge bg-light text-dark" id="chartStatus">Ready</div>
                     </div>
                     <div class="card-body p-0">
                         <div id="trendsChart" style="height: 600px;">
                             <div class="d-flex justify-content-center align-items-center h-100">
                                 <div class="text-center">
                                     <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                    <p class="text-muted mt-3">Select parameters and click "Update Chart" to view trends</p>
+                                    <p class="text-muted mt-3">Select grouping and metric, then click "Update Chart" to view quality trends over time</p>
                                 </div>
                             </div>
                         </div>
@@ -246,5 +143,6 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 {% endblock %}
 
 {% block extra_js %}
+    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='trends', filename='static/js/trends.js') }}"></script>
 {% endblock %}
