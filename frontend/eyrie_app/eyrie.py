@@ -348,15 +348,6 @@ def get_trends_data(headers: CaseInsensitiveDict, query_params: Dict[str, str]) 
     return resp.json()
 
 
-@api_authentication
-def get_metadata_filters(headers: CaseInsensitiveDict) -> Dict[str, Any]:
-    """Get metadata filters from backend API"""
-    url = f"{backend_url}/api/trends/metadata/filters"
-    resp = requests.get(url, headers=headers, timeout=10)
-    resp.raise_for_status()
-    return resp.json()
-
-
 # Additional API functions for Flask-Login user management
 def get_current_user_api() -> Dict[str, Any]:
     """Get current user info from Flask-Login session"""

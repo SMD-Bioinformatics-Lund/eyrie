@@ -66,78 +66,41 @@ class Settings:
     def trends_config(self):
         """Trends analysis configuration"""
         return {
-            'categories': [
-                {'value': 'sample_id', 'label': 'Sample ID'},
-                {'value': 'dominant_species', 'label': 'Dominant Species'},
-                {'value': 'sample_type', 'label': 'Sample Type'},
-                {'value': 'tissue', 'label': 'Tissue'},
-                {'value': 'spike_concentration', 'label': 'Spike Concentration'},
-                {'value': 'dilution', 'label': 'Dilution'},
-                {'value': 'read_quality_filtering', 'label': 'Read Quality Filtering'},
-                {'value': 'classification_type', 'label': 'Classification Type'},
+            'group_by_options': [
+                {'value': 'sequencing_run_id', 'label': 'Sequencing Run ID', 'selected': True},
+                {'value': 'library_prep_kit_lot_number', 'label': 'Library Prep Kit Lot Number'},
                 {'value': 'extraction_kit', 'label': 'Extraction Kit'},
-                {'value': 'library_prep_kit', 'label': 'Library Prep Kit'},
+                {'value': 'extraction_kit_lot_number', 'label': 'Extraction Kit Lot Number'},
+                {'value': 'tissue', 'label': 'Tissue'},
             ],
             'metrics': [
-                {'value': 'number_of_reads', 'label': 'Number of Reads'},
-                {'value': 'mean_read_quality', 'label': 'Mean Read Quality (Q-score)'},
-                {'value': 'mean_read_length', 'label': 'Mean Read Length (bp)'},
-                {'value': 'read_length_n50', 'label': 'Read Length N50 (bp)'},
-                {'value': 'species_frequency', 'label': 'Species Frequency (%)'},
-                {'value': 'abundance_percentage', 'label': 'Abundance Percentage (%)'},
-                {'value': 'sample_count', 'label': 'Sample Count'},
-                {'value': 'contaminants_count', 'label': 'Contaminants Count'},
-                {'value': 'top_hits_count', 'label': 'Top Hits Count'},
-                {'value': 'qc_pass_rate', 'label': 'QC Pass Rate (%)'},
-                {'value': 'total_bases', 'label': 'Total Bases'},
-                {'value': 'library_concentration', 'label': 'Library Concentration (ng/μL)'},
-                {'value': 'multiple_finds_rate', 'label': 'Multiple Finds Rate (%)'},
+                {'value': 'number_of_reads', 'label': 'Number of Reads', 'selected': True},
+                {'value': 'mean_read_quality', 'label': 'Mean Read Quality'},
+                {'value': 'mean_read_length', 'label': 'Mean Read Length'},
+                {'value': 'read_length_n50', 'label': 'Read Length N50'},
+                {'value': 'total_contaminants_abundance', 'label': 'Total Contaminants Abundance per Sample'},
+                {'value': 'library_concentration', 'label': 'Library Concentration'},
             ],
-            'chart_types': [
-                {'value': 'line', 'label': 'Line'},
-                {'value': 'bar', 'label': 'Bar'},
-                {'value': 'stacked_area', 'label': 'Stacked Area'}
-            ],
-            'time_ranges': [
-                {'value': '7', 'label': 'Last 7 Days'},
-                {'value': '30', 'label': 'Last 30 Days'},
-                {'value': '90', 'label': 'Last 90 Days'},
-                {'value': '365', 'label': 'Last Year'},
-                {'value': 'all', 'label': 'All Time', 'selected': True}
-            ],
-            'group_by_options': [
-                {'value': 'day', 'label': 'Daily', 'selected': True},
-                {'value': 'week', 'label': 'Weekly'},
-                {'value': 'month', 'label': 'Monthly'},
-                {'value': 'exp_start_time', 'label': 'Sequencing Run Start Time'}
+            'read_quality_filtering': [
+                {'value': 'all', 'label': 'All Data', 'selected': True},
+                {'value': 'processed', 'label': 'Processed Reads Only'},
+                {'value': 'unprocessed', 'label': 'Unprocessed Reads Only'}
             ],
             'predefined_filters': {
-                'sample_types': [
-                    {'value': 'validation', 'label': 'Validation'},
-                    {'value': 'patient', 'label': 'Patient'},
-                    {'value': 'negative control', 'label': 'Negative Control'},
-                    {'value': 'positive control', 'label': 'Positive Control'}
-                ],
-                'dilutions': [
-                    {'value': '1:1', 'label': '1:1'},
-                    {'value': '1:10', 'label': '1:10'}
-                ],
                 'classifications': [
-                    {'value': '16S', 'label': '16S Only'},
-                    {'value': 'ITS', 'label': 'ITS Only'}
-                ],
-                'spike_concentrations': [
-                    {'value': 'IC3', 'label': 'IC3'},
-                    {'value': 'IC4', 'label': 'IC4'}
+                    {'value': '16S', 'label': '16S'},
+                    {'value': 'ITS', 'label': 'ITS'}
                 ],
                 'qc': [
                     {'value': 'passed', 'label': 'Passed'},
                     {'value': 'failed', 'label': 'Failed'},
                     {'value': 'unprocessed', 'label': 'Unprocessed'}
                 ],
-                'read_quality_filtering': [
-                    {'value': 'processed', 'label': 'Processed', 'selected': True},
-                    {'value': 'unprocessed', 'label': 'Unprocessed'}
+                'sample_types': [
+                    {'value': 'validation', 'label': 'Validation'},
+                    {'value': 'patient', 'label': 'Patient'},
+                    {'value': 'negative control', 'label': 'Negative Control'},
+                    {'value': 'positive control', 'label': 'Positive Control'}
                 ]
             }
         }
