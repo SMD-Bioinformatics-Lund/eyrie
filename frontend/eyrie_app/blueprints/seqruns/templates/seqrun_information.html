@@ -3,11 +3,6 @@
 
 {% block title %}{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Seqrun{% endif %} Information - Eyrie{% endblock %}
 
-{% block extra_css %}
-    <!-- Plotly CDN for contamination analysis -->
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-{% endblock %}
-
 {% block head %}
     {{ super() }}
     {% if seqrun %}

@@ -35,9 +35,7 @@ function loadQCAnalysis(analysisType) {
 
         // Initialize plots after they become visible
         setTimeout(() => {
-            if (analysisType === 'contamination' && window.initContaminationPlot) {
-                window.initContaminationPlot();
-            } else if (analysisType === 'read-quality' && window.initReadQualityPlot) {
+            if (analysisType === 'read-quality' && window.initReadQualityPlot) {
                 window.initReadQualityPlot();
             }
         }, 100); // Small delay to ensure DOM updates complete
