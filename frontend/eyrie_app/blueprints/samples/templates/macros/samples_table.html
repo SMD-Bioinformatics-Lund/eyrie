@@ -9,9 +9,11 @@
                     </a>
                 </td>
                 <td class="fw-semibold">{{ sample.sample_name }}</td>
-                <td><code>{{ sample.sample_id }}</code></td>
                 <td>{{ sample.sequencing_run_id }}</td>
-                <td>{{ sample.lims_id }}</td>
+                <td class="d-none"><code>{{ sample.sample_id }}</code></td>
+                <td class="d-none">{{ sample.lims_id }}</td>
+                <td>{{ sample.metadata.sample_type or '-' }}</td>
+                <td>{{ sample.metadata.tissue or '-' }}</td>
                 <td>
                     <span class="badge {{ qc_badge_class(sample.classification) }}">
                         {{ sample.classification.upper() }}
@@ -75,7 +77,7 @@
         {% endfor %}
     {% else %}
         <tr>
-            <td colspan="13" class="text-center py-4">
+            <td colspan="15" class="text-center py-4">
                 <div class="text-muted">
                     <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
                     <p class="mt-2">No samples found</p>
