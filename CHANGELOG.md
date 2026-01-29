@@ -38,6 +38,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added sequencing run metadata fields to seqruns collection (device_id, flow_cell_id, exp_start_time, etc.)
  - Added sequencing run metadata display to frontend seqrun information pages
  - Added seqrun QC panel containing negatice control analysis, positive control analysis, read quality anlysis, taxonomic diversity analysis, and outlier detection
+ - Added negative control column to seqrun contamination analysis table
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
@@ -65,6 +66,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Sequencing run information pages now display comprehensive device, flow cell, and protocol metadata when available
  - Renamed `--metadata` option to `--sample-metadata` to distinguish from new sequencing run metadata functionality in eyrie-popup
  - Removed `sequencing_run_date` field from samples collection -> trends now uses `exp_start_time` from seqruns collection
+ - Replaced lims id and sample id columns with sample type and tissue columns in sample tables
+ - Simplified trends chart generation with reduced code complexity across backend and frontend
+ - Moved analysis summary below detected contaminating species table in seqrun contamination analysis view
 
 ## [0.3.0]
 
