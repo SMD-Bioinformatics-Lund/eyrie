@@ -20,7 +20,9 @@ class MetadataParser:
         'spike_concentration': ['spike_concentration', 'spike_conc', 'spike'],
         'sanger_expected_species': ['sanger_expected_species', 'expected_species', 'sanger_species'],
         'extraction_kit': ['extraction_kit', 'dna_extraction_kit', 'extraction_method', 'dna_kit'],
-        'library_prep_kit': ['library_prep_kit', 'lib_prep_kit', 'library_preparation_kit', 'prep_kit']
+        'extraction_kit_lot_number': ['extraction_kit_lot_number', 'extraction_lot', 'dna_kit_lot', 'extraction_kit_lot'],
+        'library_prep_kit': ['library_prep_kit', 'lib_prep_kit', 'library_preparation_kit', 'prep_kit'],
+        'library_prep_kit_lot_number': ['library_prep_kit_lot_number', 'lib_prep_kit_lot', 'library_prep_lot', 'prep_kit_lot']
     }
 
     def __init__(self, file_path: Union[str, Path]):
@@ -140,7 +142,9 @@ class MetadataParser:
             spike_concentration=get_value('spike_concentration'),
             sanger_expected_species=get_value('sanger_expected_species'),
             extraction_kit=get_value('extraction_kit'),
-            library_prep_kit=get_value('library_prep_kit')
+            extraction_kit_lot_number=get_value('extraction_kit_lot_number'),
+            library_prep_kit=get_value('library_prep_kit'),
+            library_prep_kit_lot_number=get_value('library_prep_kit_lot_number')
         )
 
 

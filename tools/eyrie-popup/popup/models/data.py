@@ -16,7 +16,9 @@ class SampleMetadata(BaseModel):
     spike_concentration: Optional[str] = Field(None, regex="^(IC3|IC4)$")
     sanger_expected_species: Optional[str] = None
     extraction_kit: Optional[str] = None
+    extraction_kit_lot_number: Optional[str] = None
     library_prep_kit: Optional[str] = None
+    library_prep_kit_lot_number: Optional[str] = None
 
 
 class NanoStats(BaseModel):
