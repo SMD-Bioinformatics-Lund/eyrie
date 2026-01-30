@@ -117,6 +117,11 @@ body {
     background-color: #6c757d !important;
 }
 
+.badge.bg-orange {
+    background-color: #fd7e14 !important;
+    color: white;
+}
+
 .form-control, .form-select {
     border: 2px solid #ced4da;
     font-weight: 500;

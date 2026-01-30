@@ -78,13 +78,29 @@ def dominant_species_filter(species_hits):
     """Find dominant species - fallback if not pre-calculated"""
     if not species_hits:
         return '--'
-    
+
     # Handle case where species_hits might be the wrong data type
     if not isinstance(species_hits, list):
         return '--'
-        
+
     try:
         dominant = max(species_hits, key=lambda sp: sp.get('abundance', 0), default=None)
         return dominant.get('species', '--') if dominant else '--'
     except Exception:
         return '--'
+
+def library_concentration_class_filter(concentration):
+    """Get CSS class for library concentration badge based on value thresholds."""
+    if not concentration:
+        return ''
+    try:
+        value = float(concentration)
+        if value < 1:
+            return 'bg-danger'  # Red
+        elif value <= 5:
+            return 'bg-orange'  # Orange (custom class)
+        elif value <= 10:
+            return 'bg-warning'  # Yellow
+        return ''  # Normal - no special styling
+    except (ValueError, TypeError):
+        return ''

@@ -11,7 +11,7 @@ from .__version__ import __version__
 from .utils.template_filters import (
     format_number_filter, format_bases_filter, format_quality_filter,
     format_length_filter, qc_badge_class_filter, format_date_filter,
-    shannon_diversity_filter, dominant_species_filter
+    shannon_diversity_filter, dominant_species_filter, library_concentration_class_filter
 )
 from .blueprints.login.views import unauthorized_handler, load_user, bp as login_bp
 from .blueprints.sample.views import bp as sample_bp
@@ -117,6 +117,7 @@ def create_app():
     app.jinja_env.filters['format_date'] = format_date_filter
     app.jinja_env.filters['shannon_diversity'] = shannon_diversity_filter
     app.jinja_env.filters['dominant_species'] = dominant_species_filter
+    app.jinja_env.filters['library_concentration_class'] = library_concentration_class_filter
 
     # Add template context processor for version information
     @app.context_processor
