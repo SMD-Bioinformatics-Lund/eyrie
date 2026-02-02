@@ -1,4 +1,0 @@
-sample_id	sample_type	tissue	dilution	spike_concentration	extraction_kit	library_prep_kit	library_concentration	multiple_finds
-barcode01	validation	blood	1:5	IC3	QIAamp DNA Mini Kit	NEBNext Ultra II	50 ng/μL	no
-barcode02	invalid_type	urine	1:10	IC5	DNeasy PowerSoil Kit	NEBNext Ultra II	75 ng/μL	yes
-barcode03	negative control	NA	invalid_dilution	IC3	QIAamp DNA Mini Kit	NEBNext Ultra II	0 ng/μL	no

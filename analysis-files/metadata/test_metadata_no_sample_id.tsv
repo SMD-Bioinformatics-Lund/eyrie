@@ -1,3 +1,0 @@
-name	sample_type	tissue	other_comments
-barcode01	patient	lung	Missing sample_id column
-barcode02	validation	blood	This should fail

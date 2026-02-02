@@ -1,3 +1,0 @@
-sample_id	sample_type	tissue	other_comments
-barcode01	invalid_type	lung	This should fail validation
-barcode02	patient	blood	This should pass
