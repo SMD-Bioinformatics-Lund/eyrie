@@ -1,9 +1,0 @@
-sample_id	sample_type	tissue	dilution	extraction_kit	spike_concentration	library_concentration
-SAMPLE017	validation	blood	1:1	Kit_A	IC3	25.5 ng/μL
-SAMPLE018	patient		1:10	Kit_B		18.2 ng/μL
-SAMPLE019	negative control	wound			IC4	
-SAMPLE020	positive control	sputum	1:1	Kit_A		22.7 ng/μL
-SAMPLE021	validation	urine	1:10		IC3	28.0 ng/μL
-SAMPLE022	patient	tissue		Kit_C	IC4	20.5 ng/μL
-SAMPLE023	negative control		1:1	Kit_B		35.2 ng/μL
-SAMPLE024	positive control	csf	1:10		IC3	
