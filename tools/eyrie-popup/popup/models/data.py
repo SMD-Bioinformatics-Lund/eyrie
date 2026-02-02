@@ -1,7 +1,7 @@
 """Data models for parsed sample information."""
 
 from typing import List, Optional, Dict, TYPE_CHECKING
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 from .config import SampleInfo
 
@@ -19,6 +19,22 @@ class SampleMetadata(BaseModel):
     extraction_kit_lot_number: Optional[str] = None
     library_prep_kit: Optional[str] = None
     library_prep_kit_lot_number: Optional[str] = None
+
+    @validator('multiple_finds', pre=True)
+    def validate_bool_field(cls, v):
+        if v is None or v == '':
+            return None
+        if isinstance(v, bool):
+            return v
+        if isinstance(v, str):
+            lower = v.lower().strip()
+            if lower == 'true':
+                return True
+            elif lower == 'false':
+                return False
+            else:
+                raise ValueError(f"Boolean field must be 'True' or 'False', got '{v}'")
+        raise ValueError(f"Invalid type for boolean field: {type(v)}")
 
 
 class NanoStats(BaseModel):
