@@ -124,13 +124,13 @@ class MetadataParser:
         """Extract sample ID from row."""
         for possible_key in ['sample_id', 'sample', 'id', 'sample_name']:
             if possible_key in row and row[possible_key]:
-                return row[possible_key].strip()
+                return (row[possible_key] or '').strip() or None
         return None
 
     def _parse_row_metadata(self, row: Dict[str, str]) -> SampleMetadata:
         """Parse a single row into SampleMetadata."""
         def get_value(key: str) -> Optional[str]:
-            value = row.get(key, '').strip()
+            value = (row.get(key) or '').strip()
             return value if value else None
 
         return SampleMetadata(
@@ -178,17 +178,17 @@ def validate_metadata_file(file_path: Union[str, Path]) -> tuple[bool, List[str]
                 normalized_row = {normalized_fieldnames.get(k, k): v for k, v in row.items()}
 
                 # Validate sample_type
-                sample_type = normalized_row.get('sample_type', '').strip()
+                sample_type = (normalized_row.get('sample_type') or '').strip()
                 if sample_type and sample_type not in ['validation', 'patient', 'negative control', 'positive control']:
                     errors.append(f"Row {row_num}: Invalid sample_type '{sample_type}'. Must be one of: validation, patient, negative control, positive control")
 
                 # Validate dilution
-                dilution = normalized_row.get('dilution', '').strip()
+                dilution = (normalized_row.get('dilution') or '').strip()
                 if dilution and dilution not in ['1:1', '1:10']:
                     errors.append(f"Row {row_num}: Invalid dilution '{dilution}'. Must be one of: 1:1, 1:10")
 
                 # Validate spike_concentration
-                spike_concentration = normalized_row.get('spike_concentration', '').strip()
+                spike_concentration = (normalized_row.get('spike_concentration') or '').strip()
                 if spike_concentration and spike_concentration not in ['IC3', 'IC4']:
                     errors.append(f"Row {row_num}: Invalid spike_concentration '{spike_concentration}'. Must be one of: IC3, IC4")
 
