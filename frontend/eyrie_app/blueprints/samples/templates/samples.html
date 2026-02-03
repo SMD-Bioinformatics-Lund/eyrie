@@ -55,11 +55,19 @@
 {% endblock %}
 
 {% block dom_ready %}
-// Samples page specific initialization
+// Initialize table sorting with default sort: Sequencing Run ID (desc), then Sample Name (asc)
+new TableSort('samplesTable', {
+    defaultSort: [
+        {column: 2, direction: 'desc'},  // Sequencing Run ID descending
+        {column: 1, direction: 'asc'}    // Sample Name ascending
+    ],
+    nonSortableColumns: [0]  // Open button column
+});
 {% endblock %}
 
 {% from 'macros/samples_table.html' import samples_table_rows %}
 
 {% block extra_js %}
+    <script src="{{ url_for('login.serve_shared_static_endpoint', filename='js/table_sort.js') }}"></script>
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/js/samples.js') }}"></script>
 {% endblock %}
