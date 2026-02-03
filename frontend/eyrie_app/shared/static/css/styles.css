@@ -233,6 +233,28 @@ body {
     opacity: 0.8;
 }
 
+/* Sortable table headers */
+th[data-sortable] {
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+}
+
+th .sort-indicator {
+    margin-left: 0.25rem;
+    opacity: 0.5;
+    font-size: 0.8em;
+}
+
+th .sort-indicator.active {
+    opacity: 1;
+}
+
+th .sort-indicator sub {
+    font-size: 0.7em;
+    margin-left: 1px;
+}
+
 /* Responsive table adjustments */
 @media (max-width: 768px) {
     .qc-comment-preview {
