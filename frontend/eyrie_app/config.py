@@ -68,6 +68,7 @@ class Settings:
         return {
             'group_by_options': [
                 {'value': 'sequencing_run_id', 'label': 'Sequencing Run ID', 'selected': True},
+                {'value': 'library_prep_kit', 'label': 'Library Prep Kit'},
                 {'value': 'library_prep_kit_lot_number', 'label': 'Library Prep Kit Lot Number'},
                 {'value': 'extraction_kit', 'label': 'Extraction Kit'},
                 {'value': 'extraction_kit_lot_number', 'label': 'Extraction Kit Lot Number'},

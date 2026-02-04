@@ -17,6 +17,7 @@ router = APIRouter(prefix="/trends", tags=["trends"])
 # Supported categories for grouping samples
 SUPPORTED_CATEGORIES = {
     "sequencing_run_id",
+    "library_prep_kit",
     "library_prep_kit_lot_number",
     "extraction_kit",
     "extraction_kit_lot_number",
@@ -160,6 +161,7 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
 
     Supported categories:
     - sequencing_run_id
+    - library_prep_kit
     - library_prep_kit_lot_number
     - extraction_kit
     - extraction_kit_lot_number
@@ -171,6 +173,9 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
     for sample in samples:
         if category == "sequencing_run_id":
             key = sample.get("sequencing_run_id", "Unknown")
+        elif category == "library_prep_kit":
+            metadata = sample.get("metadata", {})
+            key = metadata.get("library_prep_kit", "Unknown") if metadata else "Unknown"
         elif category == "library_prep_kit_lot_number":
             metadata = sample.get("metadata", {})
             key = metadata.get("library_prep_kit_lot_number", "Unknown") if metadata else "Unknown"

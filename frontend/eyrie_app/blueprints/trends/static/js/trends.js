@@ -5,6 +5,42 @@
 let currentTrendsData = null;
 
 /**
+ * Generate distinct colors for any number of series using golden ratio distribution
+ */
+function generateColors(count) {
+    const colors = [];
+    const goldenRatio = 0.618033988749895;
+    let hue = 0.1; // Start with a pleasant blue
+
+    for (let i = 0; i < count; i++) {
+        // Convert HSL to hex (saturation 65%, lightness 55% for good visibility)
+        const h = hue * 360;
+        const s = 65;
+        const l = 55;
+        colors.push(hslToHex(h, s, l));
+        hue = (hue + goldenRatio) % 1;
+    }
+    return colors;
+}
+
+function hslToHex(h, s, l) {
+    s /= 100;
+    l /= 100;
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; }
+    else if (h < 120) { r = x; g = c; }
+    else if (h < 180) { g = c; b = x; }
+    else if (h < 240) { g = x; b = c; }
+    else if (h < 300) { r = x; b = c; }
+    else { r = c; b = x; }
+    const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+/**
  * Fetch and update trends chart asynchronously
  */
 async function updateTrends() {
@@ -59,10 +95,8 @@ function renderTrendsChart(data) {
         return;
     }
 
-    const colors = [
-        '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd',
-        '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf'
-    ];
+    // Generate distinct colors dynamically based on number of series
+    const colors = generateColors(data.series.length);
 
     // Line chart only
     const traces = data.series.map((s, i) => ({
