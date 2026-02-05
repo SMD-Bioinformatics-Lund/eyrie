@@ -1,15 +1,14 @@
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Depends
 from ..models.auth import UserCreate, UserUpdate
 from ..database.async_user_operations import get_all_users, create_user, update_user, delete_user, user_exists
-from ..auth.middleware import get_admin_user
+from .auth import require_admin
 from ..utils.json_encoder import JSONEncoder
 import json
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.get("/users")
-async def get_users(request: Request):
-    get_admin_user(request)  # Verify admin access
+async def get_users(current_user: dict = Depends(require_admin)):
     try:
         users = await get_all_users()
         return json.loads(JSONEncoder().encode(users))
@@ -17,8 +16,7 @@ async def get_users(request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/users")
-async def create_new_user(user_data: UserCreate, request: Request):
-    get_admin_user(request)  # Verify admin access
+async def create_new_user(user_data: UserCreate, current_user: dict = Depends(require_admin)):
     try:
         if not user_data.username or not user_data.email or not user_data.password:
             raise HTTPException(status_code=400, detail="Username, email, and password are required")
@@ -41,8 +39,7 @@ async def create_new_user(user_data: UserCreate, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/users/{user_id}")
-async def update_existing_user(user_id: str, user_data: UserUpdate, request: Request):
-    get_admin_user(request)  # Verify admin access
+async def update_existing_user(user_id: str, user_data: UserUpdate, current_user: dict = Depends(require_admin)):
     try:
         update_data = {}
         if user_data.email is not None:
@@ -68,10 +65,9 @@ async def update_existing_user(user_id: str, user_data: UserUpdate, request: Req
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.delete("/users/{user_id}")
-async def delete_existing_user(user_id: str, request: Request):
-    admin_user = get_admin_user(request)  # Verify admin access
+async def delete_existing_user(user_id: str, current_user: dict = Depends(require_admin)):
     try:
-        if str(admin_user['_id']) == user_id:
+        if str(current_user['_id']) == user_id:
             raise HTTPException(status_code=400, detail="Cannot delete your own account")
 
         success = await delete_user(user_id)

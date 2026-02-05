@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect, url_for, session
 from flask_cors import CORS
 from flask_login import LoginManager
 from datetime import datetime
@@ -106,6 +106,13 @@ def create_app():
                 'error': str(e),
                 'container_name': os.getenv('HOSTNAME', 'unknown')
             }), 500
+
+
+    @app.errorhandler(401)
+    def unauthorized_error(error):
+        """Redirect to login on 401 Unauthorized"""
+        session.clear()  # Clear expired session data
+        return redirect(url_for('login.login'))
 
 
     # Register Jinja template filters
