@@ -9,8 +9,7 @@ from typing import Dict, Any, Optional, List, Callable
 from functools import wraps
 from requests.structures import CaseInsensitiveDict
 
-from flask import redirect, url_for, jsonify, send_file, current_app, send_from_directory, session
-from flask_login import current_user
+from flask import redirect, url_for, jsonify, send_file, current_app, send_from_directory, request
 
 from .config import settings
 
@@ -61,120 +60,19 @@ def test_backend_connectivity() -> str:
     return backend_url
 
 
-# Authentication decorators for view routes (redirects)
-def login_required(func: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Decorator to require authentication for view routes.
-    Uses Flask-Login for authentication.
-    """
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not current_user.is_authenticated:
-            return redirect(url_for('login.login'))
-
-        # Add user to kwargs for the decorated function
-        kwargs['current_user'] = current_user
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def role_required(allowed_roles: List[str]) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
-    """
-    Decorator to require specific roles for view routes.
-    Uses Flask-Login for authentication.
-
-    Args:
-        allowed_roles: List of roles that are allowed to access the view
-    """
-    def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-        @wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> Any:
-            if not current_user.is_authenticated:
-                return redirect(url_for('login.login'))
-
-            if current_user.role not in allowed_roles:
-                # Redirect to samples page if user doesn't have required role
-                return redirect(url_for('samples.samples'))
-
-            # Add user to kwargs for the decorated function
-            kwargs['current_user'] = current_user
-            return func(*args, **kwargs)
-
-        return wrapper
-    return decorator
-
-
-def admin_required_view(func: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Decorator to require admin role for view routes.
-    Shorthand for @role_required(['admin'])
-    """
-    return role_required(['admin'])(func)
-
-
-def uploader_or_admin_required(func: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Decorator to require uploader or admin role for view routes.
-    Shorthand for @role_required(['admin', 'uploader'])
-    """
-    return role_required(['admin', 'uploader'])(func)
-
-
-# API-specific decorators (return JSON errors instead of redirects)
-def api_authentication_decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Use Flask-Login authentication for API endpoints.
-    Returns JSON error responses instead of redirects.
-    """
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not current_user.is_authenticated:
-            return jsonify({'error': 'Authentication required'}), 401
-
-        # Add user to kwargs for the decorated function
-        kwargs['current_user'] = current_user
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def admin_required_api(func: Callable[..., Any]) -> Callable[..., Any]:
-    """
-    Require admin privileges for API endpoints.
-    Returns JSON error responses instead of redirects.
-    """
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not current_user.is_authenticated:
-            return jsonify({'error': 'Authentication required'}), 401
-
-        if not current_user.is_admin:
-            return jsonify({'error': 'Admin privileges required'}), 403
-
-        # Add user to kwargs for the decorated function
-        kwargs['current_user'] = current_user
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
-def get_admin_user():
-    """Get admin user using Flask-Login"""
-    if not current_user.is_authenticated or not current_user.is_admin:
-        return None
-    return current_user
+# JWT Cookie name (should match auth.py)
+JWT_COOKIE_NAME = 'eyrie_jwt'
 
 
 def api_authentication(func):
     """
-    Decorator for API functions that adds authentication headers
-    Inspired by Bonsai pattern
+    Decorator for API functions that adds authentication headers.
+    Gets JWT token from cookie instead of session.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        # Get backend token from session
-        backend_token = session.get('backend_token')
+        # Get backend token from JWT cookie
+        backend_token = request.cookies.get(JWT_COOKIE_NAME)
         if not backend_token:
             raise ValueError("Backend authentication token not available")
 
@@ -355,19 +253,6 @@ def get_trends_data(headers: CaseInsensitiveDict, query_params: Dict[str, str]) 
     resp = requests.get(url, headers=headers, timeout=10)
     resp.raise_for_status()
     return resp.json()
-
-
-# Additional API functions for Flask-Login user management
-def get_current_user_api() -> Dict[str, Any]:
-    """Get current user info from Flask-Login session"""
-    if current_user.is_authenticated:
-        return {
-            'username': current_user.username,
-            'email': current_user.email,
-            'role': current_user.role
-        }
-    else:
-        raise ValueError("User not authenticated")
 
 
 # Static file serving functions
