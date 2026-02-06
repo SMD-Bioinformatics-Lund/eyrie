@@ -63,3 +63,6 @@ METAVAL_ANALYSIS_RESULTS=/app/analysis-files/results/metaval
 # Security
 # =====================================================
 SECRET_KEY=prod-secret-key-change-this-in-production
+JWT_SECRET=prod-jwt-secret-change-this-in-production
+JWT_EXPIRATION_HOURS=24
+JWT_COOKIE_SECURE=true
