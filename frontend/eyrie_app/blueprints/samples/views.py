@@ -1,11 +1,11 @@
-from flask import Blueprint, render_template, request, jsonify, session
-from flask_login import login_required
+from flask import Blueprint, render_template, request, jsonify
+from ...auth import jwt_required
 from ...eyrie import get_samples_from_backend, get_sample_from_backend, update_sample_qc, update_sample_comment, update_sample_species_flags, create_sample
 
 bp = Blueprint('samples', __name__, url_prefix='', template_folder='templates')
 
 @bp.route("/")
-@login_required
+@jwt_required
 def root():
     """Redirect to samples page"""
     try:
@@ -16,7 +16,7 @@ def root():
         return render_template('samples.html', samples=[], error=str(e))
 
 @bp.route("/samples")
-@login_required
+@jwt_required
 def samples_page():
     """Display samples page"""
     try:
@@ -29,7 +29,7 @@ def samples_page():
 
 # API Endpoints
 @bp.route("/api/samples", methods=['GET'])
-@login_required
+@jwt_required
 def get_samples_api():
     """Get samples from backend API"""
     try:
@@ -42,7 +42,7 @@ def get_samples_api():
 
 
 @bp.route("/api/samples", methods=['POST'])
-@login_required
+@jwt_required
 def create_sample_api():
     """Create a new sample"""
     try:
@@ -58,7 +58,7 @@ def create_sample_api():
 
 
 @bp.route("/api/samples/<sample_id>", methods=['GET'])
-@login_required
+@jwt_required
 def get_sample_api(sample_id):
     """Get specific sample from backend API"""
     try:
@@ -71,7 +71,7 @@ def get_sample_api(sample_id):
 
 
 @bp.route("/api/samples/<sample_id>/qc", methods=['PUT'])
-@login_required
+@jwt_required
 def update_qc_api(sample_id):
     """Update sample QC status"""
     try:
@@ -85,7 +85,7 @@ def update_qc_api(sample_id):
 
 
 @bp.route("/api/samples/<sample_id>/comment", methods=['PUT'])
-@login_required
+@jwt_required
 def update_comment_api(sample_id):
     """Update sample comment"""
     try:
@@ -99,7 +99,7 @@ def update_comment_api(sample_id):
 
 
 @bp.route("/api/samples/<sample_id>/species-flags", methods=['PUT'])
-@login_required
+@jwt_required
 def update_species_flags_api(sample_id):
     """Update sample species flags"""
     try:

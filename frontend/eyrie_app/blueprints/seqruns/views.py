@@ -1,7 +1,7 @@
 import json
 import requests
-from flask import Blueprint, render_template, url_for, redirect, session, request, flash
-from flask_login import login_required
+from flask import Blueprint, render_template, url_for, redirect, request, flash
+from ...auth import jwt_required, get_jwt_from_cookie
 import urllib.parse
 from collections import defaultdict
 from ...config import settings
@@ -244,7 +244,7 @@ def get_contamination_data_for_seqrun(seqrun_id):
 
 
 @bp.route('/seqruns')
-@login_required
+@jwt_required
 def seqruns_page():
     """Display list of sequencing runs"""
     try:
@@ -259,7 +259,7 @@ def seqruns_page():
         return render_template('seqruns.html', seqruns=[], error=str(e))
 
 @bp.route('/seqruns/<seqrun_id>/samples')
-@login_required
+@jwt_required
 def seqrun_samples(seqrun_id):
     """Display samples table for a specific sequencing run"""
     try:
@@ -319,7 +319,7 @@ def seqrun_samples(seqrun_id):
                              error=f"Error: {str(e)}<br><pre>{error_details}</pre>")
 
 @bp.route('/seqruns/<seqrun_id>/information')
-@login_required
+@jwt_required
 def seqrun_information(seqrun_id):
     """Display information/overview page for a specific sequencing run"""
     try:
@@ -368,7 +368,7 @@ def seqrun_information(seqrun_id):
 
 
 @bp.route('/seqruns/<seqrun_id>/files/<file_type>')
-@login_required
+@jwt_required
 def seqrun_pipeline_file(seqrun_id, file_type):
     """Serve pipeline HTML files wrapped in Eyrie template for proper favicon and branding"""
     try:
@@ -423,7 +423,7 @@ def seqrun_pipeline_file(seqrun_id, file_type):
 
 
 @bp.route('/seqruns/<seqrun_id>/quality-control')
-@login_required
+@jwt_required
 def seqrun_quality_control(seqrun_id):
     """Display quality control page for a specific sequencing run"""
     try:
@@ -503,7 +503,7 @@ def seqrun_quality_control(seqrun_id):
 
 
 @bp.route('/seqruns/<seqrun_id>/flag-contamination', methods=['GET'])
-@login_required
+@jwt_required
 def flag_contamination(seqrun_id):
     """Handle form submission to flag species as contamination"""
 
@@ -522,8 +522,8 @@ def flag_contamination(seqrun_id):
             # Get backend URL (similar to other API calls)
             backend_url = settings.internal_backend_url
 
-            # Get session token
-            session_token = session.get('backend_token')
+            # Get JWT token from cookie
+            session_token = get_jwt_from_cookie()
             if not session_token:
                 flash('Authentication required', 'error')
                 return redirect(url_for('seqruns.seqrun_quality_control', seqrun_id=seqrun_id))

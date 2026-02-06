@@ -1,7 +1,7 @@
 """Views for trends analysis."""
 
 from flask import Blueprint, render_template, request, jsonify
-from flask_login import login_required
+from ...auth import jwt_required
 from ...eyrie import get_trends_data
 from ...config import settings
 
@@ -12,7 +12,7 @@ trends_bp = Blueprint('trends', __name__,
 
 
 @trends_bp.route('/trends')
-@login_required
+@jwt_required
 def index():
     """Display trends dashboard."""
     return render_template('trends.html', config=settings.trends_config)
@@ -20,7 +20,7 @@ def index():
 
 # API Endpoints
 @trends_bp.route("/api/trends/data", methods=['GET'])
-@login_required
+@jwt_required
 def trends_data_api():
     """Get trends data from backend API"""
     try:
