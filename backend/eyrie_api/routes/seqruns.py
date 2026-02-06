@@ -23,7 +23,7 @@ async def get_seqrun_samples(seqrun_id: str) -> List[Dict[str, Any]]:
 async def calculate_seqrun_stats(samples: List[Dict[str, Any]]) -> Dict[str, int]:
     """Calculate statistics for a sequencing run"""
     total_samples = len(samples)
-    approved_samples = sum(1 for sample in samples if sample.get('qc') == 'approved')
+    approved_samples = sum(1 for sample in samples if sample.get('qc') == 'passed')
     true_hits = sum(1 for sample in samples if sample.get('flagged_top_hits'))
     spikes_detected = sum(1 for sample in samples if sample.get('spike'))
 
