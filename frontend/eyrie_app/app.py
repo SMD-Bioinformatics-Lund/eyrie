@@ -1,11 +1,11 @@
-from flask import Flask, jsonify, redirect, url_for, session
+from flask import Flask, jsonify, redirect, url_for, make_response
 from flask_cors import CORS
-from flask_login import LoginManager
 from datetime import datetime
 import os
 import json
 
 from .config import settings
+from .auth import get_current_user, clear_jwt_cookie
 from .eyrie import test_backend_connectivity, health_check
 from .__version__ import __version__
 from .utils.template_filters import (
@@ -13,7 +13,7 @@ from .utils.template_filters import (
     format_length_filter, qc_badge_class_filter, format_date_filter,
     shannon_diversity_filter, dominant_species_filter, library_concentration_class_filter
 )
-from .blueprints.login.views import unauthorized_handler, load_user, bp as login_bp
+from .blueprints.login.views import bp as login_bp
 from .blueprints.sample.views import bp as sample_bp
 from .blueprints.admin.views import bp as admin_bp
 from .blueprints.samples.views import bp as samples_bp
@@ -58,14 +58,6 @@ def create_app():
     # CORS configuration
     CORS(app, origins=settings.cors_origins, supports_credentials=True)
 
-    # Initialize Flask-Login
-    login_manager = LoginManager()
-    login_manager.init_app(app)
-    login_manager.login_view = 'login.login'
-    login_manager.login_message = 'Please log in to access this page.'
-    login_manager.unauthorized_handler(unauthorized_handler)
-    login_manager.user_loader(load_user)
-
     # Configure Flask settings from config
     print(f"🔍 EXTERNAL_BASE_PATH: '{settings.external_base_path}'")
     print(f"🔍 base_path: '{settings.external_base_path}'")
@@ -85,7 +77,7 @@ def create_app():
 
     # Register direct routes with base path
     base_path = settings.external_base_path or ''
-    
+
     @app.route(f'{base_path}/api/test')
     def test_route():
         return "Test route works!"
@@ -111,8 +103,9 @@ def create_app():
     @app.errorhandler(401)
     def unauthorized_error(error):
         """Redirect to login on 401 Unauthorized"""
-        session.clear()  # Clear expired session data
-        return redirect(url_for('login.login'))
+        response = make_response(redirect(url_for('login.login')))
+        clear_jwt_cookie(response)
+        return response
 
 
     # Register Jinja template filters
@@ -133,6 +126,11 @@ def create_app():
             'app_version': __version__,
             'app_name': 'Eyrie'
         }
+
+    # Add template context processor for current user (JWT-based auth)
+    @app.context_processor
+    def inject_current_user():
+        return {'current_user': get_current_user()}
 
     # Register all blueprints
     register_blueprints(app, settings.external_base_path)
