@@ -21,6 +21,8 @@ services:
       MONGO_URI: ${MONGO_URI:-mongodb://mongodb:27017/eyrie}
       ENVIRONMENT: ${ENVIRONMENT:-production}
       BACKEND_BASE_PATH: ${BACKEND_BASE_PATH:-/api}
+      JWT_SECRET: ${JWT_SECRET:-change-this-in-production}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
     ports:
       - "${BACKEND_HOST_PORT:-8000}:5000"
     depends_on:
@@ -40,6 +42,7 @@ services:
       TRANA_ANALYSIS_RESULTS: ${TRANA_ANALYSIS_RESULTS:-/app/analysis-files/results/trana}
       METAVAL_ANALYSIS_RESULTS: ${METAVAL_ANALYSIS_RESULTS:-/app/analysis-files/results/metaval}
       EYRIE_ANALYSIS_OUTPUT_DIRPATH: ${EYRIE_ANALYSIS_OUTPUT_DIRPATH:-./analysis-files/results/trana}
+      JWT_COOKIE_SECURE: ${JWT_COOKIE_SECURE:-true}
     ports:
       - "${FRONTEND_HOST_PORT:-3000}:5000"
     depends_on:

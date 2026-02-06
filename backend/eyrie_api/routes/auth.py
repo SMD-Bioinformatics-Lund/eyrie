@@ -14,7 +14,7 @@ security = HTTPBearer()
 
 JWT_SECRET = os.getenv('JWT_SECRET', 'your-secret-key-change-in-production')
 JWT_ALGORITHM = 'HS256'
-JWT_EXPIRATION_HOURS = 24
+JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '24'))
 
 def create_jwt_token(user_data: dict) -> str:
     """Create JWT token for authenticated user"""
