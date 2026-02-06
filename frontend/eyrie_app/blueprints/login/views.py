@@ -3,20 +3,20 @@
 import logging
 import os
 import requests
-from datetime import datetime
 
 from flask import (
     Blueprint,
     flash,
     jsonify,
+    make_response,
     redirect,
     render_template,
     request,
     session,
     url_for,
 )
-from flask_login import UserMixin, login_required, login_user, logout_user
-from ...eyrie import get_current_user_api, serve_shared_static, serve_blueprint_static
+from ...auth import jwt_required, get_current_user, set_jwt_cookie, clear_jwt_cookie
+from ...eyrie import serve_shared_static, serve_blueprint_static
 
 LOG = logging.getLogger(__name__)
 
@@ -27,36 +27,6 @@ bp = Blueprint(
     static_folder="static",
     static_url_path="/login",
 )
-
-
-class TokenObject:
-    """Token object for authentication"""
-    def __init__(self, token: str, type: str = "Bearer"):
-        self.token = token
-        self.type = type
-
-    def dict(self):
-        return {"token": self.token, "type": self.type}
-
-
-class LoginUser(UserMixin):
-    """Container for user data and perform login."""
-
-    def __init__(self, user_data, token_data):
-        """Create a new user object."""
-        self.roles = []
-        for key, value in user_data.items():
-            setattr(self, key, value)
-        self.token = token_data
-
-    def get_id(self):
-        """Get user ID for Flask-Login"""
-        return str(getattr(self, 'username', '')) or self.token.token
-
-    @property
-    def is_admin(self):
-        """Check if the user is admin."""
-        return getattr(self, 'role', '') == 'admin'
 
 
 def get_backend_url():
@@ -78,7 +48,7 @@ def get_auth_token(username: str, password: str):
             data = response.json()
             return {
                 'user': data.get('user', {}),
-                'token': TokenObject(data.get('access_token', ''))
+                'token': data.get('access_token', '')
             }
         else:
             return None
@@ -88,44 +58,15 @@ def get_auth_token(username: str, password: str):
         return None
 
 
-def unauthorized_handler():
-    """Handle unauthorized access with proper URL generation"""
-    return redirect(url_for('login.login', next=request.url))
-
-
-def load_user(user_id):
-    """Load user from session data"""
-    try:
-        if user_id and session.get('username'):
-            user_data = {
-                'username': session.get('username', ''),
-                'email': session.get('email', ''),
-                'role': session.get('role', '')
-            }
-            token_data = TokenObject(user_id, 'Bearer')
-            user = LoginUser(user_data, token_data)
-            return user
-    except Exception as e:
-        LOG.error(f"User loader error: {e}")
-    return None
-
-
 
 
 @bp.route("/logout", methods=["GET", "POST"])
-@login_required
+@jwt_required
 def logout():
-    """Logout user."""
-    logout_user()
-    session.pop("email", None)
-    session.pop("fname", None)
-    session.pop("lname", None)
-    session.pop("locale", None)
-    session.pop("username", None)
-    session.pop("role", None)
-    session.pop("backend_token", None)
-    session.clear()  # Clear all session data
-    return redirect(url_for("login.login"))
+    """Logout user by clearing JWT cookie."""
+    response = make_response(redirect(url_for("login.login")))
+    clear_jwt_cookie(response)
+    return response
 
 
 @bp.route("/login", methods=["GET", "POST"])
@@ -146,25 +87,21 @@ def login():
             auth_data = get_auth_token(username, password)
 
             if auth_data:
-                user_data = auth_data['user']
-                token_data = auth_data['token']
-
-                user = LoginUser(user_data, token_data)
-
-                login_user(user)
-
-                session["email"] = user_data.get("email", "")
-                session["username"] = user_data.get("username", "")
-                session["role"] = user_data.get("role", "")
-                session["backend_token"] = token_data.token
+                token = auth_data['token']
 
                 LOG.info(f"User {username} logged in successfully")
 
+                # Determine redirect URL
                 next_url = session.pop("next_url", None)
                 if next_url:
-                    return redirect(next_url)
+                    response = make_response(redirect(next_url))
                 else:
-                    return redirect(url_for('samples.samples_page'))
+                    response = make_response(redirect(url_for('samples.samples_page')))
+
+                # Set JWT cookie
+                set_jwt_cookie(response, token)
+
+                return response
 
             else:
                 flash("Invalid username or password", "error")
@@ -179,13 +116,17 @@ def login():
 
 
 @bp.route("/api/auth/current-user", methods=['GET'])
-@login_required
+@jwt_required
 def current_user_api():
-    """Get current user info from Flask-Login session"""
+    """Get current user info from JWT cookie"""
     try:
-        user_data = get_current_user_api()
-        return jsonify(user_data)
-    except ValueError as e:
+        user = get_current_user()
+        if user:
+            return jsonify({
+                'username': user.username,
+                'email': user.email,
+                'role': user.role
+            })
         return jsonify({'error': 'Not authenticated'}), 401
     except Exception as e:
         return jsonify({'error': str(e)}), 500
