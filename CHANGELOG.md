@@ -69,6 +69,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Replaced lims id and sample id columns with sample type and tissue columns in sample tables
  - Simplified trends chart generation with reduced code complexity across backend and frontend
  - Moved analysis summary below detected contaminating species table in seqrun contamination analysis view
+ - Replaced Flask-Login session authentication with JWT-only authentication using HTTP-only cookies
+ - Added `JWT_COOKIE_SECURE` environment variable for production HTTPS configuration
 
 ## [0.3.0]
 
