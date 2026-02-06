@@ -206,8 +206,10 @@ Key configuration options:
 - `MONGO_URI`: MongoDB connection string (default: mongodb://mongodb:27017/eyrie)
 
 **Authentication:**
-- `JWT_SECRET_KEY`: JWT signing key
-- `JWT_ACCESS_TOKEN_EXPIRE_MINUTES`: Token expiration time
+- `SECRET_KEY`: Flask session signing key (frontend)
+- `JWT_SECRET`: JWT signing key for token authentication (backend)
+- `JWT_EXPIRATION_HOURS`: Token expiration time in hours (default: 24)
+- `JWT_COOKIE_SECURE`: Set to `true` for HTTPS (production), `false` for HTTP (development)
 
 **Application:**
 - `BACKEND_HOST`: Backend server host
