@@ -46,6 +46,10 @@ class Settings:
         self.session_cookie_path: str = self.external_base_path or '/'
         self.application_root: str = self.external_base_path
 
+        # JWT Cookie Configuration
+        # Secure flag should be True in production (HTTPS), False for local dev (HTTP)
+        self.jwt_cookie_secure: bool = os.getenv('JWT_COOKIE_SECURE', 'False').lower() == 'true'
+
         # Analysis Results Paths for different pipeline software
         self.analysis_results_paths: Dict[str, str] = {
             "trana": os.getenv('TRANA_ANALYSIS_RESULTS', '/app/analysis-files/results/trana'),
