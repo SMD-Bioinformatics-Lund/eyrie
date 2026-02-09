@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, jsonify, request
+from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required, get_current_user
 from ...eyrie import (
     get_sample_from_backend, get_negative_controls_from_backend, update_sample_qc, update_sample_comment,
@@ -18,6 +19,8 @@ def sample_overview(sample_id):
         sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path(sample)
         return render_template('sample_overview.html', sample_id=sample_id, sample=sample, current_user=get_current_user(), analysis_base_path=analysis_base_path, return_to=return_to)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for overview: {e}")
@@ -46,6 +49,8 @@ def sample_classification(sample_id):
             print(f"Warning: Could not load negative controls: {neg_error}")
 
         return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=get_current_user(), analysis_base_path=analysis_base_path, return_to=return_to)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for classification view: {e}")
@@ -63,6 +68,8 @@ def sample_nanoplot(sample_id):
         sample = get_sample_from_backend(sample_id)
         analysis_base_path = get_analysis_path(sample)
         return render_template('sample_nanoplot.html', sample_id=sample_id, sample=sample, current_user=get_current_user(), analysis_base_path=analysis_base_path, return_to=return_to)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If sample data can't be loaded, still render the template but with empty sample
         print(f"Error loading sample data for nanoplot: {e}")

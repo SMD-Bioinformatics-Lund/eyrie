@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash, jsonify
+from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required, admin_required, get_current_user, get_jwt_from_cookie
 import requests
 import os
@@ -39,6 +40,8 @@ def users():
             flash(f'Failed to load users: {response.status_code}', 'error')
             return render_template('users.html', users=[], current_user=get_current_user())
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         flash(f'Error loading users: {str(e)}', 'error')
         return render_template('users.html', users=[], current_user=get_current_user())
@@ -86,6 +89,8 @@ def create_user():
             flash(error_msg, 'error')
             return render_template('create_user.html', current_user=get_current_user(), form_data=data)
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         flash(f'Error creating user: {str(e)}', 'error')
         return render_template('create_user.html', current_user=get_current_user(), form_data=request.form)
@@ -148,6 +153,8 @@ def edit_user(user_id):
             flash(error_msg, 'error')
             return redirect(url_for('admin.edit_user', user_id=user_id))
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         flash(f'Error updating user: {str(e)}', 'error')
         return redirect(url_for('admin.users'))
@@ -178,6 +185,8 @@ def delete_user(user_id):
             error_msg = result.get('error', f'Failed to delete user (status: {response.status_code})')
             flash(error_msg, 'error')
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         flash(f'Error deleting user: {str(e)}', 'error')
 
