@@ -1,6 +1,7 @@
 import json
 import requests
 from flask import Blueprint, render_template, url_for, redirect, request, flash
+from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required, get_jwt_from_cookie
 import urllib.parse
 from collections import defaultdict
@@ -251,6 +252,8 @@ def seqruns_page():
         # Fetch seqruns directly from backend API (includes exp_start_time)
         seqruns = get_seqruns_from_backend()
         return render_template('seqruns.html', seqruns=seqruns)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except ValueError as e:
         # Authentication error
         return render_template('seqruns.html', seqruns=[], error='Backend authentication required')
@@ -303,19 +306,21 @@ def seqrun_samples(seqrun_id):
         return render_template('seqrun_samples.html', 
                              seqrun=seqrun, 
                              samples=filtered_samples)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except ValueError as e:
         # Authentication error
-        return render_template('seqrun_samples.html', 
-                             seqrun=None, 
-                             samples=[], 
+        return render_template('seqrun_samples.html',
+                             seqrun=None,
+                             samples=[],
                              error='Backend authentication required')
     except Exception as e:
         # Other errors - show the actual error instead of hiding it
         import traceback
         error_details = traceback.format_exc()
-        return render_template('seqrun_samples.html', 
-                             seqrun={'sequencing_run_id': seqrun_id, 'samples': []}, 
-                             samples=[], 
+        return render_template('seqrun_samples.html',
+                             seqrun={'sequencing_run_id': seqrun_id, 'samples': []},
+                             samples=[],
                              error=f"Error: {str(e)}<br><pre>{error_details}</pre>")
 
 @bp.route('/seqruns/<seqrun_id>/information')
@@ -358,6 +363,8 @@ def seqrun_information(seqrun_id):
         # If we get here, seqrun truly not found
         return render_template('seqrun_information.html', seqrun=None)
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If everything fails, still render the template but with empty seqrun
         print(f"❌ Error loading seqrun data for information: {e}")
@@ -412,6 +419,8 @@ def seqrun_pipeline_file(seqrun_id, file_type):
 
         return serve_analysis_file(full_file_path)
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         print(f"❌ Error serving pipeline file: {e}")
         import traceback
@@ -493,6 +502,8 @@ def seqrun_quality_control(seqrun_id):
         # If we get here, seqrun truly not found
         return render_template('seqrun_quality_control.html', seqrun=None)
 
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If everything fails, still render the template but with empty seqrun
         print(f"❌ Error loading seqrun data for quality control: {e}")

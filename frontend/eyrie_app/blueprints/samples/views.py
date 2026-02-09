@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, jsonify
+from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required
 from ...eyrie import get_samples_from_backend, get_sample_from_backend, update_sample_qc, update_sample_comment, update_sample_species_flags, create_sample
 
@@ -11,6 +12,8 @@ def root():
     try:
         samples = get_samples_from_backend()
         return render_template('samples.html', samples=samples)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If backend is unavailable, show page with error message
         return render_template('samples.html', samples=[], error=str(e))
@@ -22,6 +25,8 @@ def samples_page():
     try:
         samples = get_samples_from_backend()
         return render_template('samples.html', samples=samples)
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except Exception as e:
         # If backend is unavailable, show page with error message
         return render_template('samples.html', samples=[], error=str(e))

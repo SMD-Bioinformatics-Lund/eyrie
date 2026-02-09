@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional, List, Callable
 from functools import wraps
 from requests.structures import CaseInsensitiveDict
 
-from flask import redirect, url_for, jsonify, send_file, current_app, send_from_directory, request
+from flask import jsonify, send_file, current_app, send_from_directory, request, abort
 
 from .config import settings
 
@@ -68,13 +68,14 @@ def api_authentication(func):
     """
     Decorator for API functions that adds authentication headers.
     Gets JWT token from cookie instead of session.
+    Catches 401 errors from the backend and triggers Flask's 401 handler.
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Get backend token from JWT cookie
         backend_token = request.cookies.get(JWT_COOKIE_NAME)
         if not backend_token:
-            raise ValueError("Backend authentication token not available")
+            abort(401)
 
         # Create headers dictionary
         headers = CaseInsensitiveDict()
@@ -82,8 +83,13 @@ def api_authentication(func):
         headers['Content-Type'] = 'application/json'
         headers['Authorization'] = f'Bearer {backend_token}'
 
-        # Add headers as first argument
-        return func(headers, *args, **kwargs)
+        # Add headers as first argument and catch 401 errors
+        try:
+            return func(headers, *args, **kwargs)
+        except requests.HTTPError as e:
+            if e.response is not None and e.response.status_code == 401:
+                abort(401)
+            raise
 
     return wrapper
 
