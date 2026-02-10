@@ -142,7 +142,7 @@
         <table class="table table-sm table-borderless mb-0">
             <tbody>
                 <tr><td><strong>Sample Type:</strong></td><td>{{ sample.metadata.sample_type or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Tissue:</strong></td><td>{{ sample.metadata.tissue or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><td><strong>Material:</strong></td><td>{{ sample.metadata.material or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Dilution:</strong></td><td>{{ sample.metadata.dilution or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Spike Concentration:</strong></td><td>{{ sample.metadata.spike_concentration or '--' if sample and sample.metadata else '--' }}</td></tr>
                 <tr><td><strong>Library Concentration:</strong></td><td>

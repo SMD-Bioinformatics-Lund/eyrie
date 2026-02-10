@@ -76,7 +76,7 @@ class Settings:
                 {'value': 'library_prep_kit_lot_number', 'label': 'Library Prep Kit Lot Number'},
                 {'value': 'extraction_kit', 'label': 'Extraction Kit'},
                 {'value': 'extraction_kit_lot_number', 'label': 'Extraction Kit Lot Number'},
-                {'value': 'tissue', 'label': 'Tissue'},
+                {'value': 'material', 'label': 'Material'},
             ],
             'metrics': [
                 {'value': 'number_of_reads', 'label': 'Number of Reads', 'selected': True},
