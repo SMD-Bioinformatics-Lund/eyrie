@@ -82,7 +82,7 @@ popup upload --sample config.yaml --dry-run --verbose
 
 ### 3. Upload Sample Metadata
 
-**Purpose**: Uploads sample metadata from TSV/CSV files containing sample information like sample type, tissue, extraction kit, etc.
+**Purpose**: Uploads sample metadata from TSV/CSV files containing sample information like sample type, material, extraction kit, etc.
 
 **When to use**: When you have batch metadata files with sample information that needs to be added to existing or new samples.
 
@@ -96,7 +96,7 @@ popup upload --sample-metadata sample_metadata.tsv --api http://localhost:8000/a
 
 **Sample metadata file format** (TSV/CSV):
 ```tsv
-sample_id	sample_type	tissue	extraction_kit	library_prep_kit	dilution	spike_concentration
+sample_id	sample_type	material	extraction_kit	library_prep_kit	dilution	spike_concentration
 barcode01	validation	saliva	Kit_A	PrepKit_B	1:10	IC3
 barcode02	patient	stool	Kit_A	PrepKit_B	1:1	IC4
 ```

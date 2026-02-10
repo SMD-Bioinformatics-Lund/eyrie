@@ -13,7 +13,7 @@ class MetadataParser:
     COLUMN_MAPPINGS = {
         'sample_id': ['sample_id', 'sample', 'id', 'sample_name'],
         'sample_type': ['sample_type', 'type', 'sample_category'],
-        'tissue': ['tissue', 'sample_tissue', 'tissue_type'],
+        'material': ['material', 'sample_material', 'material_type'],
         'dilution': ['dilution', 'sample_dilution'],
         'library_concentration': ['library_concentration', 'lib_concentration', 'concentration', 'library_conc'],
         'multiple_finds': ['multiple_finds', 'multiple_bacteria', 'multi_finds'],
@@ -135,7 +135,7 @@ class MetadataParser:
 
         return SampleMetadata(
             sample_type=get_value('sample_type'),
-            tissue=get_value('tissue'),
+            material=get_value('material'),
             dilution=get_value('dilution'),
             library_concentration=get_value('library_concentration'),
             multiple_finds=get_value('multiple_finds'),
