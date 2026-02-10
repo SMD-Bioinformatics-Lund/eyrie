@@ -9,7 +9,7 @@ from .config import SampleInfo
 class SampleMetadata(BaseModel):
     """Sample metadata information."""
     sample_type: Optional[str] = Field(None, regex="^(validation|patient|negative control|positive control)$")
-    tissue: Optional[str] = None
+    material: Optional[str] = None
     dilution: Optional[str] = Field(None, regex="^(1:1|1:10)$")
     library_concentration: Optional[str] = None
     multiple_finds: Optional[bool] = None

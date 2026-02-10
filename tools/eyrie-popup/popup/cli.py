@@ -251,8 +251,8 @@ def _upload_sample_metadata(sample_metadata_file: Path, api: str, username: Opti
             if verbose:
                 if sample_metadata.sample_type:
                     click.echo(f"    • Type: {sample_metadata.sample_type}")
-                if sample_metadata.tissue:
-                    click.echo(f"    • Tissue: {sample_metadata.tissue}")
+                if sample_metadata.material:
+                    click.echo(f"    • Material: {sample_metadata.material}")
                 if sample_metadata.sanger_expected_species:
                     click.echo(f"    • Expected species: {sample_metadata.sanger_expected_species}")
 
