@@ -13,7 +13,7 @@
                 <td class="d-none"><code>{{ sample.sample_id }}</code></td>
                 <td class="d-none">{{ sample.lims_id }}</td>
                 <td>{{ sample.metadata.sample_type or '-' }}</td>
-                <td>{{ sample.metadata.tissue or '-' }}</td>
+                <td>{{ sample.metadata.material or '-' }}</td>
                 <td>
                     <span class="badge {{ qc_badge_class(sample.classification) }}">
                         {{ sample.classification.upper() }}
