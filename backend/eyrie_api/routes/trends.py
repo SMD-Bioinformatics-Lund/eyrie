@@ -21,7 +21,7 @@ SUPPORTED_CATEGORIES = {
     "library_prep_kit_lot_number",
     "extraction_kit",
     "extraction_kit_lot_number",
-    "tissue",
+    "material",
 }
 
 # Supported metrics for calculation
@@ -165,7 +165,7 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
     - library_prep_kit_lot_number
     - extraction_kit
     - extraction_kit_lot_number
-    - tissue
+    - material
     """
 
     groups = {}
@@ -185,9 +185,9 @@ def group_samples_by_category(samples: List[Dict], category: str) -> Dict[str, L
         elif category == "extraction_kit_lot_number":
             metadata = sample.get("metadata", {})
             key = metadata.get("extraction_kit_lot_number", "Unknown") if metadata else "Unknown"
-        elif category == "tissue":
+        elif category == "material":
             metadata = sample.get("metadata", {})
-            key = metadata.get("tissue", "Unknown") if metadata else "Unknown"
+            key = metadata.get("material", "Unknown") if metadata else "Unknown"
         else:
             logger.warning(f"Unsupported category '{category}', grouping all samples together")
             key = "All Samples"

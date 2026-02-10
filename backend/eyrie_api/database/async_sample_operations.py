@@ -273,22 +273,22 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         # Analyze Sanger expected species matching
         sanger_analysis = {'species_matches': 0, 'genus_matches': 0, 'total_analyzed': 0}
         sample_type_counts = {'validation': 0, 'patient': 0, 'negative control': 0, 'positive control': 0}
-        tissue_type_counts = {}
+        material_type_counts = {}
 
         for sample in all_samples:
             metadata = sample.get('metadata', {})
             sample_type = metadata.get('sample_type')
             multiple_finds = metadata.get('multiple_finds')
             sanger_expected = metadata.get('sanger_expected_species')
-            tissue_type = metadata.get('tissue')
+            material_type = metadata.get('material')
 
             # Count sample types
             if sample_type:
                 sample_type_counts[sample_type] = sample_type_counts.get(sample_type, 0) + 1
 
-            # Count tissue types
-            if tissue_type:
-                tissue_type_counts[tissue_type] = tissue_type_counts.get(tissue_type, 0) + 1
+            # Count material types
+            if material_type:
+                material_type_counts[material_type] = material_type_counts.get(material_type, 0) + 1
 
             # Analyze Sanger matching only if multiple_finds is False and sanger_expected exists
             if multiple_finds is False and sanger_expected:
@@ -312,7 +312,7 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         return {
             'total_samples': len(all_samples),
             'sample_type_counts': sample_type_counts,
-            'tissue_type_counts': tissue_type_counts,
+            'material_type_counts': material_type_counts,
             'sanger_analysis': sanger_analysis,
             'sequencing_run_id': sequencing_run_id
         }
