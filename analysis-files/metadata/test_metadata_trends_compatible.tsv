@@ -1,7 +1,7 @@
-sample_id	sample_type	tissue	dilution	spike_concentration	extraction_kit	extraction_kit_lot_number	library_prep_kit	library_prep_kit_lot_number	library_concentration	multiple_finds	sanger_expected_species
+sample_id	sample_type	material	dilution	spike_concentration	extraction_kit	extraction_kit_lot_number	library_prep_kit	library_prep_kit_lot_number	library_concentration	multiple_finds	sanger_expected_species
 barcode01	validation	blood	1:1	IC3	QIAamp DNA Mini Kit	EK-2024-001	NEBNext Ultra II	LP-182345	50	False	Staphylococcus aureus
 barcode02	negative control		1:1	IC3	QIAamp DNA Mini Kit	EK-2024-001	NEBNext Ultra II	LP-182345	0.8	False	
 barcode03	patient	ledvätska	1:10	IC4	DNeasy PowerSoil Kit	EK-2024-002	NEBNext Ultra II	LP-182345	75	True	Escherichia coli
 barcode04	positive control	culture	1:10	IC4	DNeasy PowerSoil Kit	EK-2024-002	NEBNext Ultra II	LP-182346	100	True	Pseudomonas aeruginosa
-barcode05	validation	tissue	1:1	IC3	QIAamp DNA Mini Kit	EK-2024-003	ThruPLEX DNA-seq	LP-182347	45	False	Klebsiella pneumoniae
+barcode05	validation	material	1:1	IC3	QIAamp DNA Mini Kit	EK-2024-003	ThruPLEX DNA-seq	LP-182347	45	False	Klebsiella pneumoniae
 barcode06	patient	blood	1:10	IC4	DNeasy PowerSoil Kit	EK-2024-003	ThruPLEX DNA-seq	LP-182347	82	True	Enterococcus faecalis
