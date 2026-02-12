@@ -18,6 +18,15 @@
                         </h4>
                     </div>
                     <div class="card-body p-4">
+                        <!-- HTTPS Warning -->
+                        {% if https_required and not is_secure %}
+                        <div class="alert alert-warning" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Secure connection required.</strong>
+                            This site requires HTTPS. Please access via <code>https://</code> to log in.
+                        </div>
+                        {% endif %}
+
                         <!-- Flash messages -->
                         {% with messages = get_flashed_messages(with_categories=true) %}
                             {% if messages %}
