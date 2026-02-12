@@ -16,6 +16,7 @@ from flask import (
     url_for,
 )
 from ...auth import jwt_required, get_current_user, set_jwt_cookie, clear_jwt_cookie
+from ...config import settings
 from ...eyrie import serve_shared_static, serve_blueprint_static
 
 LOG = logging.getLogger(__name__)
@@ -56,8 +57,6 @@ def get_auth_token(username: str, password: str):
     except requests.RequestException as e:
         LOG.error(f"Authentication failed: {str(e)}")
         return None
-
-
 
 
 @bp.route("/logout", methods=["GET", "POST"])
@@ -112,7 +111,12 @@ def login():
             flash("Login failed. Please try again.", "error")
             return redirect(url_for("login.login"))
 
-    return render_template("login.html", title="Login")
+    return render_template(
+        "login.html",
+        title="Login",
+        https_required=settings.jwt_cookie_secure,
+        is_secure=request.is_secure or request.headers.get('X-Forwarded-Proto', 'http') == 'https'
+    )
 
 
 @bp.route("/api/auth/current-user", methods=['GET'])

@@ -12,7 +12,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added negative control tables showing Species, Abundance %, and Estimated Counts (excluding flag columns)
  - Added favicon.ico support to both base.html and sample_base.html templates for consistent branding
  - Implemented QC (array with timestamps/users) and general (string) comments with separate submission buttons
- - Added display sample metadata fields (sample_type, tissue, dilution, etc.)
+ - Added display sample metadata fields (sample_type, material, dilution, etc.)
  - Added ability to upload sample metadata via eyrie-popup tool
  - Added `/api/system/health` endpoint for proper application health checking
  - Added comprehensive version display across all pages including login page footer, navbar brand, user dropdown, and global footer
@@ -66,7 +66,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Sequencing run information pages now display comprehensive device, flow cell, and protocol metadata when available
  - Renamed `--metadata` option to `--sample-metadata` to distinguish from new sequencing run metadata functionality in eyrie-popup
  - Removed `sequencing_run_date` field from samples collection -> trends now uses `exp_start_time` from seqruns collection
- - Replaced lims id and sample id columns with sample type and tissue columns in sample tables
+ - Replaced lims id and sample id columns with sample type and material columns in sample tables
  - Simplified trends chart generation with reduced code complexity across backend and frontend
  - Moved analysis summary below detected contaminating species table in seqrun contamination analysis view
  - Replaced Flask-Login session authentication with JWT-only authentication using HTTP-only cookies
