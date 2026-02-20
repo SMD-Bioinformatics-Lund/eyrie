@@ -242,7 +242,7 @@ function displayDetailedStats(processingType) {
                         <td>Median read quality</td>
                         <td>${formatQuality(stats.median_read_quality) || '-'}</td>
                     </tr>
-                    <tr>
+                    <tr${(stats.number_of_reads != null && stats.number_of_reads < 500) ? ' class="table-danger"' : ''}>
                         <td>Number of reads</td>
                         <td>${formatNumber(stats.number_of_reads) || '-'}</td>
                     </tr>
