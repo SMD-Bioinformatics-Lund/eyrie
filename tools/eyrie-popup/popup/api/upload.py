@@ -10,7 +10,7 @@ class UploadHandler:
     def __init__(self, client):
         self.client = client
 
-    def upload_sample(self, sample_data: SampleResults, config: SampleConfig, pipeline_datetime_suffix: str = None) -> bool:
+    def upload_sample(self, sample_data: SampleResults, config: SampleConfig, pipeline_datetime_suffix: str = None, force: bool = False) -> bool:
         """Upload a single sample to Eyrie."""
         try:
             # Prepare sample data for Eyrie API
@@ -41,6 +41,14 @@ class UploadHandler:
 
             # Check if sample already exists
             existing_sample = self._get_sample(sample_data.sample_info.sample_id)
+
+            if existing_sample and not force:
+                comments = existing_sample.get('comments') or {}
+                has_other = bool(comments.get('other', '').strip()) if isinstance(comments.get('other'), str) else False
+                has_qc = bool(comments.get('qc', []))
+                if has_other or has_qc:
+                    print(f"✗ Sample {sample_data.sample_info.sample_id} has existing comments — upload cancelled. Use --force/-f to override.")
+                    return False
 
             if existing_sample:
                 # Update existing sample

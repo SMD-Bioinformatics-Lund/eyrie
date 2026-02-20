@@ -30,8 +30,9 @@ def cli():
     pass
 
 
-def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str], 
-                       dry_run: bool, verbose: bool, pipeline_datetime_suffix: Optional[str] = None) -> bool:
+def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], password: Optional[str],
+                       dry_run: bool, verbose: bool, pipeline_datetime_suffix: Optional[str] = None,
+                       force: bool = False) -> bool:
     """Upload sample analysis data from YAML configuration.
 
     Processes and uploads sample-level sequencing analysis data including:
@@ -138,7 +139,7 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
             return False
 
         # Upload the sample
-        if api_client.upload_sample(parsed_sample, config, pipeline_datetime_suffix):
+        if api_client.upload_sample(parsed_sample, config, pipeline_datetime_suffix, force=force):
             click.echo("✅ Successfully uploaded sample data to Eyrie!")
             return True
         else:
@@ -411,13 +412,14 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
 @click.option('--password', envvar='EYRIE_PASSWORD', help='Password for authentication (or set EYRIE_PASSWORD env var)')
 @click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
+@click.option('--force', '-f', is_flag=True, help='Force upload even if sample has existing comments')
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (sample metadata only)')
 @click.option('--sequencing-run-id', help='Sequencing run identifier (required for pipeline-only uploads)')
 @click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to match specific pipeline files by timestamp')
 @click.option('--analysis-output-dirpath', type=click.Path(exists=True, path_type=Path), help='Path to analysis results directory containing pipeline software output results subdirectories (e.g., /path/to/analysis-files/results/trana)')
 @click.option('--pipeline-software', default='trana', help='Pipeline software used for analysis (default: trana). Options: trana, metaval, etc.')
 def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seqrun_metadata_file: Optional[Path], api: str,
-          username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, create_missing: bool,
+          username: Optional[str], password: Optional[str], dry_run: bool, verbose: bool, force: bool, create_missing: bool,
           sequencing_run_id: Optional[str], pipeline_datetime_suffix: Optional[str],
           analysis_output_dirpath: Optional[Path], pipeline_software: str):
     """Upload sample analysis data, sample metadata, sequencing run metadata, and/or pipeline files to Eyrie.
@@ -463,7 +465,7 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
         # Upload sample analysis data if provided
         if sample_cnf:
             click.echo(f"\n📊 Processing sample analysis data...")
-            sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose, pipeline_datetime_suffix)
+            sample_success = _upload_sample_data(sample_cnf, api, username, password, dry_run, verbose, pipeline_datetime_suffix, force=force)
 
         # Upload sample metadata if provided
         if sample_metadata_file:
