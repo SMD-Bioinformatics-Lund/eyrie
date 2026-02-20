@@ -97,10 +97,17 @@ def library_concentration_class_filter(concentration):
         value = float(concentration)
         if value < 1:
             return 'bg-danger'  # Red
-        elif value <= 5:
-            return 'bg-orange'  # Orange (custom class)
-        elif value <= 10:
-            return 'bg-warning'  # Yellow
         return ''  # Normal - no special styling
+    except (ValueError, TypeError):
+        return ''
+
+def read_count_class_filter(count):
+    """Get CSS class for read count — red when below 500."""
+    if count is None:
+        return ''
+    try:
+        if int(count) < 500:
+            return 'text-danger'
+        return ''
     except (ValueError, TypeError):
         return ''

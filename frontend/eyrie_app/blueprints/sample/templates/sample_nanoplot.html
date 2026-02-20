@@ -157,7 +157,8 @@
                                             {% set unproc_stats = (sample.nanoplot.unprocessed.nanostats if sample and sample.nanoplot and sample.nanoplot.unprocessed else None) %}
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Reads:</small>
-                                                <div class="fw-bold">{{ unproc_stats.number_of_reads | format_number if unproc_stats else '--' }}</div>
+                                                {% set unproc_read_class = unproc_stats.number_of_reads | read_count_class if unproc_stats else '' %}
+                                                <div class="fw-bold {{ unproc_read_class }}">{{ unproc_stats.number_of_reads | format_number if unproc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Length:</small>
@@ -181,7 +182,8 @@
                                             {% set proc_stats = (sample.nanoplot.processed.nanostats if sample and sample.nanoplot and sample.nanoplot.processed else None) %}
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Total Reads:</small>
-                                                <div class="fw-bold">{{ proc_stats.number_of_reads | format_number if proc_stats else '--' }}</div>
+                                                {% set proc_read_class = proc_stats.number_of_reads | read_count_class if proc_stats else '' %}
+                                                <div class="fw-bold {{ proc_read_class }}">{{ proc_stats.number_of_reads | format_number if proc_stats else '--' }}</div>
                                             </div>
                                             <div class="col-sm-6 mb-2">
                                                 <small class="text-muted">Mean Length:</small>
@@ -219,8 +221,8 @@ currentSample = {{ sample | tojson }};
 // Initialize the nanoplot view and default to length-quality-scatter
 initializeNanoplotView(SAMPLE_ID);
 if (currentSample) {
-    // Show the default length-quality-scatter plot
-    loadNanoplotView('length-quality-scatter');
+    // Show summary statistics by default
+    showSummaryStats();
 }
 {% endblock %}
 
