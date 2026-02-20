@@ -1,3 +1,7 @@
-sample_id,sample_type,material,dilution,library_concentration,other_comments
-barcode01,patient,lung,1:10,5.2ng/uL,CSV format test
-barcode02,validation,blood,1:5,3.8ng/uL,Testing comma separation
+sample_id,sample_type,material,dilution,spike_concentration,extraction_kit,extraction_kit_lot_number,library_prep_kit,library_prep_kit_lot_number,library_concentration,multiple_finds,sanger_expected_species,proteinase_k_test,dilution_test
+barcode01,validation,blood,1:1,IC3,QIAamp DNA Mini Kit,EK-2024-001,NEBNext Ultra II,LP-182345,50,False,Staphylococcus aureus,False,False
+barcode02,negative control,,1:1,IC3,QIAamp DNA Mini Kit,EK-2024-001,NEBNext Ultra II,LP-182345,0.8,False,,False,False
+barcode03,patient,ledvätska,1:10,IC4,DNeasy PowerSoil Kit,EK-2024-002,NEBNext Ultra II,LP-182345,75,True,Escherichia coli,False,False
+barcode04,positive control,culture,1:10,IC4,DNeasy PowerSoil Kit,EK-2024-002,NEBNext Ultra II,LP-182346,100,True,Pseudomonas aeruginosa,False,False
+barcode05,validation,material,1:1,IC3,QIAamp DNA Mini Kit,EK-2024-003,ThruPLEX DNA-seq,LP-182347,45,False,Klebsiella pneumoniae,False,False
+barcode06,patient,blood,1:10,IC4,DNeasy PowerSoil Kit,EK-2024-003,ThruPLEX DNA-seq,LP-182347,82,True,Enterococcus faecalis,False,False
