@@ -168,7 +168,6 @@ def admin_required(func: Callable[..., Any]) -> Callable[..., Any]:
     def wrapper(*args: Any, **kwargs: Any) -> Any:
         user = get_current_user()
         if user is None:
-            # Use full_path (not url) to get relative path, avoiding scheme mismatches
             return redirect(url_for('login.login', next=request.full_path))
         if not user.is_admin:
             return redirect(url_for('samples.samples_page'))

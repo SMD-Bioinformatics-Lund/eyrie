@@ -39,6 +39,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added sequencing run metadata display to frontend seqrun information pages
  - Added seqrun QC panel containing negatice control analysis, positive control analysis, read quality anlysis, taxonomic diversity analysis, and outlier detection
  - Added negative control column to seqrun contamination analysis table
+ - Added `--force`/`-f` flag to eyrie-popup `upload` command to bypass the comment guard
+ - Added low read count warning in nanoplot view — read counts below 500 are highlighted in red
+ - Added `read_count_class` Jinja2 template filter for conditional read count CSS styling
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
@@ -71,6 +74,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Moved analysis summary below detected contaminating species table in seqrun contamination analysis view
  - Replaced Flask-Login session authentication with JWT-only authentication using HTTP-only cookies
  - Added `JWT_COOKIE_SECURE` environment variable for production HTTPS configuration
+ - eyrie-popup upload now cancels when re-uploading a sample that has existing comments in `comments.other` or `comments.qc` — use `--force`/`-f` to override
+ - Changed default nanoplot view to summary statistics (was: length-quality scatter plot)
+ - Simplified `library_concentration_class` filter — only flags red below 1 ng/µL, removed orange/yellow thresholds
 
 ## [0.3.0]
 
