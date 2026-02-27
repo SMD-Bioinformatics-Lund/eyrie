@@ -10,6 +10,7 @@ WORKDIR /usr/src/app
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the application code and configuration
