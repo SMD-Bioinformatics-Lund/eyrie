@@ -42,12 +42,14 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added `--force`/`-f` flag to eyrie-popup `upload` command to bypass the comment guard
  - Added low read count warning in nanoplot view — read counts below 500 are highlighted in red
  - Added `read_count_class` Jinja2 template filter for conditional read count CSS styling
+ - Added `procps` to `Dockerfile`
 
 ### Fixed
  - Fixed MongoDB connection issues by removing root authentication requirements
  - Fixed misleading success messages in eyrie-popup when uploads actually fail
  - Fixed trends page dynamic filter population by using proper `@api_authentication` decorator pattern
  - Fixed CSV delimiter detection in eyrie-popup to prevent periods in data values from being treated as field separators
+ - Fixed warning when production app is not using `https://`
 
 ### Changed
  - Reorganized three-column layout with metadata card and centered visualizations
