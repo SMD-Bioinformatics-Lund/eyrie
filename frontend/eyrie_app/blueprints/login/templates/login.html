@@ -18,13 +18,24 @@
                         </h4>
                     </div>
                     <div class="card-body p-4">
-                        <!-- HTTPS Warning -->
-                        {% if https_required and not is_secure %}
-                        <div class="alert alert-warning" role="alert">
+                        <!-- HTTPS Warning (shown by JS when protocol is http://) -->
+                        {% if https_required %}
+                        <div id="https-warning" class="alert alert-warning d-none" role="alert">
                             <i class="bi bi-exclamation-triangle me-2"></i>
-                            <strong>Secure connection required.</strong>
-                            This site requires HTTPS. Please access via <code>https://</code> to log in.
+                            <strong>Insecure connection.</strong>
+                            You are accessing this page over <code>http://</code>.
+                            Please use <a id="https-link" href="#"><code>https://</code></a> instead.
                         </div>
+                        <script>
+                            if (window.location.protocol === 'http:') {
+                                var warning = document.getElementById('https-warning');
+                                var link = document.getElementById('https-link');
+                                var httpsUrl = window.location.href.replace(/^http:/, 'https:');
+                                link.href = httpsUrl;
+                                link.textContent = httpsUrl;
+                                warning.classList.remove('d-none');
+                            }
+                        </script>
                         {% endif %}
 
                         <!-- Flash messages -->

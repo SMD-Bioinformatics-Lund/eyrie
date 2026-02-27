@@ -115,7 +115,6 @@ def login():
         "login.html",
         title="Login",
         https_required=settings.jwt_cookie_secure,
-        is_secure=request.is_secure or request.headers.get('X-Forwarded-Proto', 'http') == 'https'
     )
 
 
