@@ -41,14 +41,7 @@ async function updateQC(status, comments = '') {
             credentials: 'include',
             body: JSON.stringify({
                 qc: status,
-                comments: comments ? {
-                    qc: [...(currentSample.comments?.qc || []), {
-                        timestamp: new Date().toISOString(),
-                        user: 'current_user',  // Will be replaced by backend
-                        comment: comments
-                    }],
-                    other: currentSample.comments?.other || ''
-                } : currentSample.comments
+                comment: comments || null
             })
         });
 
@@ -56,17 +49,12 @@ async function updateQC(status, comments = '') {
             const result = await response.json();
             console.log('QC/comments saved successfully:', result);
             currentSample.qc = status;
-            if (comments) {
-                // Update comments structure
+            if (result.comment) {
                 if (!currentSample.comments) {
                     currentSample.comments = {qc: [], other: ''};
                 }
                 currentSample.comments.qc = currentSample.comments.qc || [];
-                currentSample.comments.qc.push({
-                    timestamp: new Date().toISOString(),
-                    user: 'current_user',
-                    comment: comments
-                });
+                currentSample.comments.qc.push(result.comment);
             }
 
             const qcStatus = document.getElementById('currentQCStatus');
@@ -75,13 +63,14 @@ async function updateQC(status, comments = '') {
             }
 
             // Refresh QC comments display if a comment was added
-            if (comments) {
+            if (result.comment) {
                 refreshQCComments();
             }
 
             showSuccess(`QC status updated to ${status.toUpperCase()}`);
         } else {
-            showError('Failed to update QC: ' + result.error);
+            const result = await response.json();
+            showError('Failed to update QC: ' + (result.detail || result.error));
         }
     } catch (error) {
         showError('Network error: ' + error.message);
@@ -149,31 +138,22 @@ async function addQCComment() {
             credentials: 'include',
             body: JSON.stringify({
                 qc: currentSample.qc,
-                comments: {
-                    qc: [...(currentSample.comments?.qc || []), {
-                        timestamp: new Date().toISOString(),
-                        user: 'current_user',  // Will be replaced by backend
-                        comment: comment
-                    }],
-                    other: currentSample.comments?.other || ''
-                }
+                comment: comment
             })
         });
 
         if (response.ok) {
             const result = await response.json();
             console.log('QC comment saved successfully:', result);
-            
-            // Update local sample data
-            if (!currentSample.comments) {
-                currentSample.comments = {qc: [], other: ''};
+
+            // Update local sample data from server response
+            if (result.comment) {
+                if (!currentSample.comments) {
+                    currentSample.comments = {qc: [], other: ''};
+                }
+                currentSample.comments.qc = currentSample.comments.qc || [];
+                currentSample.comments.qc.push(result.comment);
             }
-            currentSample.comments.qc = currentSample.comments.qc || [];
-            currentSample.comments.qc.push({
-                timestamp: new Date().toISOString(),
-                user: 'current_user',
-                comment: comment
-            });
 
             // Clear input
             if (qcCommentInput) {
@@ -216,10 +196,7 @@ async function saveGeneralComments() {
             },
             credentials: 'include',
             body: JSON.stringify({
-                comments: {
-                    qc: currentSample.comments?.qc || [],
-                    other: comments
-                }
+                other: comments
             })
         });
 

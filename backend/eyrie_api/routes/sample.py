@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
 from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
 from eyrie_api.database.async_sample_operations import (
@@ -6,7 +7,7 @@ from eyrie_api.database.async_sample_operations import (
     update_sample, upsert_sample, update_sample_species_flags,
     find_negative_controls_by_run_id
 )
-from eyrie_api.routes.auth import require_admin_or_uploader
+from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/sample", tags=["sample"])
@@ -78,18 +79,26 @@ async def partial_update_sample(
 @router.put("/{sample_id}/qc")
 async def update_qc(
     sample_id: str,
-    qc_data: QCUpdate
+    qc_data: QCUpdate,
+    current_user: dict = Depends(get_current_user)
 ):
     """Update sample QC status"""
     try:
         if qc_data.qc not in ['passed', 'failed', 'unprocessed']:
             raise HTTPException(status_code=400, detail="Invalid QC status")
 
-        success = await update_sample_qc(sample_id, qc_data.qc, qc_data.comments)
+        success = await update_sample_qc(sample_id, qc_data.qc, qc_data.comment, current_user['username'])
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
-        return {'success': True}
+        response = {'success': True}
+        if qc_data.comment:
+            response['comment'] = {
+                'user': current_user['username'],
+                'timestamp': datetime.now().isoformat(),
+                'comment': qc_data.comment
+            }
+        return response
     except HTTPException:
         raise
     except Exception as e:
@@ -98,15 +107,25 @@ async def update_qc(
 @router.put("/{sample_id}/comment")
 async def update_comment(
     sample_id: str,
-    comment_data: CommentUpdate
+    comment_data: CommentUpdate,
+    current_user: dict = Depends(get_current_user)
 ):
     """Update sample comment"""
     try:
-        success = await update_sample_comment(sample_id, comment_data.comments)
+        success = await update_sample_comment(
+            sample_id, comment_data.qc_comment, comment_data.other, current_user['username']
+        )
         if not success:
             raise HTTPException(status_code=404, detail="Sample not found")
 
-        return {'success': True}
+        response = {'success': True}
+        if comment_data.qc_comment:
+            response['comment'] = {
+                'user': current_user['username'],
+                'timestamp': datetime.now().isoformat(),
+                'comment': comment_data.qc_comment
+            }
+        return response
     except HTTPException:
         raise
     except Exception as e:

@@ -71,35 +71,34 @@ async def upsert_sample(sample_data: Dict[str, Any]) -> Tuple[str, bool]:
             return str(result.inserted_id), True
 
 
-async def update_sample_qc(sample_id: str, qc_status: str, comments: Dict[str, Any]) -> bool:
-    """Update sample QC status and comments."""
+async def update_sample_qc(sample_id: str, qc_status: str, comment_text: Optional[str], username: str) -> bool:
+    """Update sample QC status and optionally append a QC comment."""
+    update_op: Dict[str, Any] = {'$set': {'qc': qc_status, 'updated_date': datetime.now()}}
+    if comment_text:
+        update_op['$push'] = {'comments.qc': {
+            'user': username,
+            'timestamp': datetime.now().isoformat(),
+            'comment': comment_text
+        }}
     async with get_db_connection() as db:
-        result = await db.samples.update_one(
-            {'sample_id': sample_id},
-            {
-                '$set': {
-                    'qc': qc_status,
-                    'comments': comments,
-                    'updated_date': datetime.now()
-                }
-            }
-        )
-        return result.matched_count > 0
+        result = await db.samples.update_one({'sample_id': sample_id}, update_op)
+    return result.matched_count > 0
 
 
-async def update_sample_comment(sample_id: str, comments: Dict[str, Any]) -> bool:
-    """Update sample comments only."""
+async def update_sample_comment(sample_id: str, qc_comment: Optional[str], other: Optional[str], username: str) -> bool:
+    """Append a QC comment and/or update the general other comment."""
+    update_op: Dict[str, Any] = {'$set': {'updated_date': datetime.now()}}
+    if qc_comment:
+        update_op['$push'] = {'comments.qc': {
+            'user': username,
+            'timestamp': datetime.now().isoformat(),
+            'comment': qc_comment
+        }}
+    if other is not None:
+        update_op['$set']['comments.other'] = other
     async with get_db_connection() as db:
-        result = await db.samples.update_one(
-            {'sample_id': sample_id},
-            {
-                '$set': {
-                    'comments': comments,
-                    'updated_date': datetime.now()
-                }
-            }
-        )
-        return result.matched_count > 0
+        result = await db.samples.update_one({'sample_id': sample_id}, update_op)
+    return result.matched_count > 0
 
 
 async def update_sample_species_flags(
