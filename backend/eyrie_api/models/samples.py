@@ -4,10 +4,11 @@ from datetime import datetime
 
 class QCUpdate(BaseModel):
     qc: str
-    comments: Optional[Dict[str, Any]] = None
+    comment: Optional[str] = None          # plain text; backend stamps user + timestamp
 
 class CommentUpdate(BaseModel):
-    comments: Optional[Dict[str, Any]] = None
+    qc_comment: Optional[str] = None       # plain text; appended with user + timestamp
+    other: Optional[str] = None            # plain string, no attribution
 
 class SpeciesFlagsUpdate(BaseModel):
     flagged_contaminants: Optional[List[str]] = None
