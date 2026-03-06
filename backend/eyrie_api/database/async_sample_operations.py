@@ -261,6 +261,8 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                 'sample_id': 1,
                 'metadata': 1,
                 'taxonomic_data.hits': 1,
+                'qc': 1,
+                'classification': 1,
                 '_id': 0
             }
         )
@@ -273,6 +275,8 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         sanger_analysis = {'species_matches': 0, 'genus_matches': 0, 'total_analyzed': 0}
         sample_type_counts = {'validation': 0, 'patient': 0, 'negative control': 0, 'positive control': 0}
         material_type_counts = {}
+        qc_status_counts = {'passed': 0, 'failed': 0, 'unprocessed': 0}
+        classification_counts = {}
 
         for sample in all_samples:
             metadata = sample.get('metadata', {})
@@ -288,6 +292,14 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             # Count material types
             if material_type:
                 material_type_counts[material_type] = material_type_counts.get(material_type, 0) + 1
+
+            # Count QC statuses
+            qc = sample.get('qc', 'unprocessed')
+            qc_status_counts[qc] = qc_status_counts.get(qc, 0) + 1
+
+            # Count classification types
+            classification = sample.get('classification') or 'Unknown'
+            classification_counts[classification] = classification_counts.get(classification, 0) + 1
 
             # Analyze Sanger matching only if multiple_finds is False and sanger_expected exists
             if multiple_finds is False and sanger_expected:
@@ -312,6 +324,8 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             'total_samples': len(all_samples),
             'sample_type_counts': sample_type_counts,
             'material_type_counts': material_type_counts,
+            'qc_status_counts': qc_status_counts,
+            'classification_counts': classification_counts,
             'sanger_analysis': sanger_analysis,
             'sequencing_run_id': sequencing_run_id
         }
@@ -384,6 +398,7 @@ async def get_read_quality_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         return {
             'sequencing_run_id': sequencing_run_id,
             'samples_analyzed': len(quality_data),
+            'total_reads': sum(metrics['processed_reads']['processed']) + sum(metrics['processed_reads']['unprocessed']),
             'quality_data': quality_data,
             'metrics': metrics,
             'sample_ids': sample_ids
@@ -436,78 +451,6 @@ async def get_taxonomic_diversity_analysis(sequencing_run_id: str) -> Dict[str, 
             'sequencing_run_id': sequencing_run_id,
             'samples_analyzed': len(coverage_data),
             'diversity_data': coverage_data
-        }
-
-
-async def get_outlier_detection_analysis(sequencing_run_id: str) -> Dict[str, Any]:
-    """Get outlier detection analysis for sequencing run."""
-    async with get_db_connection() as db:
-        samples_cursor = db.samples.find(
-            {'sequencing_run_id': sequencing_run_id},
-            {
-                'sample_id': 1,
-                'nanoplot': 1,
-                'taxonomic_data.hits': 1,
-                'metadata.sample_type': 1,
-                '_id': 0
-            }
-        )
-        samples = await samples_cursor.to_list(length=None)
-
-        if not samples:
-            return {'message': 'No samples found for this sequencing run'}
-
-        outliers = []
-        metrics = []
-
-        for sample in samples:
-            sample_id = sample.get('sample_id')
-            sample_type = sample.get('metadata', {}).get('sample_type')
-            nanoplot = sample.get('nanoplot', {})
-            nano_stats = nanoplot.get('processed', {}).get('nanostats', {})
-            hits = sample.get('taxonomic_data', {}).get('hits', [])
-
-            # Collect key metrics for outlier detection
-            read_count = nano_stats.get('number_of_reads', 0)
-            mean_quality = nano_stats.get('mean_read_quality', 0)
-            total_species = len(hits)
-
-            metrics.append({
-                'sample_id': sample_id,
-                'sample_type': sample_type,
-                'read_count': read_count,
-                'mean_quality': mean_quality,
-                'total_species': total_species
-            })
-
-        # Simple outlier detection using IQR method for read count
-        if len(metrics) > 4:  # Need sufficient samples for outlier detection
-            read_counts = [m['read_count'] for m in metrics if m['read_count'] > 0]
-            if read_counts:
-                read_counts.sort()
-                n = len(read_counts)
-                q1 = read_counts[n // 4]
-                q3 = read_counts[3 * n // 4]
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
-                upper_bound = q3 + 1.5 * iqr
-
-                for metric in metrics:
-                    if metric['read_count'] > 0 and (metric['read_count'] < lower_bound or metric['read_count'] > upper_bound):
-                        outliers.append({
-                            'sample_id': metric['sample_id'],
-                            'sample_type': metric['sample_type'],
-                            'outlier_type': 'read_count',
-                            'value': metric['read_count'],
-                            'expected_range': f"{lower_bound:.0f} - {upper_bound:.0f}"
-                        })
-
-        return {
-            'sequencing_run_id': sequencing_run_id,
-            'samples_analyzed': len(metrics),
-            'outliers_detected': len(outliers),
-            'outliers': outliers,
-            'metrics_summary': metrics
         }
 
 

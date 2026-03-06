@@ -4,7 +4,7 @@ import json
 from eyrie_api.database.async_sample_operations import (
     get_all_samples, get_contamination_analysis, update_sample_species_flags,
     get_qc_overview_analysis, get_read_quality_analysis, get_taxonomic_diversity_analysis,
-    get_outlier_detection_analysis, get_positive_control_validation
+    get_positive_control_validation
 )
 from eyrie_api.database.async_seqrun_operations import upsert_seqrun, find_seqrun, get_all_seqruns
 from eyrie_api.models.seqruns import SeqrunCreate
@@ -24,12 +24,16 @@ async def calculate_seqrun_stats(samples: List[Dict[str, Any]]) -> Dict[str, int
     """Calculate statistics for a sequencing run"""
     total_samples = len(samples)
     approved_samples = sum(1 for sample in samples if sample.get('qc') == 'passed')
+    failed_samples = sum(1 for sample in samples if sample.get('qc') == 'failed')
+    unprocessed_samples = sum(1 for sample in samples if sample.get('qc') not in ('passed', 'failed'))
     true_hits = sum(1 for sample in samples if sample.get('flagged_top_hits'))
     spikes_detected = sum(1 for sample in samples if sample.get('spike'))
 
     return {
         'total_samples': total_samples,
         'approved_samples': approved_samples,
+        'failed_samples': failed_samples,
+        'unprocessed_samples': unprocessed_samples,
         'true_hits': true_hits,
         'spikes_detected': spikes_detected
     }
@@ -223,16 +227,6 @@ async def get_seqrun_taxonomic_diversity(seqrun_id: str, current_user: dict = De
     try:
         diversity_data = await get_taxonomic_diversity_analysis(seqrun_id)
         return json.loads(JSONEncoder().encode(diversity_data))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{seqrun_id}/qc/outlier-detection")
-async def get_seqrun_outlier_detection(seqrun_id: str, current_user: dict = Depends(get_current_user)):
-    """Get outlier detection analysis for a specific sequencing run"""
-    try:
-        outlier_data = await get_outlier_detection_analysis(seqrun_id)
-        return json.loads(JSONEncoder().encode(outlier_data))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

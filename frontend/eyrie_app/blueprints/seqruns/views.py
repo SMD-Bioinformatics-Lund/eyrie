@@ -10,7 +10,7 @@ from ...eyrie import (
     get_samples_from_backend, serve_analysis_file, get_seqrun_from_backend, get_analysis_path,
     get_contamination_analysis_from_backend, get_qc_overview_from_backend,
     get_read_quality_from_backend, get_taxonomic_diversity_from_backend,
-    get_outlier_detection_from_backend, get_positive_control_validation_from_backend,
+    get_positive_control_validation_from_backend,
     get_seqruns_from_backend
 )
 
@@ -23,6 +23,8 @@ def group_samples_by_seqrun(samples):
         'samples': [],
         'total_samples': 0,
         'approved_samples': 0,
+        'failed_samples': 0,
+        'unprocessed_samples': 0,
         'true_hits': 0,
         'spikes_detected': 0,
         'pipeline_status': 'completed',
@@ -43,6 +45,11 @@ def group_samples_by_seqrun(samples):
         # Calculate statistics
         if sample.get('qc') == 'approved':
             seqrun_data['approved_samples'] += 1
+
+        if sample.get('qc') == 'failed':
+            seqrun_data['failed_samples'] += 1
+        elif sample.get('qc') not in ('approved', 'passed', 'failed'):
+            seqrun_data['unprocessed_samples'] += 1
 
         if sample.get('flagged_top_hits'):
             seqrun_data['true_hits'] += 1
@@ -449,7 +456,6 @@ def seqrun_quality_control(seqrun_id):
                 qc_overview_data = get_qc_overview_from_backend(decoded_seqrun_id)
                 read_quality_data = get_read_quality_from_backend(decoded_seqrun_id)
                 taxonomic_diversity_data = get_taxonomic_diversity_from_backend(decoded_seqrun_id)
-                outlier_detection_data = get_outlier_detection_from_backend(decoded_seqrun_id)
                 positive_control_data = get_positive_control_validation_from_backend(decoded_seqrun_id)
                 contamination_data = get_contamination_data_for_seqrun(decoded_seqrun_id)
 
@@ -461,7 +467,6 @@ def seqrun_quality_control(seqrun_id):
                                      qc_overview_data=qc_overview_data,
                                      read_quality_data=read_quality_data,
                                      taxonomic_diversity_data=taxonomic_diversity_data,
-                                     outlier_detection_data=outlier_detection_data,
                                      positive_control_data=positive_control_data,
                                      contamination_data=contamination_data,
                                      read_quality_plot_config=read_quality_plot_config)
@@ -482,7 +487,6 @@ def seqrun_quality_control(seqrun_id):
             qc_overview_data = get_qc_overview_from_backend(decoded_seqrun_id)
             read_quality_data = get_read_quality_from_backend(decoded_seqrun_id)
             taxonomic_diversity_data = get_taxonomic_diversity_from_backend(decoded_seqrun_id)
-            outlier_detection_data = get_outlier_detection_from_backend(decoded_seqrun_id)
             positive_control_data = get_positive_control_validation_from_backend(decoded_seqrun_id)
             contamination_data = get_contamination_data_for_seqrun(decoded_seqrun_id)
 
@@ -494,7 +498,6 @@ def seqrun_quality_control(seqrun_id):
                                  qc_overview_data=qc_overview_data,
                                  read_quality_data=read_quality_data,
                                  taxonomic_diversity_data=taxonomic_diversity_data,
-                                 outlier_detection_data=outlier_detection_data,
                                  positive_control_data=positive_control_data,
                                  contamination_data=contamination_data,
                                  read_quality_plot_config=read_quality_plot_config)

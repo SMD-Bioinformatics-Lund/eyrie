@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function() {
         'contamination',
         'read-quality',
         'taxonomic-diversity',
-        'outlier-detection',
         'positive-controls'
     ];
 
