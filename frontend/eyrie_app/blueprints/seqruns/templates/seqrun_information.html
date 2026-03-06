@@ -89,47 +89,6 @@
             </li>
         </ul>
 
-        <!-- Overview Statistics -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-primary text-white">
-                        <h4 class="mb-0">
-                            <i class="bi bi-bar-chart me-2"></i>Run Statistics
-                        </h4>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <div class="display-4 text-primary">{{ seqrun.total_samples or 0 }}</div>
-                                    <div class="text-muted">Total Samples</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <div class="display-4 text-success">{{ seqrun.approved_samples or 0 }}</div>
-                                    <div class="text-muted">Approved</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <div class="display-4 text-info">{{ seqrun.true_hits or 0 }}</div>
-                                    <div class="text-muted">True Hits</div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="text-center">
-                                    <div class="display-4 text-warning">{{ seqrun.spikes_detected or 0 }}</div>
-                                    <div class="text-muted">Spikes</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="row mb-4">
             <div class="col-12">
                 <div class="row">
@@ -265,7 +224,7 @@
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
-                            <i class="bi bi-list me-2"></i>Sample Summary
+                            <i class="bi bi-list me-2"></i>Run Summary
                         </h5>
                         <a href="{{ url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id) }}" 
                            class="btn btn-light btn-sm">
@@ -275,47 +234,6 @@
                     <div class="card-body">
                         {% if seqrun.samples %}
                             <div class="row">
-                                <div class="col-md-4">
-                                    <h6>Quality Control Status</h6>
-                                    <div class="mb-3">
-                                        {% set qc_counts = {'approved': 0, 'failed': 0, 'unprocessed': 0} %}
-                                        {% for sample in seqrun.samples %}
-                                            {% if sample.qc in qc_counts %}
-                                                {% set _ = qc_counts.__setitem__(sample.qc, qc_counts[sample.qc] + 1) %}
-                                            {% endif %}
-                                        {% endfor %}
-
-                                        <div class="d-flex justify-content-between">
-                                            <span>Approved:</span>
-                                            <span class="badge bg-success">{{ qc_counts.approved }}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>Failed:</span>
-                                            <span class="badge bg-danger">{{ qc_counts.failed }}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span>Unprocessed:</span>
-                                            <span class="badge bg-secondary">{{ qc_counts.unprocessed }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <h6>Classification Types</h6>
-                                    <div class="mb-3">
-                                        {% set class_counts = {} %}
-                                        {% for sample in seqrun.samples %}
-                                            {% set classification = sample.classification or 'Unknown' %}
-                                            {% set _ = class_counts.__setitem__(classification, class_counts.get(classification, 0) + 1) %}
-                                        {% endfor %}
-
-                                        {% for classification, count in class_counts.items() %}
-                                            <div class="d-flex justify-content-between">
-                                                <span>{{ classification }}:</span>
-                                                <span class="badge bg-primary">{{ count }}</span>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
                                 <div class="col-md-4">
                                     <h6>Run Information</h6>
                                     <div class="mb-3">

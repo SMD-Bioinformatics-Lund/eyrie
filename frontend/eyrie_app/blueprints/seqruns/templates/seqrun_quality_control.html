@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'macros/qc_reports.html' import render_qc_overview, render_read_quality_analysis, render_taxonomic_diversity_analysis, render_outlier_detection_analysis, render_positive_control_validation, render_contamination_analysis %}
+{% from 'macros/qc_reports.html' import render_qc_overview, render_read_quality_analysis, render_taxonomic_diversity_analysis, render_positive_control_validation, render_contamination_analysis %}
 
 {% block title %}{% if seqrun %}{{ seqrun.sequencing_run_id }}{% else %}Seqrun{% endif %} Quality Control - Eyrie{% endblock %}
 
@@ -12,14 +12,12 @@
     {{ super() }}
     {% if seqrun %}
         <!-- Meta tags for JavaScript title/icon mappings -->
-        <meta name="qc-title-overview" content="QC Overview">
+        <meta name="qc-title-overview" content="Species Matching Analysis">
         <meta name="qc-icon-overview" content="bi-speedometer2">
         <meta name="qc-title-read-quality" content="Read Quality Analysis">
         <meta name="qc-icon-read-quality" content="bi-bar-chart">
         <meta name="qc-title-taxonomic-diversity" content="Taxonomic Diversity">
         <meta name="qc-icon-taxonomic-diversity" content="bi-graph-up">
-        <meta name="qc-title-outlier-detection" content="Outlier Detection">
-        <meta name="qc-icon-outlier-detection" content="bi-exclamation-triangle">
         <meta name="qc-title-positive-controls" content="Positive Control Validation">
         <meta name="qc-icon-positive-controls" content="bi-shield-check">
         <meta name="qc-title-contamination" content="Contamination Analysis">
@@ -111,6 +109,59 @@
             </li>
         </ul>
 
+        <!-- Run Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="bi bi-bar-chart me-2"></i>Run Statistics
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-primary">{{ seqrun.total_samples or 0 }}</div>
+                                    <div class="text-muted">Total Samples</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-success">{{ seqrun.approved_samples or 0 }}</div>
+                                    <div class="text-muted">Passed</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-danger">{{ seqrun.failed_samples or 0 }}</div>
+                                    <div class="text-muted">Failed</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-secondary">{{ seqrun.unprocessed_samples or 0 }}</div>
+                                    <div class="text-muted">Unprocessed</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-info">{{ seqrun.true_hits or 0 }}</div>
+                                    <div class="text-muted">True Hits</div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="text-center">
+                                    <div class="display-4 text-warning">{{ seqrun.spikes_detected or 0 }}</div>
+                                    <div class="text-muted">Spikes</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main QC Analysis Section -->
         <div class="row">
             <!-- Left Panel - QC Analysis Buttons -->
@@ -128,8 +179,8 @@
                                     id="btn-qc-overview">
                                 <i class="bi bi-speedometer2 me-3 text-primary"></i>
                                 <div>
-                                    <div class="fw-semibold">QC Overview</div>
-                                    <small class="text-muted">Species matching summary</small>
+                                    <div class="fw-semibold">Species Matching Analysis</div>
+                                    <small class="text-muted">Sanger species matching</small>
                                 </div>
                             </button>
 
@@ -173,15 +224,6 @@
                                 </div>
                             </button>
 
-                            <button class="list-group-item list-group-item-action d-flex align-items-center"
-                                    onclick="loadQCAnalysis('outlier-detection')" 
-                                    id="btn-outlier-detection">
-                                <i class="bi bi-exclamation-triangle me-3 text-warning"></i>
-                                <div>
-                                    <div class="fw-semibold">Outlier Detection</div>
-                                    <small class="text-muted">Statistical outlier identification</small>
-                                </div>
-                            </button>
                         </div>
                     </div>
                     <div class="card-footer bg-light">
@@ -233,11 +275,6 @@
             {% if taxonomic_diversity_data %}
                 <div id="qc-data-taxonomic-diversity">
                     {{ render_taxonomic_diversity_analysis(taxonomic_diversity_data) }}
-                </div>
-            {% endif %}
-            {% if outlier_detection_data %}
-                <div id="qc-data-outlier-detection">
-                    {{ render_outlier_detection_analysis(outlier_detection_data) }}
                 </div>
             {% endif %}
             {% if positive_control_data %}

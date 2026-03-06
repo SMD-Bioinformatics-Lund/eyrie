@@ -410,19 +410,6 @@ def get_taxonomic_diversity_from_backend(headers: CaseInsensitiveDict, seqrun_id
 
 
 @api_authentication
-def get_outlier_detection_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
-    """Get outlier detection analysis for a specific sequencing run"""
-    try:
-        url = f"{backend_url}/api/seqruns/{seqrun_id}/qc/outlier-detection"
-        resp = requests.get(url, headers=headers, timeout=10)
-        if resp.status_code == 200:
-            return resp.json()
-        return {'message': 'Unable to retrieve outlier detection data'}
-    except Exception as e:
-        return {'message': 'Unable to retrieve outlier detection data'}
-
-
-@api_authentication
 def get_positive_control_validation_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
     """Get positive control validation for a specific sequencing run"""
     try:
