@@ -90,18 +90,12 @@
                             </div>
                             <div class="card-body p-0">
                                 <div id="unprocessedPlotContainer" class="w-100" style="min-height: 500px;">
-                                    {% if sample and sample.nanoplot and sample.nanoplot.unprocessed and sample.nanoplot.unprocessed.files and sample.nanoplot.unprocessed.files.length_quality_scatter %}
-                                        <iframe style="width: 100%; height: 500px; border: none;"
-                                                src="{{ url_for('sample.serve_data_file_endpoint', file_path=analysis_base_path ~ '/' ~ sample.nanoplot.unprocessed.files.length_quality_scatter) }}">
-                                        </iframe>
-                                    {% else %}
-                                        <div class="d-flex justify-content-center align-items-center h-100">
-                                            <div class="text-center">
-                                                <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                                <p class="text-muted mt-3">No unprocessed plot available</p>
-                                            </div>
+                                    <div class="d-flex justify-content-center align-items-center h-100">
+                                        <div class="text-center">
+                                            <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                                            <p class="text-muted mt-3">No unprocessed plot available</p>
                                         </div>
-                                    {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -120,18 +114,12 @@
                             </div>
                             <div class="card-body p-0">
                                 <div id="processedPlotContainer" class="w-100" style="min-height: 500px;">
-                                    {% if sample and sample.nanoplot and sample.nanoplot.processed and sample.nanoplot.processed.files and sample.nanoplot.processed.files.length_quality_scatter %}
-                                        <iframe style="width: 100%; height: 500px; border: none;"
-                                                src="{{ url_for('sample.serve_data_file_endpoint', file_path=analysis_base_path ~ '/' ~ sample.nanoplot.processed.files.length_quality_scatter) }}">
-                                        </iframe>
-                                    {% else %}
-                                        <div class="d-flex justify-content-center align-items-center h-100">
-                                            <div class="text-center">
-                                                <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                                <p class="text-muted mt-3">No processed plot available</p>
-                                            </div>
+                                    <div class="d-flex justify-content-center align-items-center h-100">
+                                        <div class="text-center">
+                                            <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                                            <p class="text-muted mt-3">No processed plot available</p>
                                         </div>
-                                    {% endif %}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -218,7 +206,7 @@ const SAMPLE_ID = '{{ sample_id }}';
 {% if sample %}
 currentSample = {{ sample | tojson }};
 {% endif %}
-// Initialize the nanoplot view and default to length-quality-scatter
+// Initialize the nanoplot view and default to summary statistics
 initializeNanoplotView(SAMPLE_ID);
 if (currentSample) {
     // Show summary statistics by default
