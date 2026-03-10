@@ -374,9 +374,22 @@
 </div>
 {% endmacro %}
 
-{% macro render_contamination_analysis(contamination_data) %}
+{% macro render_contamination_analysis(contamination_data, contamination_plot_config=none) %}
 <div class="container-fluid p-4">
     {% if contamination_data and contamination_data.species_analysis %}
+        {% if contamination_plot_config %}
+            <!-- Contamination Abundance Stacked Bar Chart -->
+            <div class="mb-4">
+                <h6>Contaminating Species Abundance Across Samples</h6>
+                <div id="contamination-plot" style="height: 500px;"
+                     data-sequencing-run-id="{{ contamination_data.sequencing_run_id | default('unknown') }}">
+                </div>
+            </div>
+            <div style="display: none;">
+                <div id="contamination-plot-config">{{ contamination_plot_config | tojson }}</div>
+            </div>
+        {% endif %}
+
         <!-- Species Details -->
         <div class="mb-4">
             <h6>Detected Contaminating Species</h6>
@@ -387,7 +400,6 @@
                             <th>Species</th>
                             <th>Negative Control(s)</th>
                             <th>Detected in Samples</th>
-                            <th>Detection Rate</th>
                             <th>Abundance Range (%)</th>
                             <th>Actions</th>
                         </tr>
@@ -397,8 +409,7 @@
                         <tr>
                             <td><small>{{ species }}</small></td>
                             <td><small>{{ analysis.source_negative_controls | join(', ') }}</small></td>
-                            <td>{{ analysis.detected_in_samples|length }}</td>
-                            <td>{{ "%.1f"|format(analysis.detection_rate) }}%</td>
+                            <td>{{ analysis.detected_in_samples|length }} ({{ "%.1f"|format(analysis.detection_rate) }}%)</td>
                             <td>
                                 {% if analysis.abundances %}
                                     {{ "%.2f"|format(analysis.abundances|min) }} - {{ "%.2f"|format(analysis.abundances|max) }}%
