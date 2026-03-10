@@ -43,3 +43,36 @@ function initializeReadQualityPlot() {
 
 // Store the initialization functions globally for the main QC page to call
 window.initReadQualityPlot = initializeReadQualityPlot;
+
+// Function to initialize contamination stacked bar plot when visible
+function initializeContaminationPlot() {
+    try {
+        const configElement = document.getElementById('contamination-plot-config');
+        const plotElement = document.getElementById('contamination-plot');
+
+        if (configElement && plotElement && plotElement.offsetParent !== null) {
+            const plotConfig = JSON.parse(configElement.textContent);
+            const seqrunId = plotElement.dataset.sequencingRunId || 'unknown';
+            const exportConfig = {
+                ...plotConfig.config,
+                toImageButtonOptions: {
+                    format: 'png',
+                    filename: `eyrie_contamination_${seqrunId}_${new Date().toISOString().split('T')[0]}`,
+                    height: 600,
+                    width: 1200,
+                    scale: 2,
+                },
+            };
+            Plotly.newPlot('contamination-plot', plotConfig.data, plotConfig.layout, exportConfig);
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error loading contamination plot:', error);
+        const el = document.getElementById('contamination-plot');
+        if (el) el.innerHTML = '<div class="alert alert-danger">Error loading contamination plot</div>';
+        return true;
+    }
+}
+
+window.initContaminationPlot = initializeContaminationPlot;

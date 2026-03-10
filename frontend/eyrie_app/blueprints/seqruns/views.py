@@ -242,6 +242,67 @@ def generate_read_quality_plot_config(read_quality_data):
     }
 
 
+_SPECIES_PALETTE = [
+    '#800000', '#9a6324', '#808000', '#469990', '#000075',
+    '#000000', '#e6194b', '#158231', '#ffe119', '#bfef45',
+    '#3cb44b', '#42d414', '#4363d8', '#911eb4', '#1032e6',
+    '#a9a9a9', '#fabed4', '#ffd8b1', '#fffac8', '#aaffc3',
+    '#dcbeff', '#ffffff', '#ffa500', '#00ffff', '#ff00ff',
+    '#add8e6', '#ff4500', '#da70d6', '#ff1493', '#f08080',
+]
+
+
+def generate_contamination_plot_config(contamination_data):
+    """Generate Plotly configuration for contamination stacked bar chart."""
+    if not contamination_data or not contamination_data.get('plot_data'):
+        return None
+
+    plot_data = contamination_data['plot_data']
+    samples = plot_data.get('samples', [])
+    species_abundances = plot_data.get('species_abundances', {})
+    n_clinical = plot_data.get('n_clinical', 0)
+
+    if not samples or not species_abundances:
+        return None
+
+    x_labels = [
+        f"{s['sample_id']} (NC)" if s['type'] == 'negative_control' else s['sample_id']
+        for s in samples
+    ]
+
+    traces = []
+    for i, (species, abundances) in enumerate(species_abundances.items()):
+        traces.append({
+            'type': 'bar',
+            'name': species,
+            'x': x_labels,
+            'y': abundances,
+            'marker': {'color': _SPECIES_PALETTE[i % len(_SPECIES_PALETTE)]},
+            'hovertemplate': '<b>%{fullData.name}</b><br>Abundance: %{y:.2f}%<br>Sample: %{x}<extra></extra>',
+        })
+
+    shapes = []
+    if 0 < n_clinical < len(samples):
+        shapes.append({
+            'type': 'line', 'xref': 'x', 'yref': 'paper',
+            'x0': n_clinical - 0.5, 'x1': n_clinical - 0.5,
+            'y0': 0, 'y1': 1,
+            'line': {'color': 'rgba(150,0,0,0.4)', 'width': 1.5, 'dash': 'dash'},
+        })
+
+    layout = {
+        'barmode': 'stack',
+        'xaxis': {'title': 'Sample', 'tickangle': -45},
+        'yaxis': {'title': 'Abundance (%)'},
+        'legend': {'title': {'text': 'Contaminating Species'}},
+        'height': 500,
+        'margin': {'b': 150, 'r': 20, 't': 20, 'l': 60},
+        'shapes': shapes,
+    }
+
+    return {'data': traces, 'layout': layout, 'config': {'responsive': True, 'displayModeBar': True}}
+
+
 def get_contamination_data_for_seqrun(seqrun_id):
     """Get contamination analysis data for a sequencing run via API."""
     try:
@@ -461,6 +522,7 @@ def seqrun_quality_control(seqrun_id):
 
                 # Generate plot configurations
                 read_quality_plot_config = generate_read_quality_plot_config(read_quality_data)
+                contamination_plot_config = generate_contamination_plot_config(contamination_data)
 
                 return render_template('seqrun_quality_control.html',
                                      seqrun=seqrun,
@@ -469,7 +531,8 @@ def seqrun_quality_control(seqrun_id):
                                      taxonomic_diversity_data=taxonomic_diversity_data,
                                      positive_control_data=positive_control_data,
                                      contamination_data=contamination_data,
-                                     read_quality_plot_config=read_quality_plot_config)
+                                     read_quality_plot_config=read_quality_plot_config,
+                                     contamination_plot_config=contamination_plot_config)
         except Exception as api_error:
             print(f"⚠️ Backend API call failed: {api_error}")
 
@@ -492,6 +555,7 @@ def seqrun_quality_control(seqrun_id):
 
             # Generate plot configurations
             read_quality_plot_config = generate_read_quality_plot_config(read_quality_data)
+            contamination_plot_config = generate_contamination_plot_config(contamination_data)
 
             return render_template('seqrun_quality_control.html',
                                  seqrun=seqrun,
@@ -500,7 +564,8 @@ def seqrun_quality_control(seqrun_id):
                                  taxonomic_diversity_data=taxonomic_diversity_data,
                                  positive_control_data=positive_control_data,
                                  contamination_data=contamination_data,
-                                 read_quality_plot_config=read_quality_plot_config)
+                                 read_quality_plot_config=read_quality_plot_config,
+                                 contamination_plot_config=contamination_plot_config)
 
         # If we get here, seqrun truly not found
         return render_template('seqrun_quality_control.html', seqrun=None)

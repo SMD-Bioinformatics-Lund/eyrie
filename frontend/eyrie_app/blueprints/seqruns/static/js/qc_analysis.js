@@ -38,6 +38,9 @@ function loadQCAnalysis(analysisType) {
             if (analysisType === 'read-quality' && window.initReadQualityPlot) {
                 window.initReadQualityPlot();
             }
+            if (analysisType === 'contamination' && window.initContaminationPlot) {
+                window.initContaminationPlot();
+            }
         }, 100); // Small delay to ensure DOM updates complete
     } else {
         container.innerHTML = displayError(`No ${analysisType.replace('-', ' ')} data available`);
