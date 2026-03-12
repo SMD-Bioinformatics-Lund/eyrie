@@ -13,6 +13,12 @@ function initializeClassificationView(sampleId) {
     if (currentSample) {
         loadClassificationData(currentSample);
     }
+    // Initialise Bootstrap tooltips for this view (e.g. Krona info button)
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(function(el) {
+        if (!bootstrap.Tooltip.getInstance(el)) {
+            new bootstrap.Tooltip(el, { delay: 0, animation: false });
+        }
+    });
 }
 
 /**
@@ -312,18 +318,34 @@ function exportContaminationData() {
         return;
     }
 
-    const data = currentSample.taxonomic_data.hits || [];
-    const csvContent = "data:text/csv;charset=utf-8,"
-        + "Species,Genus,Family,Abundance,Flagged\\n"
-        + data.map(sp =>
-            `"${sp.species}","${sp.genus || 'N/A'}","${sp.family || 'N/A'}",${sp.abundance},${flaggedContaminants.has(sp.species) ? 'Yes' : 'No'}`
-        ).join("\\n");
+    const hits = currentSample.taxonomic_data.hits || [];
+    const rows = [
+        ['Species', 'Genus', 'Family', 'Abundance (%)', 'Estimated Counts',
+         'Top Hit', 'Contaminant'],
+        ...hits.map(sp => [
+            sp.species,
+            sp.genus  || 'N/A',
+            sp.family || 'N/A',
+            sp.abundance,
+            sp.estimated_counts ?? '',
+            flaggedTopHits.has(sp.species)      ? 'Yes' : 'No',
+            flaggedContaminants.has(sp.species) ? 'Yes' : 'No',
+        ]),
+    ];
 
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `${currentSample.sample_id}_abundance_data.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csv = rows.map(r => r.map(safeCSVValue).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url  = URL.createObjectURL(blob);
+    try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = sanitizeFilename(
+            `${currentSample.sample_id || 'sample'}_abundance_data.csv`
+        );
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } finally {
+        URL.revokeObjectURL(url);
+    }
 }

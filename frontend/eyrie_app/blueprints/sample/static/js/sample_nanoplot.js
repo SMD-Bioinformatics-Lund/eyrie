@@ -363,16 +363,19 @@ function downloadStatsCSV(processingType) {
         filename = `${currentSample.sample_id || 'sample'}_nanostats.csv`;
     }
 
-    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const csv = rows.map(r => r.map(safeCSVValue).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = sanitizeFilename(filename);
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } finally {
+        URL.revokeObjectURL(url);
+    }
 }
 
 /**

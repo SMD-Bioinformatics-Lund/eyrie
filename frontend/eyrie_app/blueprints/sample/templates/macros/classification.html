@@ -8,12 +8,16 @@
                     <h5 class="mb-0">
                         <i class="bi bi-pie-chart me-2"></i>Taxonomic Classification (Krona Plot)
                     </h5>
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-light btn-sm">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-outline-light btn-sm"
+                                onclick="refreshKronaPlot()">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
-                        <button type="button" class="btn btn-outline-light btn-sm">
-                            <i class="bi bi-download"></i>
+                        <button type="button"
+                                style="background: none; border: none; padding: 2px 4px; line-height: 1; cursor: default;"
+                                data-bs-toggle="tooltip"
+                                title="To save, click the Snapshot button within the Krona chart">
+                            <i class="bi bi-info-circle"></i>
                         </button>
                     </div>
                 </div>
