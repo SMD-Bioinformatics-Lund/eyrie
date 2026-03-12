@@ -89,6 +89,23 @@ function getQCBadgeClass(qc) {
 }
 
 
+/** Strip path separators and invalid filename characters from a download filename. */
+function sanitizeFilename(name) {
+    return name
+        .replace(/[/\\]/g, '_')
+        .replace(/\.\./g, '')
+        .replace(/[<>:"|?*\x00-\x1f]/g, '_')
+        .substring(0, 255);
+}
+
+/** Quote a CSV cell (RFC 4180) and guard against spreadsheet formula injection. */
+function safeCSVValue(value) {
+    const str = String(value ?? '');
+    // Prefix with tab to neutralise leading formula characters (=, +, -, @)
+    const safe = /^[=+\-@\t]/.test(str) ? '\t' + str : str;
+    return `"${safe.replace(/"/g, '""')}"`;
+}
+
 /**
  * Update DOM element with value
  */
