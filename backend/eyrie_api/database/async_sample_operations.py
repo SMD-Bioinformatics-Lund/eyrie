@@ -161,6 +161,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         # Extract unique species from negative controls, tracking which controls they came from
         species_to_negative_controls = {}  # species -> list of negative control sample_ids
         neg_control_species_abundances = {}  # species -> {sample_id -> abundance}
+        neg_control_species_counts = {}  # species -> {sample_id -> estimated_counts}
         for negative_sample in negative_controls:
             sample_id = negative_sample.get('sample_id', 'Unknown')
             taxonomic_data = negative_sample.get('taxonomic_data', {})
@@ -176,6 +177,9 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                     if species not in neg_control_species_abundances:
                         neg_control_species_abundances[species] = {}
                     neg_control_species_abundances[species][sample_id] = hit.get('abundance', 0)
+                    if species not in neg_control_species_counts:
+                        neg_control_species_counts[species] = {}
+                    neg_control_species_counts[species][sample_id] = hit.get('estimated_counts')
 
         contaminating_species = set(species_to_negative_controls.keys())
 
@@ -214,6 +218,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         for species in contaminating_species:
             abundances = []
             detected_samples = []
+            estimated_counts_list = []
 
             for sample in normal_samples:
                 taxonomic_data = sample.get('taxonomic_data', {})
@@ -226,6 +231,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                         abundance = hit.get('abundance', 0)
                         abundances.append(abundance)
                         detected_samples.append(sample.get('sample_id'))
+                        estimated_counts_list.append(hit.get('estimated_counts'))
                         break
 
             # Calculate average abundance for sorting
@@ -233,6 +239,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
 
             species_analysis[species] = {
                 'abundances': abundances,
+                'estimated_counts': estimated_counts_list,
                 'detected_in_samples': detected_samples,
                 'detection_rate': len(abundances) / len(normal_samples) * 100 if normal_samples else 0,
                 'average_abundance': avg_abundance,
@@ -255,15 +262,26 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         )
 
         plot_species_abundances = {}
+        plot_species_estimated_counts = {}
         for species in list(species_analysis.keys()):
             clinical_abund_map = dict(zip(
                 species_analysis[species]['detected_in_samples'],
                 species_analysis[species]['abundances']
             ))
+            clinical_counts_map = dict(zip(
+                species_analysis[species]['detected_in_samples'],
+                species_analysis[species]['estimated_counts']
+            ))
             nc_abund_map = neg_control_species_abundances.get(species, {})
+            nc_counts_map = neg_control_species_counts.get(species, {})
             plot_species_abundances[species] = [
                 clinical_abund_map.get(s['sample_id'], 0.0) if s['type'] == 'clinical'
                 else nc_abund_map.get(s['sample_id'], 0.0)
+                for s in plot_samples
+            ]
+            plot_species_estimated_counts[species] = [
+                clinical_counts_map.get(s['sample_id']) if s['type'] == 'clinical'
+                else nc_counts_map.get(s['sample_id'])
                 for s in plot_samples
             ]
 
@@ -277,6 +295,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             'plot_data': {
                 'samples': plot_samples,
                 'species_abundances': plot_species_abundances,
+                'species_estimated_counts': plot_species_estimated_counts,
                 'n_clinical': len(normal_samples),
             }
         }

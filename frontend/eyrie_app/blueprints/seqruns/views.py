@@ -260,6 +260,7 @@ def generate_contamination_plot_config(contamination_data):
     plot_data = contamination_data['plot_data']
     samples = plot_data.get('samples', [])
     species_abundances = plot_data.get('species_abundances', {})
+    species_estimated_counts = plot_data.get('species_estimated_counts', {})
     n_clinical = plot_data.get('n_clinical', 0)
 
     if not samples or not species_abundances:
@@ -272,13 +273,25 @@ def generate_contamination_plot_config(contamination_data):
 
     traces = []
     for i, (species, abundances) in enumerate(species_abundances.items()):
+        raw_counts = species_estimated_counts.get(species, [None] * len(samples))
+        customdata = [
+            f"{int(c):,}" if c is not None else 'N/A'
+            for c in raw_counts
+        ]
         traces.append({
             'type': 'bar',
             'name': species,
             'x': x_labels,
             'y': abundances,
+            'customdata': customdata,
             'marker': {'color': _SPECIES_PALETTE[i % len(_SPECIES_PALETTE)]},
-            'hovertemplate': '<b>%{fullData.name}</b><br>Abundance: %{y:.2f}%<br>Sample: %{x}<extra></extra>',
+            'hovertemplate': (
+                '<b>%{fullData.name}</b><br>'
+                'Abundance: %{y:.2f}%<br>'
+                'Estimated Counts: %{customdata}<br>'
+                'Sample: %{x}'
+                '<extra></extra>'
+            ),
         })
 
     shapes = []
