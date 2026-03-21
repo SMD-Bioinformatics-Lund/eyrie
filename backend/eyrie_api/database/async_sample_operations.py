@@ -133,6 +133,7 @@ async def find_negative_controls_by_run_id(sequencing_run_id: str) -> List[Dict[
             },
             {
                 'sample_id': 1,
+                'sample_name': 1,
                 'taxonomic_data.hits': 1,
                 '_id': 0
             }
@@ -159,11 +160,11 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             }
 
         # Extract unique species from negative controls, tracking which controls they came from
-        species_to_negative_controls = {}  # species -> list of negative control sample_ids
-        neg_control_species_abundances = {}  # species -> {sample_id -> abundance}
-        neg_control_species_counts = {}  # species -> {sample_id -> estimated_counts}
+        species_to_negative_controls = {}  # species -> list of negative control sample_names
+        neg_control_species_abundances = {}  # species -> {sample_name -> abundance}
+        neg_control_species_counts = {}  # species -> {sample_name -> estimated_counts}
         for negative_sample in negative_controls:
-            sample_id = negative_sample.get('sample_id', 'Unknown')
+            sample_name = negative_sample.get('sample_name') or negative_sample.get('sample_id', 'Unknown')
             taxonomic_data = negative_sample.get('taxonomic_data', {})
             hits = taxonomic_data.get('hits', [])
             for hit in hits:
@@ -172,14 +173,14 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                     species = species.strip()
                     if species not in species_to_negative_controls:
                         species_to_negative_controls[species] = []
-                    if sample_id not in species_to_negative_controls[species]:
-                        species_to_negative_controls[species].append(sample_id)
+                    if sample_name not in species_to_negative_controls[species]:
+                        species_to_negative_controls[species].append(sample_name)
                     if species not in neg_control_species_abundances:
                         neg_control_species_abundances[species] = {}
-                    neg_control_species_abundances[species][sample_id] = hit.get('abundance', 0)
+                    neg_control_species_abundances[species][sample_name] = hit.get('abundance', 0)
                     if species not in neg_control_species_counts:
                         neg_control_species_counts[species] = {}
-                    neg_control_species_counts[species][sample_id] = hit.get('estimated_counts')
+                    neg_control_species_counts[species][sample_name] = hit.get('estimated_counts')
 
         contaminating_species = set(species_to_negative_controls.keys())
 
@@ -199,6 +200,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             },
             {
                 'sample_id': 1,
+                'sample_name': 1,
                 'taxonomic_data.hits': 1,
                 '_id': 0
             }
@@ -230,7 +232,7 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
                     if hit_species == species:
                         abundance = hit.get('abundance', 0)
                         abundances.append(abundance)
-                        detected_samples.append(sample.get('sample_id'))
+                        detected_samples.append(sample.get('sample_name') or sample.get('sample_id'))
                         estimated_counts_list.append(hit.get('estimated_counts'))
                         break
 
@@ -255,10 +257,10 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
         # Build plot_data for stacked bar chart:
         # clinical samples first (sorted), then negative controls (sorted)
         plot_samples = (
-            [{'sample_id': s.get('sample_id'), 'type': 'clinical'}
-             for s in sorted(normal_samples, key=lambda x: x.get('sample_id', ''))]
-            + [{'sample_id': s.get('sample_id'), 'type': 'negative_control'}
-               for s in sorted(negative_controls, key=lambda x: x.get('sample_id', ''))]
+            [{'sample_name': s.get('sample_name') or s.get('sample_id'), 'type': 'clinical'}
+             for s in sorted(normal_samples, key=lambda x: x.get('sample_name') or x.get('sample_id', ''))]
+            + [{'sample_name': s.get('sample_name') or s.get('sample_id'), 'type': 'negative_control'}
+               for s in sorted(negative_controls, key=lambda x: x.get('sample_name') or x.get('sample_id', ''))]
         )
 
         plot_species_abundances = {}
@@ -275,13 +277,13 @@ async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
             nc_abund_map = neg_control_species_abundances.get(species, {})
             nc_counts_map = neg_control_species_counts.get(species, {})
             plot_species_abundances[species] = [
-                clinical_abund_map.get(s['sample_id'], 0.0) if s['type'] == 'clinical'
-                else nc_abund_map.get(s['sample_id'], 0.0)
+                clinical_abund_map.get(s['sample_name'], 0.0) if s['type'] == 'clinical'
+                else nc_abund_map.get(s['sample_name'], 0.0)
                 for s in plot_samples
             ]
             plot_species_estimated_counts[species] = [
-                clinical_counts_map.get(s['sample_id']) if s['type'] == 'clinical'
-                else nc_counts_map.get(s['sample_id'])
+                clinical_counts_map.get(s['sample_name']) if s['type'] == 'clinical'
+                else nc_counts_map.get(s['sample_name'])
                 for s in plot_samples
             ]
 
