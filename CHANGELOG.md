@@ -79,6 +79,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - eyrie-popup upload now cancels when re-uploading a sample that has existing comments in `comments.other` or `comments.qc` — use `--force`/`-f` to override
  - Changed default nanoplot view to summary statistics (was: length-quality scatter plot)
  - Simplified `library_concentration_class` filter — only flags red below 1 ng/µL, removed orange/yellow thresholds
+ - Changed contamination analysis plot to display sample_name instead of sample_id on x-axis and hover text
 
 ## [0.3.0]
 

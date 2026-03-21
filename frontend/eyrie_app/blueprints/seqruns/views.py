@@ -267,7 +267,7 @@ def generate_contamination_plot_config(contamination_data):
         return None
 
     x_labels = [
-        f"{s['sample_id']} (NC)" if s['type'] == 'negative_control' else s['sample_id']
+        f"{s['sample_name']} (NC)" if s['type'] == 'negative_control' else s['sample_name']
         for s in samples
     ]
 
