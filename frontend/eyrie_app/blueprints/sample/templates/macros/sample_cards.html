@@ -9,19 +9,19 @@
     <div class="card-body">
         <table class="table table-sm table-borderless mb-0">
             <tbody>
-                <tr><td><strong>Sample Name:</strong></td><td>{{ sample.sample_name or '--' }}</td></tr>
-                <tr><td><strong>Sample ID:</strong></td><td>{{ sample.sample_id or '--' }}</td></tr>
-                <tr><td><strong>Sequencing Run ID:</strong></td><td>{{ sample.sequencing_run_id or '--' }}</td></tr>
-                <tr><td><strong>LIMS ID:</strong></td><td>{{ sample.lims_id or '--' }}</td></tr>
-                <tr><td><strong>Classification:</strong></td><td>
+                <tr><td class="text-nowrap"><strong>Sample Name:</strong></td><td class="text-break">{{ sample.sample_name or '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>Sample ID:</strong></td><td class="text-break">{{ sample.sample_id or '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>Sequencing Run ID:</strong></td><td class="text-break">{{ sample.sequencing_run_id or '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>LIMS ID:</strong></td><td class="text-break">{{ sample.lims_id or '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>Classification:</strong></td><td class="text-break">
                     {% if sample and sample.classification %}
                         <span class="badge {{ 'bg-primary' if sample.classification == '16S' else 'bg-info' }}">{{ sample.classification }}</span>
                     {% else %}
                         --
                     {% endif %}
                 </td></tr>
-                <tr><td><strong>Created Date:</strong></td><td>{{ sample.created_date | format_date if sample else '--' }}</td></tr>
-                <tr><td><strong>Updated Date:</strong></td><td>{{ sample.updated_date | format_date if sample else '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>Created Date:</strong></td><td class="text-break">{{ sample.created_date | format_date if sample else '--' }}</td></tr>
+                <tr><td class="text-nowrap"><strong>Updated Date:</strong></td><td class="text-break">{{ sample.updated_date | format_date if sample else '--' }}</td></tr>
             </tbody>
         </table>
     </div>
