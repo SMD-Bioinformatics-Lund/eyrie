@@ -384,6 +384,15 @@ mypy popup/
 flake8 popup/
 ```
 
+### Releasing
+
+eyrie-popup is versioned independently of Eyrie and is not published by GitHub releases. Publishing to PyPI and Docker Hub is triggered by pushing a tag that matches `popup/__version__.py`:
+
+```bash
+git tag eyrie-popup-v0.3.0
+git push origin eyrie-popup-v0.3.0
+```
+
 ## Troubleshooting
 
 ### Common Issues

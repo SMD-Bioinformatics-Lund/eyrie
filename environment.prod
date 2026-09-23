@@ -4,7 +4,7 @@
 # =====================================================
 # Version Management
 # =====================================================
-EYRIE_VERSION=0.4.0
+EYRIE_VERSION=0.4.1
 POPUP_VERSION=0.3.0
 FRONTEND_VERSION=${EYRIE_VERSION}
 BACKEND_VERSION=${EYRIE_VERSION}

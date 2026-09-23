@@ -65,7 +65,7 @@ jobs:
             org.opencontainers.image.licenses=MIT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6.8
+        uses: docker/build-push-action@v6.19.2
         with:
           context: tools/eyrie-popup
           file: tools/eyrie-popup/Dockerfile

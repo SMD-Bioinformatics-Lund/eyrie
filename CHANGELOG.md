@@ -6,11 +6,21 @@ All notable changes to the Eyrie sample management system will be documented in 
 
 ### Added
 
-### Enhanced
-
 ### Fixed
 
 ### Changed
+
+## [0.4.1]
+
+### Added
+
+### Fixed
+ - Fixed backend Docker image build failing in the release workflow — switched backend and frontend base images to `python:3.11.13-bullseye` and removed the `apt-get upgrade` step (gcc and curl ship with the base image)
+ - Fixed invalid `docker/build-push-action@v6.8` reference in the eyrie-popup Docker Hub workflow
+
+### Changed
+ - Updated GitHub Actions in the release workflow to current versions and added manual `workflow_dispatch` trigger
+ - Documented the eyrie-popup tag-based release process in its README
 
 ## [0.4.0]
 
@@ -191,8 +201,6 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [0.2.1]
 
 ### Added
-
-### Enhanced
 
 ### Fixed
 
