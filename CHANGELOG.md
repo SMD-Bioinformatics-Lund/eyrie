@@ -50,6 +50,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed trends page dynamic filter population by using proper `@api_authentication` decorator pattern
  - Fixed CSV delimiter detection in eyrie-popup to prevent periods in data values from being treated as field separators
  - Fixed warning when production app is not using `https://`
+ - Fixed long values (e.g. sample_id) overflowing the General Information card in the sample view — text now wraps
 
 ### Changed
  - Reorganized three-column layout with metadata card and centered visualizations
