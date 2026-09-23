@@ -1,15 +1,8 @@
 # Use more recent Python version with better ARM64 support
-FROM python:3.11.3-slim
+FROM python:3.11.13-bullseye
 
 # Add a cache-busting layer
 ARG CACHE_BUST=1
-
-# Install system dependencies - separate steps for better ARM64 compatibility
-RUN apt-get update -qq && apt-get upgrade -y
-RUN apt-get install -y --no-install-recommends \
-        gcc \
-        curl
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Set working directory
 WORKDIR /app
