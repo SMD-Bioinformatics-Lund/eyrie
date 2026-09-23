@@ -5,6 +5,16 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+
+### Enhanced
+
+### Fixed
+
+### Changed
+
+## [0.4.0]
+
+### Added
  - Added negative controls display in classification view with automatic detection from same sequencing run
  - Added MongoDB query to find negative controls by sequencing_run_id and metadata.sample_type 'negative control'
  - Added backend API endpoint `/api/sample/{sample_id}/negative-controls` to retrieve negative control data
