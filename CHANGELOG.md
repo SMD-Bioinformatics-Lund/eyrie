@@ -19,12 +19,17 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the navbars from black to a pale green that suits the logo, with the current page's button in the same sage green
  - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
  - Changed the samples, users and species abundance tables to select rows with a checkbox in the header row instead of Select All and Clear Selection buttons, and named every table in its header with an info tooltip
+ - Added emuse to eyrie-popup for parsing Emu results
+ - Added read assignment probabilities, alignment identity/coverage and lineage to uploaded taxonomic hits
+ - Added `classification_qc` summary stats (reads, read length/quality, mapped reads) to uploaded samples
+ - Added `--rel-abundance-file`, `--read-assignment-file`, `--alignment-metrics-file` and `--emu-log-file` options to `popup generate-config`
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
  - Fixed table action menus opening behind the table header row
  - Fixed the web interface hanging for up to 30 seconds, e.g. when clearing species flags: the frontend ran a single synchronous gunicorn worker that idle browser connections could block; it now uses threaded workers
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
+ - Fixed `pipeline_software` not being sent when uploading samples
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -44,6 +49,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the sample overview and NanoPlot statistics tables to the compact table style, with low values shown as red cells
  - Changed the NanoPlot page to the sample page colours: neutral view icons, the selected view in pale blue, and NanoStats Comparison as a compact Unprocessed/Processed table
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
+ - eyrie-popup requires Python 3.11 or later
+ - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
+ - Removed spike detection from eyrie-popup, spike species will be configured in Eyrie
 
 ## [0.4.1]
 
