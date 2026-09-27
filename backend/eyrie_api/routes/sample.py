@@ -7,7 +7,9 @@ from eyrie_api.database.async_sample_operations import (
     update_sample, upsert_sample, update_sample_species_flags,
     find_negative_controls_by_run_id
 )
+from eyrie_api.database.async_settings_operations import get_spike_settings
 from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
+from eyrie_api.utils.classification import classify_sample
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/sample", tags=["sample"])
@@ -169,6 +171,24 @@ async def get_negative_controls(sample_id: str):
         negative_controls = await find_negative_controls_by_run_id(sequencing_run_id)
 
         return json.loads(JSONEncoder().encode(negative_controls))
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/{sample_id}/classification")
+async def get_classification(sample_id: str, current_user: dict = Depends(get_current_user)):
+    """Get taxonomic hits flagged against the run's negative controls and spike species"""
+    try:
+        sample = await find_sample(sample_id)
+        if not sample:
+            raise HTTPException(status_code=404, detail="Sample not found")
+
+        sequencing_run_id = sample.get('sequencing_run_id')
+        negative_controls = await find_negative_controls_by_run_id(sequencing_run_id) if sequencing_run_id else []
+        classification = classify_sample(sample, negative_controls, await get_spike_settings())
+
+        return json.loads(JSONEncoder().encode(classification))
     except HTTPException:
         raise
     except Exception as e:
