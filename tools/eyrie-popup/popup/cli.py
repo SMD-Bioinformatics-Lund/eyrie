@@ -98,6 +98,11 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
             if contaminants > 0:
                 click.echo(f"  ⚠️  Potential contaminants: {contaminants}")
 
+            if any(taxa.median_probability is not None for taxa in sample_data.taxonomic_abundances):
+                click.echo(f"  ✓ Read assignment probabilities")
+            if any(taxa.median_identity is not None for taxa in sample_data.taxonomic_abundances):
+                click.echo(f"  ✓ Alignment metrics")
+
         # Add debug info about nanoplot structure
         if sample_data.nanoplot:
             click.echo(f"  ✓ Structured nanoplot data available")

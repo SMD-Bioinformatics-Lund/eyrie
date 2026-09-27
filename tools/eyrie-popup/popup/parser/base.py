@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ..models import SampleConfig, SampleResults, ParsedSample
 from ..utils import find_file
+from .emu_metrics import parse_emu_metrics
 from .nanoplot import NanoPlotParser
 from .nanostats import NanoStatsParser
 from .taxonomic import TaxonomicParser
@@ -75,7 +76,9 @@ class SampleParser:
             sample_data.nanoplot = nanoplot_parser.create_structured_nanoplot(self.config.nanoplot)
 
         if self.config.results and self.config.results.enabled:
+            results_dir = self.seqrun_path / self.config.results.directory
             taxonomic_parser = TaxonomicParser(self.seqrun_path)
             sample_data.taxonomic_abundances = taxonomic_parser.parse_rel_abundance(self.config.results)
+            parse_emu_metrics(sample_data.taxonomic_abundances, results_dir, self.config.results)
 
         return sample_data
