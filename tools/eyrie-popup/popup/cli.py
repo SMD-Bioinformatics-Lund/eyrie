@@ -103,6 +103,9 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
             if any(taxa.median_identity is not None for taxa in sample_data.taxonomic_abundances):
                 click.echo(f"  ✓ Alignment metrics")
 
+        if sample_data.classification_qc:
+            click.echo(f"  ✓ Classification QC")
+
         # Add debug info about nanoplot structure
         if sample_data.nanoplot:
             click.echo(f"  ✓ Structured nanoplot data available")

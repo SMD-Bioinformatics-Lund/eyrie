@@ -1,10 +1,11 @@
 """Per-taxon metrics and summary statistics from EMU outputs, using emuse."""
 
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from emuse.alignment import read_alignment_metrics
+from emuse.qc import summary_stats
 from emuse.read_assignment import read_assignment_stats
 
 from ..models import TaxonomicAbundance
@@ -33,3 +34,8 @@ def parse_emu_metrics(abundances: List[TaxonomicAbundance], results_dir: Path, r
     if alignment_metrics:
         add_taxon_metrics(abundances, read_alignment_metrics(alignment_metrics), ['median_identity', 'median_coverage'])
 
+
+def parse_classification_qc(multiqc_data: Optional[Path], emu_log: Optional[Path], sample_id: str) -> Optional[Dict[str, Any]]:
+    if not multiqc_data:
+        return None
+    return summary_stats(multiqc_data, sample_id, emu_log).to_dict()
