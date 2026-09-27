@@ -31,6 +31,7 @@ dependencies = [
     "jinja2>=3.1.2",
     "Werkzeug>=2.3.7",
     "PyJWT>=2.8.0",
+    "emuse @ git+https://github.com/SMD-Bioinformatics-Lund/emuse.git@importable-analysis",
 ]
 
 [project.optional-dependencies]
