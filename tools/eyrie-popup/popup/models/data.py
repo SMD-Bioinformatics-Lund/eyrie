@@ -1,6 +1,6 @@
 """Data models for parsed sample information."""
 
-from typing import List, Optional, Dict, TYPE_CHECKING
+from typing import Any, List, Optional, Dict
 from pydantic import BaseModel, Field, validator
 
 from .config import SampleInfo
@@ -81,4 +81,5 @@ class SampleResults(BaseModel):
     nano_stats_processed: Optional[NanoStats] = None
     taxonomic_abundances: List[TaxonomicAbundance] = []
     nanoplot: Optional[object] = None
+    classification_qc: Optional[Dict[str, Any]] = None
     metadata: Optional[SampleMetadata] = None

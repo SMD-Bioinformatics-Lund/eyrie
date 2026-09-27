@@ -135,7 +135,8 @@ class FormatHandler:
             "updated_date": datetime.now().isoformat(),
             "files": files_data,
             "taxonomic_data": taxonomic_summary,
-            "nanoplot": nanoplot_data
+            "nanoplot": nanoplot_data,
+            "classification_qc": sample_data.classification_qc
         }
 
         # Add sample metadata fields if present

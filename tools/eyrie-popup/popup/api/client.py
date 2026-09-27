@@ -110,7 +110,7 @@ class EyrieAPIClient:
                     'sample_name', 'sample_id', 'sequencing_run_id', 'lims_id',
                     'classification', 'qc', 'comments', 'files',
                     'taxonomic_data', 'flagged_contaminants', 'flagged_top_hits',
-                    'nanoplot'
+                    'nanoplot', 'classification_qc'
                 ]
 
                 updated_sample = {k: v for k, v in existing_sample.items() if k in api_fields}

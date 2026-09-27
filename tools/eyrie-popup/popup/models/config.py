@@ -34,6 +34,7 @@ class MultiQCConfig(BaseModel):
     enabled: bool = True
     directory: str = "multiqc"
     report_file: str = "multiqc_report.html"
+    data_file: str = "multiqc_data/multiqc_data.json"
 
 
 class NanoPlotStageConfig(BaseModel):
