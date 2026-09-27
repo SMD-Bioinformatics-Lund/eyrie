@@ -125,8 +125,7 @@ class FormatHandler:
             "updated_date": datetime.now().isoformat(),
             "files": files_data,
             "taxonomic_data": taxonomic_summary,
-            "nanoplot": nanoplot_data,
-            "spike": sample_data.spike if hasattr(sample_data, 'spike') else None
+            "nanoplot": nanoplot_data
         }
 
         # Add sample metadata fields if present

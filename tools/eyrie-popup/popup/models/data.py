@@ -77,5 +77,4 @@ class SampleResults(BaseModel):
     nano_stats_processed: Optional[NanoStats] = None
     taxonomic_abundances: List[TaxonomicAbundance] = []
     nanoplot: Optional[object] = None
-    spike: Optional[str] = None
     metadata: Optional[SampleMetadata] = None

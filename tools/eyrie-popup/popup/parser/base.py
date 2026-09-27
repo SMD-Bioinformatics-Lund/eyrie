@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from ..models import SampleConfig, SampleResults, ParsedSample
-from ..utils import get_detected_spike, find_file
+from ..utils import find_file
 from .nanoplot import NanoPlotParser
 from .nanostats import NanoStatsParser
 from .taxonomic import TaxonomicParser
@@ -77,9 +77,5 @@ class SampleParser:
         if self.config.results and self.config.results.enabled:
             taxonomic_parser = TaxonomicParser(self.seqrun_path)
             sample_data.taxonomic_abundances = taxonomic_parser.parse_rel_abundance(self.config.results)
-
-            spike = get_detected_spike(sample_data.taxonomic_abundances)
-            if spike:
-                sample_data.spike = spike
 
         return sample_data
