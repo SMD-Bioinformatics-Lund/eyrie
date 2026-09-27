@@ -5,10 +5,18 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+ - Added emuse to eyrie-popup for parsing Emu results
+ - Added read assignment probabilities, alignment identity/coverage and lineage to uploaded taxonomic hits
+ - Added `classification_qc` summary stats (reads, read length/quality, mapped reads) to uploaded samples
+ - Added `--rel-abundance-file`, `--read-assignment-file`, `--alignment-metrics-file` and `--emu-log-file` options to `popup generate-config`
 
 ### Fixed
+ - Fixed `pipeline_software` not being sent when uploading samples
 
 ### Changed
+ - eyrie-popup requires Python 3.11 or later
+ - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
+ - Removed spike detection from eyrie-popup, spike species will be configured in Eyrie
 
 ## [0.4.1]
 
