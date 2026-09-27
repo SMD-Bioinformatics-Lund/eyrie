@@ -136,7 +136,8 @@ class FormatHandler:
             "files": files_data,
             "taxonomic_data": taxonomic_summary,
             "nanoplot": nanoplot_data,
-            "classification_qc": sample_data.classification_qc
+            "classification_qc": sample_data.classification_qc,
+            "pipeline_software": sample_data.sample_info.pipeline_software
         }
 
         # Add sample metadata fields if present
