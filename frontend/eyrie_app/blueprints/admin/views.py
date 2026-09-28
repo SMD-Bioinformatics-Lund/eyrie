@@ -193,6 +193,74 @@ def delete_user(user_id):
     return redirect(url_for('admin.users'))
 
 
+SPIKE_SETTINGS_PATH = "/api/admin/settings/spike-species"
+
+
+def spike_settings_request(method, json=None):
+    backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
+    return requests.request(
+        method,
+        f"{backend_url}{SPIKE_SETTINGS_PATH}",
+        headers={'Authorization': f'Bearer {get_jwt_from_cookie()}'},
+        json=json,
+        timeout=10
+    )
+
+
+def save_spike_settings(species, normaliser, message):
+    response = spike_settings_request('PUT', {'species': species, 'normaliser': normaliser})
+    if response.status_code == 200:
+        flash(message, 'success')
+    else:
+        flash(f'Failed to save spike species (status: {response.status_code})', 'error')
+
+
+@bp.route("/admin/settings/spike-species")
+@jwt_required
+@admin_required
+def spike_species():
+    """Spike species settings"""
+    response = spike_settings_request('GET')
+    if response.status_code == 200:
+        settings = response.json()
+    else:
+        flash(f'Failed to load spike species (status: {response.status_code})', 'error')
+        settings = {'species': [], 'normaliser': None}
+    return render_template('spike_species.html', settings=settings, current_user=get_current_user())
+
+
+@bp.route("/admin/settings/spike-species/add", methods=['POST'])
+@jwt_required
+@admin_required
+def add_spike_species():
+    species = request.form.get('species', '').strip()
+    settings = spike_settings_request('GET').json()
+    if species and species not in settings['species']:
+        save_spike_settings(settings['species'] + [species], settings['normaliser'], f'Added {species}.')
+    return redirect(url_for('admin.spike_species'))
+
+
+@bp.route("/admin/settings/spike-species/remove", methods=['POST'])
+@jwt_required
+@admin_required
+def remove_spike_species():
+    species = request.form.get('species')
+    settings = spike_settings_request('GET').json()
+    normaliser = None if settings['normaliser'] == species else settings['normaliser']
+    save_spike_settings([s for s in settings['species'] if s != species], normaliser, f'Removed {species}.')
+    return redirect(url_for('admin.spike_species'))
+
+
+@bp.route("/admin/settings/spike-species/normaliser", methods=['POST'])
+@jwt_required
+@admin_required
+def set_spike_normaliser():
+    normaliser = request.form.get('normaliser') or None
+    settings = spike_settings_request('GET').json()
+    save_spike_settings(settings['species'], normaliser, 'Updated normalising species.')
+    return redirect(url_for('admin.spike_species'))
+
+
 @bp.route("/api/admin/users", methods=['GET'])
 @jwt_required
 @admin_required
