@@ -11,6 +11,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added `--rel-abundance-file`, `--read-assignment-file`, `--alignment-metrics-file` and `--emu-log-file` options to `popup generate-config`
  - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`
  - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
+ - Added admin page for managing spike species and the normalising species
+ - Added spike, negative control and low abundance highlighting to the classification view
+ - Added read assignment probability, alignment identity/coverage and a sequencing summary to the classification view
 
 ### Fixed
  - Fixed `pipeline_software` not being sent when uploading samples
