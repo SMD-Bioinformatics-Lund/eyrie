@@ -45,6 +45,10 @@
         </div>
     </div>
     
+    {% if sample and sample.classification_qc %}
+    {{ sequencing_summary(sample.classification_qc) }}
+    {% endif %}
+
     <!-- Negative Controls Section -->
     {% if negative_controls and negative_controls|length > 0 %}
     <div class="row mt-4">
@@ -152,12 +156,20 @@
                 </thead>
                 <tbody id="contaminationTableBody">
                     {% for organism in hits %}
-                    {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if sample.spike == organism.species else '' %}
-                    <tr class="{{ row_class }}" data-species="{{ organism.species }}">
+                    {% set is_spike = organism.spike or sample.spike == organism.species %}
+                    {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if is_spike else 'table-warning' if organism.highlight == 'not_in_control' else '' %}
+                    <tr class="{{ row_class }}{{ ' low-abundance-row' if organism.low_abundance }}" data-species="{{ organism.species }}"
+                        {% if organism.absent_in_controls %}title="Not found in negative controls"{% elif organism.enriched %}title="More than 25 times more abundant than in negative controls, normalised to the spike"{% endif %}>
                         {{ row_checkbox('species', organism.species, 'speciesForm', organism.species) }}
                         <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
+                            {% if organism.median_probability is number or organism.median_identity is number %}
+                            <small class="d-block text-muted">
+                                {% if organism.median_probability is number %}Prob {{ '%.2f'|format(organism.median_probability) }}{% endif %}
+                                {% if organism.median_identity is number %}&middot; Identity {{ '%.1f%%'|format(organism.median_identity * 100) }} &middot; Coverage {{ '%.1f%%'|format(organism.median_coverage * 100) }}{% endif %}
+                            </small>
+                            {% endif %}
                         </td>
                         <td>{{ '%.2f'|format(organism.abundance) }}%</td>
                         <td>{{ '{:,.0f}'.format(organism.estimated_counts) if organism.estimated_counts else '--' }}</td>
@@ -171,10 +183,12 @@
             </table>
         </div>
     </div>
-    <div class="card-footer bg-white small text-muted d-flex gap-3">
+    <div class="card-footer bg-white small text-muted d-flex flex-wrap column-gap-3">
         <span><span class="legend-swatch bg-success-subtle"></span>Top hit</span>
         <span><span class="legend-swatch bg-danger-subtle"></span>Contaminant</span>
         <span><span class="legend-swatch bg-info-subtle"></span>Spike species</span>
+        <span><span class="legend-swatch bg-warning-subtle"></span>Not in negative controls or &gt;25&times; more abundant</span>
+        <span><span class="low-abundance-text">Grey</span>: below 0.5%</span>
     </div>
 </div>
 <form id="speciesForm" method="post" action="{{ url_for('sample.flag_species', sample_id=sample_id) }}"></form>
@@ -231,6 +245,58 @@
                     {% endif %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro quality_badge_class(quality) %}
+    {% if quality < 15 %}quality-not-acceptable{% elif quality < 20 %}quality-good{% else %}quality-excellent{% endif %}
+{% endmacro %}
+
+{% macro sequencing_summary(qc) %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-eyrie-green text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>Sequencing Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    {% for label, value in [
+                        ('Reads', '{:,.0f}'.format(qc.number_of_reads) if qc.number_of_reads is number else '--'),
+                        ('Mapped Reads', '{:,.0f}'.format(qc.mapped_reads) if qc.mapped_reads is number else '--'),
+                        ('Mean Read Length', '{:,.0f} bp'.format(qc.mean_read_length) if qc.mean_read_length is number else '--'),
+                        ('Median Read Length', '{:,.0f} bp'.format(qc.median_read_length) if qc.median_read_length is number else '--'),
+                        ('Read Length N50', '{:,.0f} bp'.format(qc.read_length_n50) if qc.read_length_n50 is number else '--'),
+                        ('Total Bases', '{:,.0f} bp'.format(qc.total_bases) if qc.total_bases is number else '--'),
+                    ] %}
+                    <div class="col-lg-2 col-md-4 col-6 mb-2">
+                        <div class="h5 mb-1">{{ value }}</div>
+                        <small class="text-muted">{{ label }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="row text-center mt-2">
+                    {% for label, quality in [('Mean Read Quality', qc.mean_read_quality), ('Median Read Quality', qc.median_read_quality)] %}
+                    <div class="col-lg-2 col-md-4 col-6 mb-2">
+                        {% if quality is number %}
+                            <span class="badge fs-6 {{ quality_badge_class(quality) }}">Q{{ '%.1f'|format(quality) }}</span>
+                        {% else %}
+                            <div class="h5 mb-1">--</div>
+                        {% endif %}
+                        <div><small class="text-muted">{{ label }}</small></div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-lg-8 col-12 small text-muted text-lg-start align-self-center">
+                        <span class="badge quality-not-acceptable">&lt; Q15</span> not acceptable
+                        <span class="badge quality-good ms-2">Q15&ndash;Q20</span> good
+                        <span class="badge quality-excellent ms-2">&ge; Q20</span> excellent
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
