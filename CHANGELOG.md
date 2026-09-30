@@ -18,6 +18,7 @@ All notable changes to the Eyrie sample management system will be documented in 
 ### Fixed
  - Fixed `pipeline_software` not being sent when uploading samples
  - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
+ - Fixed analysis files being served without login
 
 ### Changed
  - eyrie-popup requires Python 3.11 or later

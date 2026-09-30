@@ -141,8 +141,8 @@ def update_species_flags_api(sample_id):
         return jsonify({'error': str(e)}), 500
 
 # Analysis file serving endpoint
-@jwt_required
 @bp.route("/analysis-files/<path:file_path>", methods=['GET'])
+@jwt_required
 def serve_data_file_endpoint(file_path):
     """Serve analysis files from /app/analysis-files directory with authentication"""
     return serve_analysis_file(file_path)
