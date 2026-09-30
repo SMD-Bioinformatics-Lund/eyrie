@@ -1,6 +1,6 @@
 """Negative control comparison for a sample's taxonomic hits, using emuse."""
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from emuse.negative_control import compare_to_negative_controls
 
@@ -14,6 +14,11 @@ def abundance_rows(sample: Dict[str, Any]) -> List[Dict[str, Any]]:
         }
         for hit in hits
     ]
+
+
+def detected_spike(sample: Dict[str, Any], spike_species: List[str]) -> Optional[str]:
+    hits = (sample.get('taxonomic_data') or {}).get('hits', [])
+    return next((hit.get('species') for hit in hits if hit.get('species') in spike_species), None)
 
 
 def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, Any]], spike_settings: Dict[str, Any]) -> Dict[str, Any]:
@@ -33,12 +38,10 @@ def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, An
         flag_data.pop('species')
         classified_hits.append({**hit, **flag_data})
 
-    spike = next((hit['species'] for hit in classified_hits if hit['spike']), None)
-
     return {
         'sample_id': sample['sample_id'],
         'hits': classified_hits,
-        'spike': spike,
+        'spike': detected_spike(sample, spike_settings['species']),
         'negative_controls': list(controls),
         'spike_settings': spike_settings,
         'classification_qc': sample.get('classification_qc'),

@@ -56,7 +56,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
  - eyrie-popup requires Python 3.11 or later
  - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
- - Removed spike detection from eyrie-popup, spike species will be configured in Eyrie
+ - Removed spike detection from eyrie-popup, spike species are configured in Eyrie
+ - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings
 
 ## [0.4.1]
 

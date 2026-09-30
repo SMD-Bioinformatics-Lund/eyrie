@@ -9,7 +9,7 @@ from .utils import get_db_connection
 TABLE_FIELDS = [
     'sample_id', 'sample_name', 'lims_id', 'sequencing_run_id', 'classification', 'qc', 'metadata',
     'comments', 'flagged_top_hits', 'flagged_contaminants', 'created_date', 'updated_date',
-    'nanoplot.processed.nanostats', 'nanoplot.unprocessed.nanostats',
+    'nanoplot.processed.nanostats', 'nanoplot.unprocessed.nanostats', 'taxonomic_data.hits.species',
 ]
 
 
