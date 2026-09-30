@@ -35,6 +35,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed the web interface hanging for up to 30 seconds, e.g. when clearing species flags: the frontend ran a single synchronous gunicorn worker that idle browser connections could block; it now uses threaded workers
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
  - Fixed `pipeline_software` not being sent when uploading samples
+ - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
