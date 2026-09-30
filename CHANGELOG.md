@@ -37,6 +37,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed `pipeline_software` not being sent when uploading samples
  - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
  - Fixed analysis files being served without login
+ - Fixed eyrie-popup Docker image build by installing git
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
