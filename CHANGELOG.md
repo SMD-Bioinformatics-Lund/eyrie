@@ -5,10 +5,27 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+ - Added emuse to eyrie-popup for parsing Emu results
+ - Added read assignment probabilities, alignment identity/coverage and lineage to uploaded taxonomic hits
+ - Added `classification_qc` summary stats (reads, read length/quality, mapped reads) to uploaded samples
+ - Added `--rel-abundance-file`, `--read-assignment-file`, `--alignment-metrics-file` and `--emu-log-file` options to `popup generate-config`
+ - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`
+ - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
+ - Added admin page for managing spike species and the normalising species
+ - Added spike, negative control and low abundance highlighting to the classification view
+ - Added read assignment probability, alignment identity/coverage and a sequencing summary to the classification view
 
 ### Fixed
+ - Fixed `pipeline_software` not being sent when uploading samples
+ - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
+ - Fixed analysis files being served without login
+ - Fixed eyrie-popup Docker image build by installing git
 
 ### Changed
+ - eyrie-popup requires Python 3.11 or later
+ - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
+ - Removed spike detection from eyrie-popup, spike species are configured in Eyrie
+ - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings
 
 ## [0.4.1]
 

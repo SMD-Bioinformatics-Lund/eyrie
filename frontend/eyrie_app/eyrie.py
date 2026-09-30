@@ -174,6 +174,15 @@ def get_negative_controls_from_backend(headers: CaseInsensitiveDict, sample_id: 
 
 
 @api_authentication
+def get_classification_from_backend(headers: CaseInsensitiveDict, sample_id: str) -> Dict[str, Any]:
+    """Get taxonomic hits flagged against negative controls and spike species"""
+    url = f"{backend_url}/api/sample/{sample_id}/classification"
+    resp = requests.get(url, headers=headers, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@api_authentication
 def get_contamination_analysis_from_backend(headers: CaseInsensitiveDict, seqrun_id: str) -> Dict[str, Any]:
     """Get contamination analysis for a specific sequencing run"""
     try:

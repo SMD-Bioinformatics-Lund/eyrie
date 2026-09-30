@@ -39,11 +39,21 @@ class FormatHandler:
             "contaminants_detected": len(contaminants),
             "hits": [
                 {
+                    "tax_id": taxa.tax_id,
                     "species": taxa.species,
                     "abundance": round(taxa.abundance * 100, 2),  # Convert to percentage
+                    "relative_abundance": taxa.abundance,
                     "genus": taxa.genus,
                     "family": taxa.family,
-                    "estimated_counts": taxa.estimated_counts
+                    "order": taxa.order,
+                    "class": taxa.class_name,
+                    "phylum": taxa.phylum,
+                    "superkingdom": taxa.superkingdom,
+                    "estimated_counts": taxa.estimated_counts,
+                    "median_probability": taxa.median_probability,
+                    "mean_probability": taxa.mean_probability,
+                    "median_identity": taxa.median_identity,
+                    "median_coverage": taxa.median_coverage
                 }
                 for taxa in sorted(
                     sample_data.taxonomic_abundances, 
@@ -126,7 +136,8 @@ class FormatHandler:
             "files": files_data,
             "taxonomic_data": taxonomic_summary,
             "nanoplot": nanoplot_data,
-            "spike": sample_data.spike if hasattr(sample_data, 'spike') else None
+            "classification_qc": sample_data.classification_qc,
+            "pipeline_software": sample_data.sample_info.pipeline_software
         }
 
         # Add sample metadata fields if present

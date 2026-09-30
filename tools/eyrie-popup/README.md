@@ -23,7 +23,7 @@ pip install -e .
 
 ### Python Version Compatibility
 
-eyrie-popup supports Python 3.8 through 3.13. It is **not compatible with Python 3.14+** due to dependencies on Pydantic v1.
+eyrie-popup supports Python 3.11 through 3.13. It is **not compatible with Python 3.14+** due to dependencies on Pydantic v1. Emu results are parsed with [emuse](https://github.com/kclinmicro/emuse).
 
 ## Quick Start
 
@@ -64,7 +64,16 @@ popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/
 
 # With custom sample information
 popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --sample-name "Sample_001" --sequencing-run-id "RUN_20250930"
+
+# With explicit EMU files (relative to results/), e.g. from TRANA
+popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 \
+  --rel-abundance-file barcode01_filtered.fastq_rel-abundance.tsv \
+  --read-assignment-file barcode01_filtered.fastq_read-assignment-distributions.tsv \
+  --alignment-metrics-file barcode01_alignment-metrics.tsv \
+  --emu-log-file emu_logs/barcode01_emu_log.log
 ```
+
+When the EMU file options are omitted they are found from the sample ID in `results/`, for any TRANA preprocessing (`_downsampled`, `_filtered`, `.porechop_abi`, ...).
 
 ### 2. Upload Sample Data
 
@@ -246,12 +255,16 @@ results:
   enabled: true
   directory: "results"
   rel_abundance_file: "barcode01_filtered.fastq_rel-abundance.tsv"
+  read_assignment_file: "barcode01_filtered.fastq_read-assignment-distributions.tsv"  # optional
+  alignment_metrics_file: "barcode01_alignment-metrics.tsv"  # optional
+  emu_log_file: "emu_logs/barcode01_emu_log.log"  # optional
 
 # MultiQC aggregated reports (optional)
 multiqc:
   enabled: true
   directory: "multiqc"
   report_file: "multiqc_report.html"
+  data_file: "multiqc_data/multiqc_data.json"
 ```
 
 ### Analysis Directory Structure

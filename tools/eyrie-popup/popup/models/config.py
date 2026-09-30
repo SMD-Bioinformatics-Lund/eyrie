@@ -34,6 +34,7 @@ class MultiQCConfig(BaseModel):
     enabled: bool = True
     directory: str = "multiqc"
     report_file: str = "multiqc_report.html"
+    data_file: str = "multiqc_data/multiqc_data.json"
 
 
 class NanoPlotStageConfig(BaseModel):
@@ -55,6 +56,9 @@ class ResultsConfig(BaseModel):
     enabled: bool = True
     directory: str = "results"
     rel_abundance_file: str  # Direct file name instead of pattern
+    read_assignment_file: Optional[str] = None
+    alignment_metrics_file: Optional[str] = None
+    emu_log_file: Optional[str] = None
 
 
 class SampleConfig(BaseModel):
