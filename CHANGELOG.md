@@ -36,6 +36,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
  - Fixed `pipeline_software` not being sent when uploading samples
  - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
+ - Fixed analysis files being served without login
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
