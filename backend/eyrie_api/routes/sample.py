@@ -9,7 +9,7 @@ from eyrie_api.database.async_sample_operations import (
 )
 from eyrie_api.database.async_settings_operations import get_spike_settings
 from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
-from eyrie_api.utils.classification import classify_sample
+from eyrie_api.utils.classification import classify_sample, detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/sample", tags=["sample"])
@@ -20,6 +20,7 @@ async def get_sample(sample_id: str):
         sample = await find_sample(sample_id)
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
+        sample['spike'] = detected_spike(sample, (await get_spike_settings())['species'])
         return json.loads(JSONEncoder().encode(sample))
     except HTTPException:
         raise
