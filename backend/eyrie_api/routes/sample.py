@@ -137,7 +137,8 @@ async def update_comment(
 @router.put("/{sample_id}/species-flags")
 async def update_species_flags(
     sample_id: str,
-    species_flags_data: SpeciesFlagsUpdate
+    species_flags_data: SpeciesFlagsUpdate,
+    current_user: dict = Depends(get_current_user)
 ):
     """Update sample species flags (contaminants and/or top hits)"""
     try:
