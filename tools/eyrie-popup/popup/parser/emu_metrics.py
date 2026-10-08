@@ -35,7 +35,7 @@ def parse_emu_metrics(abundances: List[TaxonomicAbundance], results_dir: Path, r
         add_taxon_metrics(abundances, read_alignment_metrics(alignment_metrics), ['median_identity', 'median_coverage'])
 
 
-def parse_classification_qc(multiqc_data: Optional[Path], emu_log: Optional[Path], sample_id: str) -> Optional[Dict[str, Any]]:
+def parse_classification_qc(multiqc_data: Optional[Path], sample_id: str) -> Optional[Dict[str, Any]]:
     if not multiqc_data:
         return None
-    return summary_stats(multiqc_data, sample_id, emu_log).to_dict()
+    return summary_stats(multiqc_data, sample_id).to_dict()

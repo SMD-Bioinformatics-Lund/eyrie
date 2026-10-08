@@ -7,8 +7,8 @@ All notable changes to the Eyrie sample management system will be documented in 
 ### Added
  - Added emuse to eyrie-popup for parsing Emu results
  - Added read assignment probabilities, alignment identity/coverage and lineage to uploaded taxonomic hits
- - Added `classification_qc` summary stats (reads, read length/quality, mapped reads) to uploaded samples
- - Added `--rel-abundance-file`, `--read-assignment-file`, `--alignment-metrics-file` and `--emu-log-file` options to `popup generate-config`
+ - Added `classification_qc` summary stats (reads before and after filtering, read length/quality) to uploaded samples
+ - Added `--rel-abundance-file`, `--read-assignment-file` and `--alignment-metrics-file` options to `popup generate-config`
  - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`
  - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
  - Added admin page for managing spike species and the normalising species

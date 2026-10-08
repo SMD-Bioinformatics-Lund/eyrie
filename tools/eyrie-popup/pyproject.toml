@@ -24,7 +24,7 @@ classifiers = [
 requires-python = ">=3.11,<3.14"
 dependencies = [
     "click>=8.0.0",
-    "emuse @ git+https://github.com/SMD-Bioinformatics-Lund/emuse.git@importable-analysis",
+    "emuse @ git+https://github.com/SMD-Bioinformatics-Lund/emuse.git@reusable-analysis",
     "pydantic>=1.8.0,<2.0.0",
     "PyYAML>=6.0",
     "requests>=2.25.0",

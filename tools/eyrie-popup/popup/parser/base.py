@@ -84,7 +84,6 @@ class SampleParser:
             if self.config.multiqc and self.config.multiqc.enabled:
                 sample_data.classification_qc = parse_classification_qc(
                     existing_file(self.seqrun_path / self.config.multiqc.directory, self.config.multiqc.data_file),
-                    existing_file(results_dir, self.config.results.emu_log_file),
                     self.config.sample.sample_id
                 )
 
