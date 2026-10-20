@@ -28,6 +28,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed all data tables to the compact bordered style with black, title-case, non-bold header rows without light borders
  - Removed the white outlines from the navbar buttons
  - Removed the sample count badge from the sequencing run tabs
+ - Changed user management to the samples table layout: select users with checkboxes and activate, deactivate or delete them from a Manage Users menu (your own account is always skipped), with the username opening the edit page
  - Changed all card headers to the same blue
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
 
