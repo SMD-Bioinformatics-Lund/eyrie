@@ -1,14 +1,15 @@
 """
-Server-side filtering of the samples tables
+Server-side filtering of the samples and sequencing runs tables
 """
 from urllib.parse import urlencode
 
 from flask import request
 
-from .template_filters import read_stats_filter
+from .template_filters import qc_class_filter, read_stats_filter, seqrun_date_filter
 
 SEARCH_FIELDS = ['sample_name', 'sample_id', 'lims_id', 'sequencing_run_id']
 CATEGORIES = ['production', 'validation', 'test']
+SPIKE_LEVELS = {'complete': 'table-success', 'partial': 'table-warning', 'low': 'table-danger'}
 QC_STATUSES = ['passed', 'failed', 'unprocessed']
 
 
@@ -58,6 +59,40 @@ def filter_options(samples):
         'qc_statuses': QC_STATUSES,
         'categories': CATEGORIES,
     }
+
+
+def spike_missing_percent(seqrun):
+    total = seqrun.get('total_samples') or 0
+    return 100 * (total - (seqrun.get('spikes_detected') or 0)) / total if total else None
+
+
+def filter_seqruns(seqruns, args):
+    search = args.get('q', '').strip().lower()
+    pipeline_status = args.get('pipeline_status')
+    spike_class = SPIKE_LEVELS.get(args.get('spikes'))
+    min_samples = to_float(args.get('min_samples'))
+    run_from, run_to = args.get('run_from'), args.get('run_to')
+
+    def keep(seqrun):
+        run_id = seqrun.get('sequencing_run_id') or ''
+        run_date = seqrun_date_filter(run_id)
+        if search and search not in run_id.lower():
+            return False
+        if pipeline_status and seqrun.get('pipeline_status') != pipeline_status:
+            return False
+        if spike_class and qc_class_filter(spike_missing_percent(seqrun), 'spike_missing_percent') != spike_class:
+            return False
+        if min_samples is not None and (seqrun.get('total_samples') or 0) < min_samples:
+            return False
+        if (run_from or run_to) and not run_date:
+            return False
+        return not (run_from and run_date < run_from) and not (run_to and run_date > run_to)
+
+    return [seqrun for seqrun in seqruns if keep(seqrun)]
+
+
+def seqrun_filter_options(seqruns):
+    return {'pipeline_statuses': sorted({s.get('pipeline_status') for s in seqruns if s.get('pipeline_status')})}
 
 
 def url_with_args(**changes):
