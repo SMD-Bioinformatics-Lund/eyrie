@@ -90,8 +90,13 @@ function renderTrendsChart(data) {
     const chartDiv = document.getElementById('trendsChart');
     chartDiv.innerHTML = '';
 
+    const undated = data?.metadata?.undated_samples || 0;
+    document.getElementById('chartNote').textContent = undated
+        ? `${undated} sample${undated === 1 ? '' : 's'} left out: no run start time or date in the run ID`
+        : '';
+
     if (!data?.series?.length) {
-        showEmptyChart();
+        showEmptyChart(undated);
         return;
     }
 
@@ -145,14 +150,17 @@ function renderTrendsChart(data) {
 /**
  * Show empty chart message
  */
-function showEmptyChart() {
+function showEmptyChart(undated = 0) {
     const chartDiv = document.getElementById('trendsChart');
+    const hint = undated
+        ? 'Samples need a run start time (upload the run report) or a date in the run ID'
+        : 'Try adjusting the filters';
     chartDiv.innerHTML = `
         <div class="d-flex justify-content-center align-items-center h-100">
             <div class="text-center">
                 <i class="bi bi-graph-down text-muted" style="font-size: 4rem;"></i>
                 <p class="text-muted mt-3">No data available for the selected parameters</p>
-                <small class="text-muted">Try adjusting the filters</small>
+                <small class="text-muted">${hint}</small>
             </div>
         </div>
     `;

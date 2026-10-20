@@ -16,6 +16,7 @@ All notable changes to the Eyrie sample management system will be documented in 
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
+ - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`

@@ -9,6 +9,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 
 from ..database.utils import get_db_connection
 from ..auth.middleware import get_current_user
+from ..utils.run_dates import run_date_from_id
 
 logger = logging.getLogger(__name__)
 
@@ -85,13 +86,11 @@ async def get_trends_data(
             # Create seqrun lookup dict
             seqruns_dict = {seqrun["sequencing_run_id"]: seqrun for seqrun in seqruns}
 
-            # Add seqrun exp_start_time to samples for processing
+            # Date samples by their run's start time, or the date in the run ID when no run report was uploaded
             for sample in samples:
                 seqrun_id = sample.get("sequencing_run_id")
-                if seqrun_id and seqrun_id in seqruns_dict:
-                    seqrun = seqruns_dict[seqrun_id]
-                    sequencing_metadata = seqrun.get("sequencing_metadata", {})
-                    sample["_seqrun_exp_start_time"] = sequencing_metadata.get("exp_start_time")
+                sequencing_metadata = seqruns_dict.get(seqrun_id, {}).get("sequencing_metadata") or {}
+                sample["_seqrun_exp_start_time"] = sequencing_metadata.get("exp_start_time") or run_date_from_id(seqrun_id)
 
         if not samples:
             return {
@@ -106,6 +105,7 @@ async def get_trends_data(
 
         # Process trends data and get period count
         period_count = len(group_by_time_period(samples))
+        undated_samples = sum(1 for sample in samples if not sample.get("_seqrun_exp_start_time"))
         series_data = process_trends_data(samples, category, metric, read_quality_filtering)
 
         return {
@@ -116,7 +116,8 @@ async def get_trends_data(
                 "category": category,
                 "metric": metric,
                 "group_by": group_by,
-                "period_count": period_count
+                "period_count": period_count,
+                "undated_samples": undated_samples
             }
         }
 
