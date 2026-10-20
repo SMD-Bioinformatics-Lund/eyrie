@@ -1,0 +1,160 @@
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    text-transform: none;
+    letter-spacing: normal;
+    white-space: nowrap;
+    border-width: 1px;
+}
+
+.summary-block {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-radius: 0.25rem;
+}
+
+.filter-bar .form-control,
+.filter-bar .form-select,
+.filter-bar .btn {
+    font-size: 0.8rem;
+    width: auto;
+}
+
+.filter-bar .filter-search {
+    width: 9rem;
+}
+
+.filter-bar .filter-select {
+    max-width: 9.5rem;
+}
+
+.filter-bar .filter-number {
+    width: 6.25rem;
+}
+
+.filter-bar .btn {
+    text-transform: none;
+    letter-spacing: normal;
+    padding: 0.25rem 0.6rem;
+    border-width: 1px;
+}
+
+.btn-apply {
+    color: #fff;
+    background-color: #146c43;
+    border-color: #146c43;
+}
+
+.btn-apply:hover,
+.btn-apply:focus {
+    color: #fff;
+    background-color: #0f5132;
+    border-color: #0f5132;
+}
+
+.compact-table {
+    font-size: 0.8rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-top: 1px solid var(--bs-border-color);
+    border-left: 1px solid var(--bs-border-color);
+}
+
+.compact-table th,
+.compact-table td {
+    padding: 0.15rem 0.4rem;
+    white-space: nowrap;
+    vertical-align: middle;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-right: 1px solid var(--bs-border-color);
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.compact-table th {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.8rem;
+}
+
+.compact-table th.text-center,
+.compact-table td.text-center {
+    text-align: center;
+}
+
+/* Frozen metadata columns */
+.samples-table tr > :nth-child(1):not([colspan]) {
+    position: sticky;
+    left: 0rem;
+    z-index: 1;
+    width: 1.75rem;
+    min-width: 1.75rem;
+    max-width: 1.75rem;
+}
+.samples-table tr > :nth-child(2):not([colspan]) {
+    position: sticky;
+    left: 1.75rem;
+    z-index: 1;
+    width: 8rem;
+    min-width: 8rem;
+    max-width: 8rem;
+}
+.samples-table tr > :nth-child(3):not([colspan]) {
+    position: sticky;
+    left: 9.75rem;
+    z-index: 1;
+    width: 6.5rem;
+    min-width: 6.5rem;
+    max-width: 6.5rem;
+}
+.samples-table tr > :nth-child(4):not([colspan]) {
+    position: sticky;
+    left: 16.25rem;
+    z-index: 1;
+    width: 5rem;
+    min-width: 5rem;
+    max-width: 5rem;
+}
+.samples-table tr > :nth-child(5):not([colspan]) {
+    position: sticky;
+    left: 21.25rem;
+    z-index: 1;
+    width: 5rem;
+    min-width: 5rem;
+    max-width: 5rem;
+}
+.samples-table tr > :nth-child(6):not([colspan]) {
+    position: sticky;
+    left: 26.25rem;
+    z-index: 1;
+    width: 5.5rem;
+    min-width: 5.5rem;
+    max-width: 5.5rem;
+}
+
+.samples-table tr > :nth-child(6):not([colspan]) {
+    border-right: 2px solid var(--bs-secondary-border-subtle);
+}
+
+.compact-table .has-hover {
+    cursor: help;
+    text-decoration: underline dotted;
+}
+
+.compact-table-wrapper {
+    padding-bottom: 0.75rem;
+}
+
+.list-tooltip .tooltip-inner {
+    white-space: pre-line;
+    text-align: left;
+    max-width: 25rem;
+}
+
+.table-search {
+    width: 250px;
+}

@@ -1,0 +1,248 @@
+{% macro samples_card(samples, filter_options, error=None, show_seqrun_filter=True) %}
+{% set select_all = request.args.get('select') == 'all' %}
+{% set passed = samples | selectattr('qc', 'equalto', 'passed') | list | length %}
+{% set failed = samples | selectattr('qc', 'equalto', 'failed') | list | length %}
+{{ filter_bar(filter_options, show_seqrun_filter) }}
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-primary">
+        <div class="d-flex gap-1 mb-2">
+            <span class="summary-block">Total <strong>{{ samples | length }}</strong></span>
+            <span class="summary-block">Unreviewed <strong>{{ samples | length - passed - failed }}</strong></span>
+            <span class="summary-block bg-success-subtle">Passed <strong>{{ passed }}</strong></span>
+            <span class="summary-block bg-danger-subtle">Failed <strong>{{ failed }}</strong></span>
+            <span class="summary-block bg-primary-subtle">Selected <strong id="selectedCount">{{ samples | length if select_all else 0 }}</strong></span>
+        </div>
+        <div class="d-flex align-items-center gap-2 table-actions">
+            <i class="bi bi-table text-white fs-5"></i>
+            <a href="{{ url_with_args(select='all', message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-check2-all me-1"></i>Select All</a>
+            <a href="{{ url_with_args(select=None, message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg me-1"></i>Clear Selection</a>
+            <div class="dropdown">
+                <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear me-1"></i>Manage Samples
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exportModal"><i class="bi bi-download me-2"></i>Export to LIMS</button></li>
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#qcModal"><i class="bi bi-clipboard-check me-2"></i>Set QC</button></li>
+                    {% if current_user and current_user.role == 'admin' %}
+                    <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#categoryModal"><i class="bi bi-tag me-2"></i>Update Category</button></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if request.args.get('message') %}
+    <div class="alert alert-info alert-dismissible small py-1 px-2 m-2" role="alert">
+        {{ request.args.get('message') }}
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <div class="card-body p-0">
+        <div class="table-responsive compact-table-wrapper">
+            <table class="table table-sm table-hover mb-0 compact-table samples-table" id="samplesTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center" title="Select"><i class="bi bi-check2-square"></i></th>
+                        <th>Sample Name</th>
+                        <th>LIMS ID</th>
+                        <th>Run Date</th>
+                        <th>Category</th>
+                        <th>QC Status</th>
+                        <th>Sequencing Run ID</th>
+                        <th>Sample Type</th>
+                        <th>Material</th>
+                        <th>Classification</th>
+                        <th title="Number of reads after filtering">Reads</th>
+                        <th title="Percentage of reads removed by filtering">Filtered</th>
+                        <th title="Mean read quality after filtering">Mean Quality</th>
+                        <th>Top Hits</th>
+                        <th>Contaminants</th>
+                        <th>QC Comments</th>
+                        <th>General Comments</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th class="d-none">Sample ID</th>
+                    </tr>
+                </thead>
+                <tbody id="samplesTableBody">
+                    {{ samples_table_rows(samples, select_all, error) | compact_html }}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<form id="samplesForm" method="post" action="{{ url_for('samples.export_samples') }}">
+    <input type="hidden" name="next" value="{{ url_with_args(message=None, select=None) }}">
+</form>
+
+{% call action_modal('exportModal', 'Export to LIMS', url_for('samples.export_samples'), 'Export TSV') %}
+    <label for="exportIdField" class="form-label">ID to use in the sample_id column</label>
+    <select id="exportIdField" name="id_field" class="form-select form-select-sm" form="samplesForm">
+        <option value="lims_id" selected>lims_id</option>
+        <option value="sample_id">sample_id</option>
+        <option value="sample_name">sample_name</option>
+    </select>
+{% endcall %}
+
+{% call action_modal('qcModal', 'Set QC', url_for('samples.set_samples_qc'), 'Set QC') %}
+    <label for="qcStatus" class="form-label">QC status</label>
+    <select id="qcStatus" name="qc" class="form-select form-select-sm mb-2" form="samplesForm">
+        <option value="passed">passed</option>
+        <option value="failed">failed</option>
+        <option value="unprocessed">unprocessed</option>
+    </select>
+    <label for="qcComment" class="form-label">QC comment (optional)</label>
+    <textarea id="qcComment" name="qc_comment" class="form-control form-control-sm" rows="2" form="samplesForm"></textarea>
+{% endcall %}
+
+{% if current_user and current_user.role == 'admin' %}
+{% call action_modal('categoryModal', 'Update Category', url_for('samples.update_samples_category'), 'Update Category') %}
+    <label for="categoryField" class="form-label">Category</label>
+    <select id="categoryField" name="category" class="form-select form-select-sm" form="samplesForm">
+        <option value="production">production</option>
+        <option value="validation">validation</option>
+        <option value="test">test</option>
+    </select>
+{% endcall %}
+{% endif %}
+{% endmacro %}
+
+{% macro filter_bar(options, show_seqrun_filter) %}
+{% set args = request.args %}
+<div class="card border-0 shadow-sm mb-2">
+<form method="get" action="{{ request.path }}" class="card-body d-flex flex-wrap align-items-center gap-2 p-2 filter-bar">
+    <input type="text" name="q" value="{{ args.get('q', '') }}" class="form-control form-control-sm filter-search" placeholder="Search samples..." aria-label="Search samples">
+    {% if show_seqrun_filter %}
+    {{ filter_select('seqrun', 'Sequencing run', options.seqruns) }}
+    {% endif %}
+    {{ filter_select('sample_type', 'Sample type', options.sample_types) }}
+    {{ filter_select('material', 'Material', options.materials) }}
+    {{ filter_select('qc', 'QC status', options.qc_statuses) }}
+    {% set selected_categories = args.getlist('category') %}
+    <div class="dropdown">
+        <button type="button" class="form-select form-select-sm text-start filter-select" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
+            Categories{% if selected_categories %} ({{ selected_categories | length }}){% endif %}
+        </button>
+        <div class="dropdown-menu p-2">
+            {% for category in options.categories %}
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" name="category" value="{{ category }}" id="category-{{ category }}" {% if category in selected_categories %}checked{% endif %}>
+                <label class="form-check-label" for="category-{{ category }}">{{ category | title }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <input type="number" name="min_reads" value="{{ args.get('min_reads', '') }}" min="0" step="1" class="form-control form-control-sm filter-number" placeholder="Min reads" aria-label="Minimum reads">
+    <input type="number" name="min_quality" value="{{ args.get('min_quality', '') }}" min="0" step="0.1" class="form-control form-control-sm filter-number" placeholder="Min quality" aria-label="Minimum mean quality">
+    <input type="number" name="min_filtered" value="{{ args.get('min_filtered', '') }}" min="0" max="100" step="0.1" class="form-control form-control-sm filter-number" placeholder="Min % filtered" aria-label="Minimum percentage filtered">
+    <button type="submit" class="btn btn-sm btn-apply">Apply</button>
+    <a href="{{ request.path }}" class="btn btn-sm btn-secondary">Reset</a>
+</form>
+</div>
+{% endmacro %}
+
+{% macro filter_select(name, label, values) %}
+<select name="{{ name }}" class="form-select form-select-sm filter-select" aria-label="{{ label }}">
+    <option value="">{{ label }}</option>
+    {% for value in values %}
+    <option value="{{ value }}" {% if request.args.get(name) == value %}selected{% endif %}>{{ value }}</option>
+    {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro action_modal(id, title, action, submit_label) %}
+<div class="modal fade" id="{{ id }}" tabindex="-1" aria-labelledby="{{ id }}Label" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title" id="{{ id }}Label">{{ title }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ caller() }}
+                <div class="form-text">Applies to the selected samples.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" form="samplesForm" formaction="{{ action }}" data-bs-dismiss="modal">{{ submit_label }}</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro samples_table_rows(samples, select_all=False, error=None) %}
+    {% if samples %}
+        {% for sample in samples %}
+            {% set overview_url = url_for('sample.sample_overview', sample_id=sample.sample_id) %}
+            {% set stats = sample | read_stats %}
+            {% set qc_comments = sample.comments.qc if sample.comments and sample.comments.qc else [] %}
+            {% set general_comment = sample.comments.other if sample.comments and sample.comments.other else '' %}
+            <tr>
+                <td class="text-center">
+                    <input type="checkbox" class="form-check-input" name="sample_ids" value="{{ sample.sample_id }}" form="samplesForm" aria-label="Select {{ sample.sample_name }}" {% if select_all %}checked{% endif %}>
+                </td>
+                <td title="{{ sample.sample_name }}"><a href="{{ overview_url }}" class="fw-semibold">{{ sample.sample_name }}</a></td>
+                <td title="{{ sample.lims_id or '' }}">{{ sample.lims_id or '-' }}</td>
+                <td>{{ sample.sequencing_run_id | seqrun_date or '-' }}</td>
+                <td>{{ sample.metadata.category or '-' }}</td>
+                <td class="{{ {'passed': 'table-success', 'failed': 'table-danger'}.get(sample.qc, '') }}">{{ sample.qc }}</td>
+                <td>{{ sample.sequencing_run_id }}</td>
+                <td>{{ sample.metadata.sample_type or '-' }}</td>
+                <td>{{ sample.metadata.material or '-' }}</td>
+                <td>{{ sample.classification }}</td>
+                {{ qc_stat_cell(stats.reads, 'reads', '{:,.0f}') }}
+                {{ qc_stat_cell(stats.filtered_percent, 'filtered_percent', '{:.1f}%') }}
+                {{ qc_stat_cell(stats.quality, 'quality', '{:.1f}') }}
+                {{ hover_list_cell(sample.flagged_top_hits or []) }}
+                {{ hover_list_cell(sample.flagged_contaminants or []) }}
+                <td data-sort-value="{{ qc_comments|length }}">
+                    {% if qc_comments %}
+                        <a href="{{ overview_url }}#qcCommentsContainer" class="has-hover" data-bs-toggle="tooltip" title="{% for c in qc_comments %}{{ c.timestamp[:10] }} {{ c.user }}: {{ c.comment }}{% if not loop.last %}&#10;{% endif %}{% endfor %}">{{ qc_comments|length }} {{ comment_preview(qc_comments[-1].comment, qc_comments|length > 1) }}</a>
+                    {% else %}<span class="text-muted">0</span>{% endif %}
+                </td>
+                <td data-sort-value="{{ 1 if general_comment else 0 }}">
+                    {% if general_comment %}
+                        <a href="{{ overview_url }}#generalComments" class="has-hover" data-bs-toggle="tooltip" title="{{ general_comment }}">1 {{ comment_preview(general_comment) }}</a>
+                    {% else %}<span class="text-muted">0</span>{% endif %}
+                </td>
+                <td>{{ sample.created_date[:10] if sample.created_date else '-' }}</td>
+                <td>{{ sample.updated_date[:10] if sample.updated_date else '-' }}</td>
+                <td class="d-none">{{ sample.sample_id }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="20" class="text-center py-4">
+                <div class="text-muted">
+                    <i class="bi bi-table text-muted" style="font-size: 2rem;"></i>
+                    <p class="mt-2">No samples found</p>
+                    {% if error %}
+                        <small class="text-danger">Error: {{ error }}</small>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+    {% endif %}
+{% endmacro %}
+
+{% macro qc_stat_cell(value, metric, format) %}
+    {% if value is number %}
+        <td class="{{ value | qc_class(metric) }}" data-sort-value="{{ value }}">{{ format.format(value) }}</td>
+    {% else %}
+        <td class="text-muted" data-sort-value="-1">-</td>
+    {% endif %}
+{% endmacro %}
+
+{% macro comment_preview(comment, more=False) %}
+    {%- set preview = comment | truncate(25, true, '', 0) -%}
+    - {{ preview }}{% if more or preview != comment %}&hellip;{% endif %}
+{%- endmacro %}
+
+{% macro hover_list_cell(items) %}
+    <td data-sort-value="{{ items|length }}">
+        {% if items %}
+            <span class="has-hover" data-bs-toggle="tooltip" title="{{ items|join('&#10;'|safe) }}">{{ items|length }}</span>
+        {% else %}<span class="text-muted">0</span>{% endif %}
+    </td>
+{% endmacro %}

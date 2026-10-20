@@ -7,13 +7,21 @@ All notable changes to the Eyrie sample management system will be documented in 
 ### Added
  - Added sample `category` metadata (`production`, `validation` or `test`) to eyrie-popup and the samples table
  - Added `lims_id` to the eyrie-popup sample metadata file, so LIMS IDs can be uploaded or updated
+ - Added LIMS ID and run date (from the sequencing run ID) columns to the samples table
+ - Added reads, percentage filtered and mean read quality after filtering to the samples table, with cells shaded by configurable QC boundaries
+ - Added Manage Samples menu to the samples tables: export to LIMS as TSV (QC status, top hits and contaminants, with `lims_id`, `sample_id` or `sample_name` as ID), set QC and update category (admin only)
  - Added admin-only `PUT /api/sample/{sample_id}/category`
  - Added `view=table` and `sequencing_run_id` parameters to `GET /api/samples`, so the samples tables only load the fields they show
+ - Added a filter bar to the samples tables: search, sequencing run, sample type, material, QC status, categories, and minimum reads, quality and percentage filtered
 
 ### Fixed
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
+ - Changed the samples and sequencing run samples tables to one shared compact, bordered table without coloured badges, with frozen metadata columns and QC status shaded green/red
+ - Changed top hits, contaminants and comments in the samples table to counts, listing them on hover, with comment counts linking to the sample
+ - Changed the sample name to open the sample and the first column to a selection checkbox, with Select All and Clear Selection buttons
+ - Changed the samples table header to show total, unreviewed, passed, failed and selected counts
 
 ## [0.4.1]
 
