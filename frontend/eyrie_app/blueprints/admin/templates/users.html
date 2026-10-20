@@ -41,6 +41,7 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}"><i class="bi bi-person-plus me-2"></i>Add User</a></li>
                             <li><hr class="dropdown-divider"></li>
+                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateUsersModal"><i class="bi bi-pencil-square me-2"></i>Update</button></li>
                             <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.activate_users') }}"><i class="bi bi-person-check me-2"></i>Activate</button></li>
                             <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.deactivate_users') }}"><i class="bi bi-person-dash me-2"></i>Deactivate</button></li>
                             <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"><i class="bi bi-trash me-2"></i>Delete</button></li>
@@ -85,6 +86,37 @@
         </div>
 
         <form id="usersForm" method="post" action="{{ url_for('admin.activate_users') }}"></form>
+
+        <div class="modal fade" id="updateUsersModal" tabindex="-1" aria-labelledby="updateUsersModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title" id="updateUsersModalLabel">Update Users</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <label for="updateRole" class="form-label">Role</label>
+                        <select id="updateRole" name="role" class="form-select form-select-sm mb-2" form="usersForm">
+                            <option value="" selected>Keep current</option>
+                            <option value="user">user</option>
+                            <option value="uploader">uploader</option>
+                            <option value="admin">admin</option>
+                        </select>
+                        <label for="updateStatus" class="form-label">Status</label>
+                        <select id="updateStatus" name="status" class="form-select form-select-sm" form="usersForm">
+                            <option value="" selected>Keep current</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <div class="form-text">Applies to the selected users, except your own account.</div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm" form="usersForm" formaction="{{ url_for('admin.update_users') }}">Update</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <div class="modal fade" id="deleteUsersModal" tabindex="-1" aria-labelledby="deleteUsersModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-sm modal-dialog-centered">
