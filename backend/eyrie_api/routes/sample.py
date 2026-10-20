@@ -1,13 +1,13 @@
 import json
 from datetime import datetime
 from fastapi import APIRouter, HTTPException, Depends
-from eyrie_api.models.samples import QCUpdate, CommentUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
+from eyrie_api.models.samples import QCUpdate, CommentUpdate, CategoryUpdate, SampleCreate, SampleUpdate, SpeciesFlagsUpdate
 from eyrie_api.database.async_sample_operations import (
-    find_sample, update_sample_qc, update_sample_comment,
+    find_sample, update_sample_qc, update_sample_comment, update_sample_category,
     update_sample, upsert_sample, update_sample_species_flags,
     find_negative_controls_by_run_id
 )
-from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
+from eyrie_api.routes.auth import require_admin, require_admin_or_uploader, get_current_user
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/sample", tags=["sample"])
@@ -103,6 +103,17 @@ async def update_qc(
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{sample_id}/category")
+async def update_category(
+    sample_id: str,
+    category_data: CategoryUpdate,
+    current_user: dict = Depends(require_admin)
+):
+    """Update sample category"""
+    if not await update_sample_category(sample_id, category_data.category):
+        raise HTTPException(status_code=404, detail="Sample not found")
+    return {'success': True}
 
 @router.put("/{sample_id}/comment")
 async def update_comment(

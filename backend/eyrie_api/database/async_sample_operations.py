@@ -85,6 +85,16 @@ async def update_sample_qc(sample_id: str, qc_status: str, comment_text: Optiona
     return result.matched_count > 0
 
 
+async def update_sample_category(sample_id: str, category: str) -> bool:
+    """Set the sample's metadata category."""
+    async with get_db_connection() as db:
+        result = await db.samples.update_one(
+            {'sample_id': sample_id},
+            {'$set': {'metadata.category': category, 'updated_date': datetime.now()}}
+        )
+        return result.matched_count > 0
+
+
 async def update_sample_comment(sample_id: str, qc_comment: Optional[str], other: Optional[str], username: str) -> bool:
     """Append a QC comment and/or update the general other comment."""
     update_op: Dict[str, Any] = {'$set': {'updated_date': datetime.now()}}

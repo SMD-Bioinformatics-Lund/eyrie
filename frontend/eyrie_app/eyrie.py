@@ -198,6 +198,15 @@ def update_sample_qc(headers: CaseInsensitiveDict, sample_id: str, data: Dict[st
 
 
 @api_authentication
+def update_sample_category(headers: CaseInsensitiveDict, sample_id: str, category: str) -> Dict[str, Any]:
+    """Update sample category"""
+    url = f"{backend_url}/api/sample/{sample_id}/category"
+    resp = requests.put(url, headers=headers, json={'category': category}, timeout=10)
+    resp.raise_for_status()
+    return resp.json()
+
+
+@api_authentication
 def update_sample_comment(headers: CaseInsensitiveDict, sample_id: str, data: Dict[str, Any]) -> Dict[str, Any]:
     """Update sample comment"""
     url = f"{backend_url}/api/sample/{sample_id}/comment"
