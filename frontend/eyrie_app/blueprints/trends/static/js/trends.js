@@ -57,6 +57,7 @@ async function updateTrends() {
             group_by: 'exp_start_time',
             classification: document.getElementById('classificationFilter').value,
             sample_type: document.getElementById('sampleTypeFilter').value,
+            sample_category: document.getElementById('categoryFilter').value,
             qc: document.getElementById('qcFilter').value,
             read_quality_filtering: document.getElementById('readQualityFilteringSelect').value
         });
