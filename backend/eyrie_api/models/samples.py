@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 from datetime import datetime
 
 class QCUpdate(BaseModel):
@@ -9,6 +9,9 @@ class QCUpdate(BaseModel):
 class CommentUpdate(BaseModel):
     qc_comment: Optional[str] = None       # plain text; appended with user + timestamp
     other: Optional[str] = None            # plain string, no attribution
+
+class CategoryUpdate(BaseModel):
+    category: Literal['production', 'validation', 'test']
 
 class SpeciesFlagsUpdate(BaseModel):
     flagged_contaminants: Optional[List[str]] = None
