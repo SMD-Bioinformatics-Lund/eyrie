@@ -27,6 +27,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed buttons, badges, form fields and dialogs back to Bootstrap's standard styling (normal case, standard padding and borders), keeping square corners
  - Changed all data tables to the compact bordered style with black, title-case, non-bold header rows without light borders
  - Removed the white outlines from the navbar buttons
+ - Removed the sample count badge from the sequencing run tabs
  - Changed all card headers to the same blue
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
 
