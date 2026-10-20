@@ -104,10 +104,10 @@ def get_current_user_from_backend(headers: CaseInsensitiveDict) -> Dict[str, Any
 
 
 @api_authentication
-def get_samples_from_backend(headers: CaseInsensitiveDict) -> Dict[str, Any]:
-    """Get samples from backend API"""
+def get_samples_from_backend(headers: CaseInsensitiveDict, **params) -> Dict[str, Any]:
+    """Get samples from backend API, e.g. view='table' or sequencing_run_id='...'"""
     url = f"{backend_url}/api/samples"
-    resp = requests.get(url, headers=headers, timeout=10)
+    resp = requests.get(url, headers=headers, params=params, timeout=10)
     resp.raise_for_status()
     return resp.json()
 
