@@ -7,6 +7,8 @@ from ...eyrie import get_admin_users, create_admin_user, update_admin_user, dele
 
 bp = Blueprint('admin', __name__, url_prefix='', template_folder='templates')
 
+ROLES = ['user', 'uploader', 'admin']
+
 @bp.route("/admin")
 @jwt_required
 @admin_required
@@ -184,6 +186,24 @@ def apply_to_selected_users(action, past_tense):
           + (' Your own account was skipped.' if skipped_self else '')
           + (f' {failed} failed.' if failed else ''), 'warning' if failed else 'success')
     return redirect(url_for('admin.users'))
+
+
+@bp.route("/admin/users/update", methods=['POST'])
+@jwt_required
+@admin_required
+def update_users():
+    """Update the role and/or status of the selected users"""
+    data = {}
+    role = request.form.get('role')
+    if role in ROLES:
+        data['role'] = role
+    status = request.form.get('status')
+    if status in ('active', 'inactive'):
+        data['is_active'] = status == 'active'
+    if not data:
+        flash('Nothing to update: choose a role or status.', 'warning')
+        return redirect(url_for('admin.users'))
+    return apply_to_selected_users(lambda user_id: update_admin_user(user_id, data), 'Updated')
 
 
 @bp.route("/admin/users/activate", methods=['POST'])
