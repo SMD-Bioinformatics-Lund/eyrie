@@ -130,3 +130,100 @@ th .sort-indicator sub {
     font-size: 0.7em;
     margin-left: 1px;
 }
+
+/* Compact data tables, filter bars and table actions */
+.table-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.summary-block {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.75rem;
+    color: var(--bs-body-color);
+    background-color: var(--bs-body-bg);
+    border-radius: 0.25rem;
+}
+
+.filter-bar .form-control,
+.filter-bar .form-select,
+.filter-bar .btn {
+    font-size: 0.8rem;
+    width: auto;
+}
+
+.filter-bar .filter-search {
+    width: 9rem;
+}
+
+.filter-bar .filter-select {
+    max-width: 9.5rem;
+}
+
+.filter-bar .filter-number {
+    width: 6.25rem;
+}
+
+.filter-bar .btn {
+    padding: 0.25rem 0.6rem;
+}
+
+.btn-apply {
+    color: #fff;
+    background-color: #146c43;
+    border-color: #146c43;
+}
+
+.btn-apply:hover,
+.btn-apply:focus {
+    color: #fff;
+    background-color: #0f5132;
+    border-color: #0f5132;
+}
+
+.compact-table {
+    font-size: 0.8rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-top: 1px solid var(--bs-border-color);
+    border-left: 1px solid var(--bs-border-color);
+}
+
+.compact-table th,
+.compact-table td {
+    padding: 0.15rem 0.4rem;
+    vertical-align: middle;
+    text-align: left;
+    border-right: 1px solid var(--bs-border-color);
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.compact-table th {
+    font-size: 0.8rem;
+}
+
+.compact-table th.text-center,
+.compact-table td.text-center {
+    text-align: center;
+}
+
+.compact-table .has-hover {
+    cursor: help;
+    text-decoration: underline dotted;
+}
+
+.compact-table-wrapper {
+    padding-bottom: 0.75rem;
+}
+
+.list-tooltip .tooltip-inner {
+    white-space: pre-line;
+    text-align: left;
+    max-width: 25rem;
+}
+
+.table-search {
+    width: 250px;
+}

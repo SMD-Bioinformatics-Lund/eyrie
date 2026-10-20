@@ -17,7 +17,7 @@
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive compact-table-wrapper">
-                            <table class="table table-sm table-hover mb-0 compact-table" id="seqrunsTable">
+                            <table class="table table-sm table-hover mb-0 compact-table text-nowrap" id="seqrunsTable">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>Sequencing Run ID</th>
@@ -49,10 +49,6 @@
 {% endblock %}
 
 {% from 'macros/seqruns_table.html' import seqruns_table_rows %}
-
-{% block extra_css %}
-    <link href="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/css/samples.css') }}" rel="stylesheet">
-{% endblock %}
 
 {% block extra_js %}
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
