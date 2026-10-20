@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from 'macros/seqrun_table_rows.html' import seqrun_samples_table_rows %}
+{% from 'samples_table.html' import samples_card with context %}
 
 {% block title %}{{ seqrun.sequencing_run_id }} Samples - Eyrie{% endblock %}
 
@@ -47,53 +47,7 @@
             </li>
         </ul>
 
-        <!-- Samples Table -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-table me-2"></i>Sample Results
-                            <small class="ms-3 opacity-75">{{ seqrun.sequencing_run_id }}</small>
-                        </h5>
-                        <div class="input-group" style="width: 300px;">
-                            <span class="input-group-text bg-white border-0">
-                                <i class="bi bi-search"></i>
-                            </span>
-                            <input type="text" class="form-control border-0" id="tableSearch" placeholder="Search samples...">
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="samplesTable">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>Open</th>
-                                        <th>Sample Name</th>
-                                        <th>Sequencing Run ID</th>
-                                        <th class="d-none">Sample ID</th>
-                                        <th class="d-none">LIMS ID</th>
-                                        <th>Sample Type</th>
-                                        <th>Material</th>
-                                        <th>Classification</th>
-                                        <th>Top Hits</th>
-                                        <th>Contaminants</th>
-                                        <th>QC Status</th>
-                                        <th>QC Comments</th>
-                                        <th>General Comments</th>
-                                        <th>Created Date</th>
-                                        <th>Updated Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="samplesTableBody">
-                                    {{ seqrun_samples_table_rows(samples, error, url_for('seqruns.seqrun_samples', seqrun_id=seqrun.sequencing_run_id)) }}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {{ samples_card(samples, filter_options, error, show_seqrun_filter=False) }}
     </div>
 {% endblock %}
 
@@ -101,15 +55,18 @@
 // Initialize table sorting with default sort: Sequencing Run ID (desc), then Sample Name (asc)
 new TableSort('samplesTable', {
     defaultSort: [
-        {column: 2, direction: 'desc'},  // Sequencing Run ID descending
+        {column: 6, direction: 'desc'},  // Sequencing Run ID descending
         {column: 1, direction: 'asc'}    // Sample Name ascending
     ],
-    nonSortableColumns: [0]  // Open button column
+    nonSortableColumns: [0]  // Selection column
 });
+{% endblock %}
+
+{% block extra_css %}
+    <link href="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/css/samples.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block extra_js %}
     <script src="{{ url_for('login.serve_shared_static_endpoint', filename='js/table_sort.js') }}"></script>
-    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
-    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/seqrun_samples.js') }}"></script>
+    <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/js/samples.js') }}"></script>
 {% endblock %}
