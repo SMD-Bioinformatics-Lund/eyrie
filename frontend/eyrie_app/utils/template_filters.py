@@ -151,15 +151,3 @@ def qc_class_filter(value, metric):
         if (value < threshold) if operator == '<' else (value > threshold):
             return f'table-{level}'
     return ''
-
-
-def read_count_class_filter(count):
-    """Get CSS class for read count — red when below 500."""
-    if count is None:
-        return ''
-    try:
-        if int(count) < 500:
-            return 'text-danger'
-        return ''
-    except (ValueError, TypeError):
-        return ''
