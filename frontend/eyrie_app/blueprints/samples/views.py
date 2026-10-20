@@ -1,35 +1,34 @@
 from flask import Blueprint, render_template, request, jsonify
 from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required
+from ...utils.sample_filters import filter_options, filter_samples
 from ...eyrie import get_samples_from_backend, get_sample_from_backend, update_sample_qc, update_sample_comment, update_sample_species_flags, create_sample
 
 bp = Blueprint('samples', __name__, url_prefix='', template_folder='templates')
+
+def render_samples_page():
+    try:
+        samples = get_samples_from_backend(view='table')
+        return render_template('samples.html', samples=filter_samples(samples, request.args),
+                               filter_options=filter_options(samples))
+    except HTTPException:
+        raise  # Let Flask handle HTTP errors (401, 403, etc.)
+    except Exception as e:
+        # If backend is unavailable, show page with error message
+        return render_template('samples.html', samples=[], filter_options=filter_options([]), error=str(e))
+
 
 @bp.route("/")
 @jwt_required
 def root():
     """Redirect to samples page"""
-    try:
-        samples = get_samples_from_backend()
-        return render_template('samples.html', samples=samples)
-    except HTTPException:
-        raise  # Let Flask handle HTTP errors (401, 403, etc.)
-    except Exception as e:
-        # If backend is unavailable, show page with error message
-        return render_template('samples.html', samples=[], error=str(e))
+    return render_samples_page()
 
 @bp.route("/samples")
 @jwt_required
 def samples_page():
     """Display samples page"""
-    try:
-        samples = get_samples_from_backend()
-        return render_template('samples.html', samples=samples)
-    except HTTPException:
-        raise  # Let Flask handle HTTP errors (401, 403, etc.)
-    except Exception as e:
-        # If backend is unavailable, show page with error message
-        return render_template('samples.html', samples=[], error=str(e))
+    return render_samples_page()
 
 
 # API Endpoints
