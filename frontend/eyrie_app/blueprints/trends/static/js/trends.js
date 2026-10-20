@@ -204,10 +204,12 @@ function resetFilters() {
  */
 function getGroupByLabel() {
     const select = document.getElementById('groupBySelect');
-    return select?.options[select.selectedIndex]?.text || 'Category';
+    const option = select?.options[select.selectedIndex];
+    return option?.dataset.label || option?.text || 'Category';
 }
 
 function getMetricLabel() {
     const select = document.getElementById('metricSelect');
-    return select?.options[select.selectedIndex]?.text || 'Metric';
+    const option = select?.options[select.selectedIndex];
+    return option?.dataset.label || option?.text || 'Metric';
 }

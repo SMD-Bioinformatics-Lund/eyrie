@@ -169,6 +169,10 @@ th .sort-indicator sub {
     max-width: 9.5rem;
 }
 
+.filter-bar .filter-select.filter-wide {
+    max-width: 16rem;
+}
+
 .filter-bar .filter-number {
     width: 6.25rem;
 }
