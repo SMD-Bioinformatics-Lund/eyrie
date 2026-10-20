@@ -159,38 +159,55 @@ def edit_user(user_id):
         flash(f'Error updating user: {str(e)}', 'error')
         return redirect(url_for('admin.users'))
 
-@bp.route("/admin/users/<user_id>/delete", methods=['POST'])
+def selected_user_ids():
+    """Selected users, leaving out the signed-in admin so they cannot lock themselves out."""
+    current_user = get_current_user()
+    own_id = current_user.user_id if current_user else None
+    selected = request.form.getlist('user_ids')
+    skipped_self = own_id in selected
+    return [user_id for user_id in selected if user_id != own_id], skipped_self
+
+
+def apply_to_selected_users(action, past_tense):
+    user_ids, skipped_self = selected_user_ids()
+    if not user_ids:
+        flash('No other users selected.' if skipped_self else 'No users selected.', 'warning')
+        return redirect(url_for('admin.users'))
+    failed = 0
+    for user_id in user_ids:
+        try:
+            action(user_id)
+        except Exception:
+            failed += 1
+    done = len(user_ids) - failed
+    flash(f"{past_tense} {done} user{'' if done == 1 else 's'}."
+          + (' Your own account was skipped.' if skipped_self else '')
+          + (f' {failed} failed.' if failed else ''), 'warning' if failed else 'success')
+    return redirect(url_for('admin.users'))
+
+
+@bp.route("/admin/users/activate", methods=['POST'])
 @jwt_required
 @admin_required
-def delete_user(user_id):
-    """Delete user"""
-    try:
-        backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
-        backend_token = get_jwt_from_cookie()
+def activate_users():
+    """Activate the selected users"""
+    return apply_to_selected_users(lambda user_id: update_admin_user(user_id, {'is_active': True}), 'Activated')
 
-        if not backend_token:
-            flash('Backend authentication required.', 'error')
-            return redirect(url_for('admin.dashboard'))
 
-        response = requests.delete(
-            f"{backend_url}/api/admin/users/{user_id}",
-            headers={'Authorization': f'Bearer {backend_token}'},
-            timeout=10
-        )
+@bp.route("/admin/users/deactivate", methods=['POST'])
+@jwt_required
+@admin_required
+def deactivate_users():
+    """Deactivate the selected users"""
+    return apply_to_selected_users(lambda user_id: update_admin_user(user_id, {'is_active': False}), 'Deactivated')
 
-        if response.status_code == 200:
-            flash('User deleted successfully.', 'success')
-        else:
-            result = response.json() if response.content else {}
-            error_msg = result.get('error', f'Failed to delete user (status: {response.status_code})')
-            flash(error_msg, 'error')
 
-    except HTTPException:
-        raise  # Let Flask handle HTTP errors (401, 403, etc.)
-    except Exception as e:
-        flash(f'Error deleting user: {str(e)}', 'error')
-
-    return redirect(url_for('admin.users'))
+@bp.route("/admin/users/delete", methods=['POST'])
+@jwt_required
+@admin_required
+def delete_users():
+    """Delete the selected users"""
+    return apply_to_selected_users(delete_admin_user, 'Deleted')
 
 
 @bp.route("/api/admin/users", methods=['GET'])
