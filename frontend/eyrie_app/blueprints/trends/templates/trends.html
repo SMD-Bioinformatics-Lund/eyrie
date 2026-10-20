@@ -10,119 +10,35 @@
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-12">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">
-                            <i class="bi bi-graph-up me-2"></i>Quality Control Trends
-                        </h5>
-                        <small class="opacity-75">Track metrics over time grouped by experimental variables</small>
-                    </div>
-                    <div class="card-body">
-                        <!-- Controls Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label for="groupBySelect" class="form-label">Group By</label>
-                                <select class="form-select" id="groupBySelect">
-                                    {% for group_option in config.group_by_options %}
-                                    <option value="{{ group_option.value }}"{% if group_option.get('selected') %} selected{% endif %}>
-                                        {{ group_option.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="metricSelect" class="form-label">Metric</label>
-                                <select class="form-select" id="metricSelect">
-                                    {% for metric in config.metrics %}
-                                    <option value="{{ metric.value }}"{% if metric.get('selected') %} selected{% endif %}>
-                                        {{ metric.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="readQualityFilteringSelect" class="form-label">Read Quality</label>
-                                <select class="form-select" id="readQualityFilteringSelect">
-                                    {% for quality_option in config.read_quality_filtering %}
-                                    <option value="{{ quality_option.value }}"{% if quality_option.get('selected') %} selected{% endif %}>
-                                        {{ quality_option.label }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Filters Row -->
-                        <div class="row mb-4">
-                            <div class="col-md-4">
-                                <label for="classificationFilter" class="form-label">Classification</label>
-                                <select class="form-select" id="classificationFilter">
-                                    <option value="all" selected>All Classifications</option>
-                                    {% for classification in config.predefined_filters.classifications %}
-                                    <option value="{{ classification.value }}">{{ classification.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="qcFilter" class="form-label">QC Status</label>
-                                <select class="form-select" id="qcFilter">
-                                    <option value="all" selected>All QC Status</option>
-                                    {% for qc_option in config.predefined_filters.qc %}
-                                    <option value="{{ qc_option.value }}">{{ qc_option.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="sampleTypeFilter" class="form-label">Sample Type</label>
-                                <select class="form-select" id="sampleTypeFilter">
-                                    <option value="all" selected>All Sample Types</option>
-                                    {% for sample_type in config.predefined_filters.sample_types %}
-                                    <option value="{{ sample_type.value }}">{{ sample_type.label }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="row mb-4">
-                            <div class="col-12">
-                                <button type="button" class="btn btn-primary me-2" onclick="updateTrends()">
-                                    <i class="bi bi-arrow-clockwise me-2"></i>Update Chart
-                                </button>
-                                <button type="button" class="btn btn-outline-secondary me-2" onclick="exportChart()">
-                                    <i class="bi bi-download me-2"></i>Export Chart
-                                </button>
-                                <button type="button" class="btn btn-outline-info" onclick="resetFilters()">
-                                    <i class="bi bi-arrow-counterclockwise me-2"></i>Reset Filters
-                                </button>
-                            </div>
-                        </div>
+                <div class="card border-0 shadow-sm mb-2">
+                    <div class="card-body d-flex flex-wrap align-items-center gap-2 p-2 filter-bar">
+                        {{ prefixed_select('groupBySelect', 'Group by', config.group_by_options) }}
+                        {{ prefixed_select('metricSelect', 'Metric', config.metrics) }}
+                        {{ prefixed_select('readQualityFilteringSelect', 'Read quality', config.read_quality_filtering) }}
+                        {{ filter_select('classificationFilter', 'Classification', config.predefined_filters.classifications) }}
+                        {{ filter_select('qcFilter', 'QC status', config.predefined_filters.qc) }}
+                        {{ filter_select('sampleTypeFilter', 'Sample type', config.predefined_filters.sample_types) }}
+                        <button type="button" class="btn btn-sm btn-apply" onclick="updateTrends()">Apply</button>
+                        <button type="button" class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
                     </div>
                 </div>
 
                 <!-- Chart Container -->
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">
-                            <i class="bi bi-bar-chart me-2"></i>Trend Visualisation
-                        </h6>
-                        <div class="badge bg-light text-dark" id="chartStatus">Ready</div>
+                    <div class="card-header bg-primary text-white d-flex align-items-center gap-2 table-actions">
+                        <i class="bi bi-graph-up fs-5"></i>
+                        <button type="button" class="btn btn-light btn-sm" onclick="exportChart()"><i class="bi bi-download me-1"></i>Export Chart</button>
+                        <span class="ms-auto"><span class="badge bg-light text-dark" id="chartStatus">Ready</span></span>
                     </div>
                     <div class="card-body p-0">
                         <div id="trendsChart" style="height: 600px;">
                             <div class="d-flex justify-content-center align-items-center h-100">
                                 <div class="text-center">
                                     <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
-                                    <p class="text-muted mt-3">Select grouping and metric, then click "Update Chart" to view quality trends over time</p>
+                                    <p class="text-muted mt-3">Choose a grouping and metric, then click Apply to view quality trends over time</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-footer bg-light">
-                        <small class="text-muted">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Use export button to save chart as image.
-                        </small>
                     </div>
                 </div>
             </div>
@@ -146,3 +62,20 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='trends', filename='static/js/trends.js') }}"></script>
 {% endblock %}
+
+{% macro prefixed_select(id, label, options) %}
+<select class="form-select form-select-sm filter-select filter-wide" id="{{ id }}" aria-label="{{ label }}">
+    {% for option in options %}
+    <option value="{{ option.value }}" data-label="{{ option.label }}"{% if option.get('selected') %} selected{% endif %}>{{ label }}: {{ option.label }}</option>
+    {% endfor %}
+</select>
+{% endmacro %}
+
+{% macro filter_select(id, label, options) %}
+<select class="form-select form-select-sm filter-select" id="{{ id }}" aria-label="{{ label }}">
+    <option value="all" selected>{{ label }}</option>
+    {% for option in options %}
+    <option value="{{ option.value }}">{{ option.label }}</option>
+    {% endfor %}
+</select>
+{% endmacro %}
