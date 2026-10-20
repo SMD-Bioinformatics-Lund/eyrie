@@ -224,51 +224,23 @@ function displayDetailedStats(processingType) {
         return;
     }
 
+    const lowReads = stats.number_of_reads != null && stats.number_of_reads < 500;
+    const rows = [
+        ['Mean read length', formatLength(stats.mean_read_length)],
+        ['Mean read quality', formatQuality(stats.mean_read_quality)],
+        ['Median read length', formatLength(stats.median_read_length)],
+        ['Median read quality', formatQuality(stats.median_read_quality)],
+        ['Number of reads', formatNumber(stats.number_of_reads), lowReads ? 'table-danger' : ''],
+        ['Read length N50', formatLength(stats.read_length_n50)],
+        ['STDEV read length', formatLength(stats.stdev_read_length)],
+        ['Total bases', formatBases(stats.total_bases)],
+    ];
     container.innerHTML = `
-        <div class="p-3">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Metric</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Mean read length</td>
-                        <td>${formatLength(stats.mean_read_length) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>Mean read quality</td>
-                        <td>${formatQuality(stats.mean_read_quality) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>Median read length</td>
-                        <td>${formatLength(stats.median_read_length) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>Median read quality</td>
-                        <td>${formatQuality(stats.median_read_quality) || '-'}</td>
-                    </tr>
-                    <tr${(stats.number_of_reads != null && stats.number_of_reads < 500) ? ' class="table-danger"' : ''}>
-                        <td>Number of reads</td>
-                        <td>${formatNumber(stats.number_of_reads) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>Read length N50</td>
-                        <td>${formatLength(stats.read_length_n50) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>STDEV read length</td>
-                        <td>${formatLength(stats.stdev_read_length) || '-'}</td>
-                    </tr>
-                    <tr>
-                        <td>Total bases</td>
-                        <td>${formatBases(stats.total_bases) || '-'}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <table class="table table-sm table-hover compact-table key-value-table mb-0">
+            <tbody>
+                ${rows.map(([label, value, cellClass]) => `<tr><th scope="row">${label}</th><td class="${cellClass || ''}">${value || '-'}</td></tr>`).join('')}
+            </tbody>
+        </table>
     `;
 }
 

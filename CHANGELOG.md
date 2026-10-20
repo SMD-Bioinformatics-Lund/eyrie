@@ -33,7 +33,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed user management to the samples table layout: select users with checkboxes and update their role or status, activate, deactivate or delete them from a Manage Users menu (your own account is always skipped), with the username opening the edit page
  - Changed the trends filters to a one-line bar like the samples filter, with Export Chart in the chart header
  - Changed card headers to one blue, except on the sample pages where they are grouped by content: information light blue, QC and comments yellow, summaries green, data and plots blue
- - Changed the sample overview tables to the compact table style, with a low library concentration shown as a red cell
+ - Changed the sample overview and NanoPlot statistics tables to the compact table style, with low values shown as red cells
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
 
 ## [0.4.1]
