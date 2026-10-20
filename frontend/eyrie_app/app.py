@@ -8,6 +8,7 @@ from .config import settings
 from .auth import get_current_user, clear_jwt_cookie
 from .eyrie import test_backend_connectivity, health_check
 from .__version__ import __version__
+from .utils.sample_filters import url_with_args
 from .utils.template_filters import (
     format_number_filter, format_bases_filter, format_quality_filter,
     format_length_filter, qc_badge_class_filter, format_date_filter,
@@ -124,6 +125,7 @@ def create_app():
     app.jinja_env.filters['read_stats'] = read_stats_filter
     app.jinja_env.filters['seqrun_date'] = seqrun_date_filter
     app.jinja_env.filters['compact_html'] = compact_html_filter
+    app.jinja_env.globals['url_with_args'] = url_with_args
 
     # Add template context processor for version information
     @app.context_processor

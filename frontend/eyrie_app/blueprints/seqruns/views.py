@@ -6,6 +6,7 @@ from ...auth import jwt_required, get_jwt_from_cookie
 import urllib.parse
 from collections import defaultdict
 from ...config import settings
+from ...utils.sample_filters import filter_options, filter_samples
 from ...eyrie import (
     get_samples_from_backend, serve_analysis_file, get_seqrun_from_backend, get_analysis_path,
     get_contamination_analysis_from_backend, get_qc_overview_from_backend,
@@ -351,7 +352,7 @@ def seqrun_samples(seqrun_id):
         decoded_seqrun_id = urllib.parse.unquote(seqrun_id)
 
         # Get all samples and filter for this sequencing run
-        all_samples = get_samples_from_backend()
+        all_samples = get_samples_from_backend(view='table')
 
         # Try both original and decoded IDs
         seqrun = get_seqrun_by_id(all_samples, seqrun_id)
@@ -378,15 +379,14 @@ def seqrun_samples(seqrun_id):
 
             return render_template('seqrun_samples.html', 
                                  seqrun={'sequencing_run_id': seqrun_id, 'samples': []}, 
-                                 samples=[], 
+                                 samples=[],
+                                 filter_options=filter_options([]),
                                  error=error_msg)
 
-        # Get filtered samples for this sequencing run
-        filtered_samples = seqrun['samples']
-
-        return render_template('seqrun_samples.html', 
-                             seqrun=seqrun, 
-                             samples=filtered_samples)
+        return render_template('seqrun_samples.html',
+                             seqrun=seqrun,
+                             samples=filter_samples(seqrun['samples'], request.args),
+                             filter_options=filter_options(seqrun['samples']))
     except HTTPException:
         raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except ValueError as e:
@@ -394,6 +394,7 @@ def seqrun_samples(seqrun_id):
         return render_template('seqrun_samples.html',
                              seqrun=None,
                              samples=[],
+                             filter_options=filter_options([]),
                              error='Backend authentication required')
     except Exception as e:
         # Other errors - show the actual error instead of hiding it
@@ -402,6 +403,7 @@ def seqrun_samples(seqrun_id):
         return render_template('seqrun_samples.html',
                              seqrun={'sequencing_run_id': seqrun_id, 'samples': []},
                              samples=[],
+                             filter_options=filter_options([]),
                              error=f"Error: {str(e)}<br><pre>{error_details}</pre>")
 
 @bp.route('/seqruns/<seqrun_id>/information')
