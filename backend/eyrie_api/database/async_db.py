@@ -29,6 +29,7 @@ class AsyncMongoDatabase:
         self.users: Optional[AsyncCollection] = None
         self.samples: Optional[AsyncCollection] = None
         self.seqruns: Optional[AsyncCollection] = None
+        self.settings: Optional[AsyncCollection] = None
 
     async def connect(self) -> None:
         """Establish database connection and setup collections."""
@@ -64,6 +65,7 @@ class AsyncMongoDatabase:
                 self.users = self.db.users
                 self.samples = self.db.samples
                 self.seqruns = self.db.seqruns
+                self.settings = self.db.settings
 
                 LOG.info("=== MONGODB CONNECTION SUCCESSFUL ===")
 
@@ -85,6 +87,7 @@ class AsyncMongoDatabase:
             self.users = None
             self.samples = None
             self.seqruns = None
+            self.settings = None
 
     async def ensure_connected(self) -> None:
         """Ensure database connection is established."""

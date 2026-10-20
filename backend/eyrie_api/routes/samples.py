@@ -3,7 +3,9 @@ from eyrie_api.models.samples import SampleCreate
 from eyrie_api.database.async_sample_operations import (
     get_all_samples, create_sample
 )
+from eyrie_api.database.async_settings_operations import get_spike_settings
 from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
+from eyrie_api.utils.classification import detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
 import json
 
@@ -13,6 +15,9 @@ router = APIRouter(prefix="/samples", tags=["samples"])
 async def get_samples(current_user: dict = Depends(get_current_user)):
     try:
         samples = await get_all_samples()
+        spike_species = (await get_spike_settings())['species']
+        for sample in samples:
+            sample['spike'] = detected_spike(sample, spike_species)
         return json.loads(JSONEncoder().encode(samples))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -7,8 +7,10 @@ from eyrie_api.database.async_sample_operations import (
     get_positive_control_validation
 )
 from eyrie_api.database.async_seqrun_operations import upsert_seqrun, find_seqrun, get_all_seqruns
+from eyrie_api.database.async_settings_operations import get_spike_settings
 from eyrie_api.models.seqruns import SeqrunCreate
 from eyrie_api.routes.auth import get_current_user
+from eyrie_api.utils.classification import detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/seqruns", tags=["sequencing_runs"])
@@ -27,7 +29,10 @@ async def calculate_seqrun_stats(samples: List[Dict[str, Any]]) -> Dict[str, int
     failed_samples = sum(1 for sample in samples if sample.get('qc') == 'failed')
     unprocessed_samples = sum(1 for sample in samples if sample.get('qc') not in ('passed', 'failed'))
     true_hits = sum(1 for sample in samples if sample.get('flagged_top_hits'))
-    spikes_detected = sum(1 for sample in samples if sample.get('spike'))
+    spike_species = (await get_spike_settings())['species']
+    for sample in samples:
+        sample['spike'] = detected_spike(sample, spike_species)
+    spikes_detected = sum(1 for sample in samples if sample['spike'])
 
     return {
         'total_samples': total_samples,

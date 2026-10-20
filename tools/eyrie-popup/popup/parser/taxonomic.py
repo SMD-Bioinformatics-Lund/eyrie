@@ -1,9 +1,10 @@
 """Taxonomic abundance parsing functionality."""
 
-import csv
 import glob
 from pathlib import Path
 from typing import List
+
+from emuse.abundance import read_rel_abundance, to_records
 
 from ..models import TaxonomicAbundance
 
@@ -19,47 +20,30 @@ class TaxonomicParser:
         if not results_config:
             return []
 
-        # Handle glob patterns for file discovery
         pattern = str(self.seqrun_path / results_config.directory / results_config.rel_abundance_file)
         matching_files = glob.glob(pattern)
-        
+
         if not matching_files:
             return []
-        
-        # Use first match if multiple files found
-        abundance_file = Path(matching_files[0])
 
         abundances = []
+        for row in to_records(read_rel_abundance(matching_files[0])):
+            species = row.get('species')
+            if not species:
+                continue
 
-        try:
-            with open(abundance_file, 'r') as f:
-                reader = csv.DictReader(f, delimiter='\t')
-
-                for row in reader:
-                    species = row.get('species', '')
-                    if not species or species in ['unmapped', 'mapped_unclassified']:
-                        continue
-
-                    contamination = False
-                    if 'contamination' in row:
-                        contamination = row['contamination'].lower() in ['true', '1', 'yes', 'contamination']
-
-                    abundance_data = TaxonomicAbundance(
-                        tax_id=row.get('tax_id', ''),
-                        abundance=float(row.get('abundance', 0)),
-                        species=species,
-                        genus=row.get('genus', ''),
-                        family=row.get('family', ''),
-                        order=row.get('order', ''),
-                        **{'class': row.get('class', '')},  # Using dict unpacking for 'class'
-                        phylum=row.get('phylum', ''),
-                        superkingdom=row.get('superkingdom', ''),
-                        estimated_counts=float(row.get('estimated counts', 0)),
-                        contamination=contamination
-                    )
-                    abundances.append(abundance_data)
-
-        except Exception as e:
-            print(f"Error parsing abundance file {abundance_file}: {e}")
+            abundances.append(TaxonomicAbundance(
+                tax_id=row['tax_id'],
+                abundance=row['abundance'],
+                species=species,
+                genus=row.get('genus') or '',
+                family=row.get('family') or '',
+                order=row.get('order') or '',
+                **{'class': row.get('class') or ''},
+                phylum=row.get('phylum') or '',
+                superkingdom=row.get('superkingdom') or '',
+                estimated_counts=row.get('estimated_counts') or 0,
+                contamination=str(row.get('contamination', '')).lower() in ['true', '1', 'yes', 'contamination']
+            ))
 
         return abundances

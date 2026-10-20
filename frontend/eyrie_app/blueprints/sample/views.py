@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, jsonify, request
 from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required, get_current_user
 from ...eyrie import (
-    get_sample_from_backend, get_negative_controls_from_backend, update_sample_qc, update_sample_comment,
+    get_sample_from_backend, get_negative_controls_from_backend, get_classification_from_backend,
+    update_sample_qc, update_sample_comment,
     update_sample_species_flags, serve_analysis_file, get_analysis_path
 )
 
@@ -47,6 +48,14 @@ def sample_classification(sample_id):
             negative_controls = get_negative_controls_from_backend(sample_id)
         except Exception as neg_error:
             print(f"Warning: Could not load negative controls: {neg_error}")
+
+        try:
+            classification = get_classification_from_backend(sample_id)
+            if sample.get('taxonomic_data'):
+                sample['taxonomic_data']['hits'] = classification['hits']
+            sample['spike'] = classification['spike']
+        except Exception as classification_error:
+            print(f"Warning: Could not load classification: {classification_error}")
 
         return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=get_current_user(), analysis_base_path=analysis_base_path, return_to=return_to)
     except HTTPException:
@@ -132,8 +141,8 @@ def update_species_flags_api(sample_id):
         return jsonify({'error': str(e)}), 500
 
 # Analysis file serving endpoint
-@jwt_required
 @bp.route("/analysis-files/<path:file_path>", methods=['GET'])
+@jwt_required
 def serve_data_file_endpoint(file_path):
     """Serve analysis files from /app/analysis-files directory with authentication"""
     return serve_analysis_file(file_path)
