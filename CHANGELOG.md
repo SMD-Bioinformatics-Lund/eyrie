@@ -22,6 +22,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed top hits, contaminants and comments in the samples table to counts, listing them on hover, with comment counts linking to the sample
  - Changed the sample name to open the sample and the first column to a selection checkbox, with Select All and Clear Selection buttons
  - Changed the samples table header to show total, unreviewed, passed, failed and selected counts
+ - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
 
 ## [0.4.1]
 

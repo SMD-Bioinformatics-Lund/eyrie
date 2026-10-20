@@ -8,29 +8,25 @@
         <div class="row">
             <div class="col-12">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">
-                            <i class="bi bi-cpu me-2"></i>Sequencing Runs
-                        </h5>
-                        <div class="input-group" style="width: 300px;">
-                            <span class="input-group-text bg-white border-0">
-                                <i class="bi bi-search"></i>
-                            </span>
+                    <div class="card-header bg-primary d-flex justify-content-between align-items-center gap-2">
+                        <i class="bi bi-cpu text-white fs-5"></i>
+                        <div class="input-group input-group-sm table-search">
+                            <span class="input-group-text bg-white border-0"><i class="bi bi-search"></i></span>
                             <input type="text" class="form-control border-0" id="tableSearch" placeholder="Search sequencing runs...">
                         </div>
                     </div>
                     <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="seqrunsTable">
+                        <div class="table-responsive compact-table-wrapper">
+                            <table class="table table-sm table-hover mb-0 compact-table" id="seqrunsTable">
                                 <thead class="table-dark">
                                     <tr>
-                                        <th>Open</th>
                                         <th>Sequencing Run ID</th>
+                                        <th>Run Date</th>
                                         <th>Sequencing Start Time</th>
                                         <th>Total Samples</th>
-                                        <th>Approved Samples</th>
+                                        <th>Passed Samples</th>
                                         <th>True Hits</th>
-                                        <th>Spikes Detected</th>
+                                        <th title="Green: all samples, amber: up to 10% missing, red: more than 10% missing">Spikes Detected</th>
                                         <th>Pipeline Status</th>
                                         <th>Created Date</th>
                                     </tr>
@@ -53,6 +49,10 @@
 {% endblock %}
 
 {% from 'macros/seqruns_table.html' import seqruns_table_rows %}
+
+{% block extra_css %}
+    <link href="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='samples', filename='static/css/samples.css') }}" rel="stylesheet">
+{% endblock %}
 
 {% block extra_js %}
     <script src="{{ url_for('login.serve_blueprint_static_endpoint', blueprint='seqruns', filename='static/js/table_search.js') }}"></script>
