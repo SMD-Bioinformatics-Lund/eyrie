@@ -240,3 +240,18 @@ th .sort-indicator sub {
 .table-search {
     width: 250px;
 }
+
+.key-value-table th {
+    width: 1%;
+    white-space: nowrap;
+    font-weight: normal;
+    color: var(--bs-secondary-color);
+}
+
+.key-value-table td {
+    max-width: 0;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
