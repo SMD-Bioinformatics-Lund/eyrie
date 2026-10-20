@@ -96,13 +96,13 @@ popup upload --sample-metadata sample_metadata.tsv --api http://localhost:8000/a
 
 **Sample metadata file format** (TSV/CSV):
 ```tsv
-sample_id	category	sample_type	material	extraction_kit	library_prep_kit	dilution	spike_concentration
-barcode01	validation	clinical	saliva	Kit_A	PrepKit_B	1:10	IC3
-barcode02	production	clinical	stool	Kit_A	PrepKit_B	1:1	IC4
-barcode03	production	negative control	water	Kit_A	PrepKit_B	1:1	IC4
+sample_id	lims_id	category	sample_type	material	extraction_kit	library_prep_kit	dilution	spike_concentration
+barcode01	LIMS-0001	validation	clinical	saliva	Kit_A	PrepKit_B	1:10	IC3
+barcode02	LIMS-0002	production	clinical	stool	Kit_A	PrepKit_B	1:1	IC4
+barcode03	LIMS-0003	production	negative control	water	Kit_A	PrepKit_B	1:1	IC4
 ```
 
-`category` is one of `production`, `validation` or `test`, and `sample_type` one of `clinical`, `negative control` or `positive control`. Uploading a metadata file replaces the stored metadata of each sample in it.
+`lims_id` sets the sample's LIMS ID. `category` is one of `production`, `validation` or `test`, and `sample_type` one of `clinical`, `negative control` or `positive control`. Uploading a metadata file replaces the stored metadata of each sample in it.
 
 The `--create-missing` flag allows the tool to create new sample entries for samples that don't exist in the database.
 
