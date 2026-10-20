@@ -109,6 +109,11 @@ class Settings:
                     {'value': 'failed', 'label': 'Failed'},
                     {'value': 'unprocessed', 'label': 'Unprocessed'}
                 ],
+                'categories': [
+                    {'value': 'production', 'label': 'Production'},
+                    {'value': 'validation', 'label': 'Validation'},
+                    {'value': 'test', 'label': 'Test'}
+                ],
                 'sample_types': [
                     {'value': 'clinical', 'label': 'Clinical'},
                     {'value': 'negative control', 'label': 'Negative Control'},

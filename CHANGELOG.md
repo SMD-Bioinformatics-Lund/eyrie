@@ -13,6 +13,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added admin-only `PUT /api/sample/{sample_id}/category`
  - Added `view=table` and `sequencing_run_id` parameters to `GET /api/samples`, so the samples tables only load the fields they show
  - Added a filter bar to the samples tables: search, sequencing run, sample type, material, QC status, categories, and minimum reads, quality and percentage filtered
+ - Added a category filter to trends
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens

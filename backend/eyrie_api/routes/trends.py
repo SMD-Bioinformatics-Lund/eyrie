@@ -45,6 +45,7 @@ async def get_trends_data(
     group_by: str = Query("week", description="Grouping: day, week, month"),
     classification: str = Query("all", description="Classification filter"),
     sample_type: str = Query("all", description="Sample type filter from metadata"),
+    sample_category: str = Query("all", description="Sample category filter from metadata (production, validation or test)"),
     qc: str = Query("all", description="QC status filter"),
     read_quality_filtering: str = Query("all", description="Read quality filtering filter")
 ) -> Dict[str, Any]:
@@ -69,6 +70,8 @@ async def get_trends_data(
         metadata_filter = {}
         if sample_type != "all":
             metadata_filter["metadata.sample_type"] = sample_type
+        if sample_category != "all":
+            metadata_filter["metadata.category"] = sample_category
 
         match_filter = {**time_filter, **classification_filter, **qc_filter, **metadata_filter}
 

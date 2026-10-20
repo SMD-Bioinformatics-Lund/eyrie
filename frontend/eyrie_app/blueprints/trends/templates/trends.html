@@ -17,6 +17,7 @@
                         {{ prefixed_select('readQualityFilteringSelect', 'Read quality', config.read_quality_filtering) }}
                         {{ filter_select('classificationFilter', 'Classification', config.predefined_filters.classifications) }}
                         {{ filter_select('qcFilter', 'QC status', config.predefined_filters.qc) }}
+                        {{ filter_select('categoryFilter', 'Category', config.predefined_filters.categories) }}
                         {{ filter_select('sampleTypeFilter', 'Sample type', config.predefined_filters.sample_types) }}
                         <button type="button" class="btn btn-sm btn-apply" onclick="updateTrends()">Apply</button>
                         <button type="button" class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
