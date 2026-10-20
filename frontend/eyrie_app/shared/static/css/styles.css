@@ -255,3 +255,9 @@ th .sort-indicator sub {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.plot-type-list .list-group-item.active {
+    color: var(--bs-body-color);
+    background-color: var(--bs-info-bg-subtle);
+    border-color: var(--bs-border-color);
+}
