@@ -53,15 +53,9 @@
                                                 <strong>{{ user.username }}</strong>
                                             </td>
                                             <td>{{ user.email }}</td>
-                                            <td>
-                                                <span class="badge {% if user.role == 'admin' %}bg-danger{% elif user.role == 'uploader' %}bg-warning text-dark{% else %}bg-info{% endif %}">
-                                                    {{ user.role.upper() }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge {% if user.is_active %}bg-success{% else %}bg-secondary{% endif %}">
-                                                    {% if user.is_active %}Active{% else %}Inactive{% endif %}
-                                                </span>
+                                            <td>{{ user.role }}</td>
+                                            <td class="{{ 'table-success' if user.is_active else 'table-secondary' }}">
+                                                {% if user.is_active %}Active{% else %}Inactive{% endif %}
                                             </td>
                                             <td>
                                                 {% if user.created_date %}

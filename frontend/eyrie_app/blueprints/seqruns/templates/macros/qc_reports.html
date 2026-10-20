@@ -282,16 +282,7 @@
                                     {% for sample in diversity_data.diversity_data %}
                                     <tr>
                                         <td class="fw-semibold">{{ sample.sample_id }}</td>
-                                        <td>
-                                            <span class="badge 
-                                                {% if sample.sample_type == 'clinical' %}bg-success
-                                                {% elif sample.sample_type == 'negative control' %}bg-warning text-dark
-                                                {% elif sample.sample_type == 'positive control' %}bg-info
-                                                {% else %}bg-secondary
-                                                {% endif %}">
-                                                {{ sample.sample_type or 'Unknown' }}
-                                            </span>
-                                        </td>
+                                        <td>{{ sample.sample_type or 'Unknown' }}</td>
                                         <td class="text-center">{{ sample.total_species }}</td>
                                         <td class="text-center">{{ "%.3f"|format(sample.shannon_diversity) }}</td>
                                         <td class="text-center">{{ "%.2f"|format(sample.top_species_abundance) }}%</td>
@@ -344,19 +335,13 @@
                                         <td class="fw-semibold">{{ result.sample_id }}</td>
                                         <td>{{ result.expected_species or '-' }}</td>
                                         <td>{{ result.top_detected_species or '-' }}</td>
-                                        <td class="text-center">
-                                            {% if result.expected_species_detected %}
-                                                <span class="badge bg-success">
-                                                    <i class="bi bi-check-circle me-1"></i>Yes
-                                                </span>
-                                            {% elif result.expected_species %}
-                                                <span class="badge bg-danger">
-                                                    <i class="bi bi-x-circle me-1"></i>No
-                                                </span>
-                                            {% else %}
-                                                <span class="text-muted">N/A</span>
-                                            {% endif %}
-                                        </td>
+                                        {% if result.expected_species_detected %}
+                                        <td class="text-center table-success">Yes</td>
+                                        {% elif result.expected_species %}
+                                        <td class="text-center table-danger">No</td>
+                                        {% else %}
+                                        <td class="text-center text-muted">N/A</td>
+                                        {% endif %}
                                         <td class="text-center">{{ result.total_species_detected }}</td>
                                         <td>{{ result.spike_concentration or '-' }}</td>
                                     </tr>
