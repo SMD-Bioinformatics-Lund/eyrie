@@ -56,6 +56,14 @@ class Settings:
             "metaval": os.getenv('METAVAL_ANALYSIS_RESULTS', '/app/analysis-files/results/metaval'),
         }
 
+        # Samples table QC colouring: first matching (operator, threshold, level) wins
+        self.qc_boundaries: Dict[str, List[tuple]] = {
+            'reads': [('<', 500, 'danger')],
+            'filtered_percent': [('>', 80, 'danger'), ('>', 50, 'warning')],
+            'quality': [('<', 15, 'danger'), ('<', 20, 'warning')],
+            'spike_missing_percent': [('>', 10, 'danger'), ('>', 0, 'warning'), ('>', -1, 'success')],
+        }
+
     @property
     def is_development(self) -> bool:
         """Check if running in development mode"""

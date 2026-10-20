@@ -1,6 +1,13 @@
 """
 Jinja2 template filters for server-side formatting
 """
+import re
+from datetime import datetime
+
+from markupsafe import Markup
+
+from ..config import settings
+
 
 def format_number_filter(num):
     """Format number with locale formatting"""
@@ -100,6 +107,51 @@ def library_concentration_class_filter(concentration):
         return ''  # Normal - no special styling
     except (ValueError, TypeError):
         return ''
+
+RUN_DATE_PATTERNS = [
+    (r'(?<!\d)(\d{4})[_-]?(\d{2})[_-]?(\d{2})(?!\d)', 0),
+    (r'(?<!\d)(\d{2})(\d{2})(\d{2})(?!\d)', 2000),
+]
+
+
+def compact_html_filter(html):
+    """Remove whitespace between tags, e.g. to keep large tables small."""
+    return Markup(re.sub(r'>\s+<', '><', str(html)).strip())
+
+
+def seqrun_date_filter(sequencing_run_id):
+    """Run date from the first YYYYMMDD, YYYY_MM_DD or YYMMDD in a sequencing run ID, e.g. 20250930_1234_MN12345_FAQ12345."""
+    for pattern, century in RUN_DATE_PATTERNS:
+        for year, month, day in re.findall(pattern, sequencing_run_id or ''):
+            try:
+                return datetime(century + int(year), int(month), int(day)).date().isoformat()
+            except ValueError:
+                continue
+    return None
+
+
+def read_stats_filter(sample):
+    """Read count, percentage filtered out and mean quality after filtering."""
+    nanoplot = sample.get('nanoplot') or {}
+    before = (nanoplot.get('unprocessed') or {}).get('nanostats') or {}
+    after = (nanoplot.get('processed') or {}).get('nanostats') or {}
+    reads_before = before.get('number_of_reads')
+    reads = after.get('number_of_reads')
+    filtered_percent = None
+    if reads_before and reads is not None:
+        filtered_percent = 100 * (reads_before - reads) / reads_before
+    return {'reads': reads, 'filtered_percent': filtered_percent, 'quality': after.get('mean_read_quality')}
+
+
+def qc_class_filter(value, metric):
+    """Get the table cell colour class for a QC statistic from the configured boundaries."""
+    if value is None:
+        return ''
+    for operator, threshold, level in settings.qc_boundaries.get(metric, []):
+        if (value < threshold) if operator == '<' else (value > threshold):
+            return f'table-{level}'
+    return ''
+
 
 def read_count_class_filter(count):
     """Get CSS class for read count — red when below 500."""
