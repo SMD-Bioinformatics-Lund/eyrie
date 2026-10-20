@@ -61,3 +61,13 @@ window.EyrieShared = {
 window.showError = window.EyrieShared.showError;
 window.showSuccess = window.EyrieShared.showSuccess;
 window.formatDate = window.EyrieShared.formatDate;
+
+
+// Keep "Selected" counts in table headers in step with the row checkboxes
+document.addEventListener('change', function(event) {
+    if (!event.target.classList.contains('row-select')) return;
+    const checked = document.querySelectorAll('.row-select:checked').length;
+    document.querySelectorAll('[data-selected-count]').forEach(function(element) {
+        element.textContent = checked;
+    });
+});

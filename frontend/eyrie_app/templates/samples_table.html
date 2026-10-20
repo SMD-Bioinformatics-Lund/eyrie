@@ -10,7 +10,7 @@
             <span class="summary-block">Unreviewed <strong>{{ samples | length - passed - failed }}</strong></span>
             <span class="summary-block bg-success-subtle">Passed <strong>{{ passed }}</strong></span>
             <span class="summary-block bg-danger-subtle">Failed <strong>{{ failed }}</strong></span>
-            <span class="summary-block bg-primary-subtle">Selected <strong id="selectedCount">{{ samples | length if select_all else 0 }}</strong></span>
+            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>{{ samples | length if select_all else 0 }}</strong></span>
         </div>
         <div class="d-flex align-items-center gap-2 table-actions">
             <i class="bi bi-table text-white fs-5"></i>
@@ -180,7 +180,7 @@
             {% set general_comment = sample.comments.other if sample.comments and sample.comments.other else '' %}
             <tr>
                 <td class="text-center">
-                    <input type="checkbox" class="form-check-input" name="sample_ids" value="{{ sample.sample_id }}" form="samplesForm" aria-label="Select {{ sample.sample_name }}" {% if select_all %}checked{% endif %}>
+                    <input type="checkbox" class="form-check-input row-select" name="sample_ids" value="{{ sample.sample_id }}" form="samplesForm" aria-label="Select {{ sample.sample_name }}" {% if select_all %}checked{% endif %}>
                 </td>
                 <td title="{{ sample.sample_name }}"><a href="{{ overview_url }}" class="fw-semibold">{{ sample.sample_name }}</a></td>
                 <td title="{{ sample.lims_id or '' }}">{{ sample.lims_id or '-' }}</td>
