@@ -168,11 +168,9 @@
                         </div>
                     </div>
                 </td>
-                <td class="text-center">
+                <td class="text-center {{ abundance_cell_class(organism.abundance) }}">
                     <div class="d-flex align-items-center justify-content-center">
-                        <span class="badge {{ abundance_badge_class(organism.abundance) }} me-2">
-                            {{ '%.2f'|format(organism.abundance) }}%
-                        </span>
+                        <span class="me-2">{{ '%.2f'|format(organism.abundance) }}%</span>
                         <div class="progress flex-grow-1" style="height: 8px;">
                             <div class="progress-bar" style="width: {{ [organism.abundance, 100]|min }}%"></div>
                         </div>
@@ -215,8 +213,8 @@
     {% endif %}
 {% endmacro %}
 
-{% macro abundance_badge_class(abundance) %}
-    {% if abundance >= 10 %}bg-success{% elif abundance >= 5 %}bg-warning{% elif abundance >= 1 %}bg-info{% else %}bg-secondary{% endif %}
+{% macro abundance_cell_class(abundance) %}
+    {%- if abundance >= 10 %}table-success{% elif abundance >= 5 %}table-warning{% elif abundance >= 1 %}table-info{% endif -%}
 {% endmacro %}
 
 {% macro negative_control_table(control) %}
@@ -247,11 +245,7 @@
                                 </div>
                                 <small class="text-muted">{{ organism.genus or 'N/A' }}</small>
                             </td>
-                            <td class="text-center small">
-                                <span class="badge {{ abundance_badge_class(organism.abundance) }} badge-sm">
-                                    {{ '%.1f'|format(organism.abundance) }}%
-                                </span>
-                            </td>
+                            <td class="text-center small {{ abundance_cell_class(organism.abundance) }}">{{ '%.1f'|format(organism.abundance) }}%</td>
                             <td class="text-center small text-muted">
                                 {% if organism.estimated_counts %}
                                     {{ '{:,.0f}'.format(organism.estimated_counts) }}
