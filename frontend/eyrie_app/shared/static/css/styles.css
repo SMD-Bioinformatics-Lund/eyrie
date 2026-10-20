@@ -12,6 +12,10 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+.navbar .btn-outline-light {
+    border-color: transparent;
+}
+
 .card {
     border: 1px solid #dee2e6;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -26,9 +30,12 @@ body {
     border-spacing: 0;
 }
 
-.table th {
-    border-bottom: 2px solid #dee2e6;
-    font-weight: 600;
+.table thead th {
+    font-weight: normal;
+}
+
+.table thead.table-dark th {
+    border-color: var(--bs-table-bg);
 }
 
 .table td {
@@ -187,7 +194,9 @@ th .sort-indicator sub {
     font-size: 0.8rem;
     border-collapse: separate;
     border-spacing: 0;
-    border-top: 1px solid var(--bs-border-color);
+}
+
+.compact-table tr > :first-child {
     border-left: 1px solid var(--bs-border-color);
 }
 
