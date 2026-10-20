@@ -8,6 +8,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added sample `category` metadata (`production`, `validation` or `test`) to eyrie-popup and the samples table
  - Added `lims_id` to the eyrie-popup sample metadata file, so LIMS IDs can be uploaded or updated
  - Added admin-only `PUT /api/sample/{sample_id}/category`
+ - Added `view=table` and `sequencing_run_id` parameters to `GET /api/samples`, so the samples tables only load the fields they show
 
 ### Fixed
 

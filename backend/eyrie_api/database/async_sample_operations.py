@@ -6,10 +6,19 @@ from typing import Dict, Any, List, Tuple, Optional
 from .utils import get_db_connection
 
 
-async def get_all_samples() -> List[Dict[str, Any]]:
-    """Get all samples."""
+TABLE_FIELDS = [
+    'sample_id', 'sample_name', 'lims_id', 'sequencing_run_id', 'classification', 'qc', 'metadata',
+    'comments', 'flagged_top_hits', 'flagged_contaminants', 'created_date', 'updated_date',
+    'nanoplot.processed.nanostats', 'nanoplot.unprocessed.nanostats',
+]
+
+
+async def get_all_samples(sequencing_run_id: Optional[str] = None, table_fields: bool = False) -> List[Dict[str, Any]]:
+    """Get all samples, optionally for one sequencing run and only the samples table fields."""
+    query = {'sequencing_run_id': sequencing_run_id} if sequencing_run_id else {}
+    projection = {field: 1 for field in TABLE_FIELDS} if table_fields else None
     async with get_db_connection() as db:
-        cursor = db.samples.find()
+        cursor = db.samples.find(query, projection)
         return await cursor.to_list(length=None)
 
 

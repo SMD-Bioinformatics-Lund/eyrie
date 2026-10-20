@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Depends, Query
 from eyrie_api.models.samples import SampleCreate
 from eyrie_api.database.async_sample_operations import (
     get_all_samples, create_sample
@@ -10,9 +11,13 @@ import json
 router = APIRouter(prefix="/samples", tags=["samples"])
 
 @router.get("")
-async def get_samples(current_user: dict = Depends(get_current_user)):
+async def get_samples(
+    sequencing_run_id: Optional[str] = None,
+    view: Optional[str] = Query(None, description="'table' returns only the fields used by the samples table"),
+    current_user: dict = Depends(get_current_user)
+):
     try:
-        samples = await get_all_samples()
+        samples = await get_all_samples(sequencing_run_id, table_fields=view == 'table')
         return json.loads(JSONEncoder().encode(samples))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
