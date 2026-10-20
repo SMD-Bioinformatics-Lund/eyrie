@@ -15,6 +15,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added a filter bar to the samples tables: search, sequencing run, sample type, material, QC status, categories, and minimum reads, quality and percentage filtered
 
 ### Fixed
+ - Fixed the 4th and 5th columns of every table being hidden on small screens
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -23,6 +24,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the sample name to open the sample and the first column to a selection checkbox, with Select All and Clear Selection buttons
  - Changed the samples table header to show total, unreviewed, passed, failed and selected counts
  - Changed status badges in tables (users, pipeline tasks, positive controls, abundance) to coloured cells, and table header rows to black
+ - Changed buttons, badges, form fields and dialogs back to Bootstrap's standard styling (normal case, standard padding and borders), keeping square corners
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
 
 ## [0.4.1]
