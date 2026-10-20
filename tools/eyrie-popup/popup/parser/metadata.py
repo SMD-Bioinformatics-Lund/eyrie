@@ -12,7 +12,8 @@ class MetadataParser:
 
     COLUMN_MAPPINGS = {
         'sample_id': ['sample_id', 'sample', 'id', 'sample_name'],
-        'sample_type': ['sample_type', 'type', 'sample_category'],
+        'category': ['category', 'sample_category'],
+        'sample_type': ['sample_type', 'type'],
         'material': ['material', 'sample_material', 'material_type'],
         'dilution': ['dilution', 'sample_dilution'],
         'library_concentration': ['library_concentration', 'lib_concentration', 'concentration', 'library_conc'],
@@ -134,6 +135,7 @@ class MetadataParser:
             return value if value else None
 
         return SampleMetadata(
+            category=get_value('category'),
             sample_type=get_value('sample_type'),
             material=get_value('material'),
             dilution=get_value('dilution'),
@@ -177,10 +179,14 @@ def validate_metadata_file(file_path: Union[str, Path]) -> tuple[bool, List[str]
             for row_num, row in enumerate(reader, start=2):
                 normalized_row = {normalized_fieldnames.get(k, k): v for k, v in row.items()}
 
+                category = (normalized_row.get('category') or '').strip()
+                if category and category not in ['production', 'validation', 'test']:
+                    errors.append(f"Row {row_num}: Invalid category '{category}'. Must be one of: production, validation, test")
+
                 # Validate sample_type
                 sample_type = (normalized_row.get('sample_type') or '').strip()
-                if sample_type and sample_type not in ['validation', 'patient', 'negative control', 'positive control']:
-                    errors.append(f"Row {row_num}: Invalid sample_type '{sample_type}'. Must be one of: validation, patient, negative control, positive control")
+                if sample_type and sample_type not in ['clinical', 'negative control', 'positive control']:
+                    errors.append(f"Row {row_num}: Invalid sample_type '{sample_type}'. Must be one of: clinical, negative control, positive control")
 
                 # Validate dilution
                 dilution = (normalized_row.get('dilution') or '').strip()

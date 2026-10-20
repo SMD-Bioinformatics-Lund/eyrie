@@ -5,10 +5,12 @@ All notable changes to the Eyrie sample management system will be documented in 
 ## [Unreleased]
 
 ### Added
+ - Added sample `category` metadata (`production`, `validation` or `test`) to eyrie-popup and the samples table
 
 ### Fixed
 
 ### Changed
+ - Changed `sample_type` to `clinical`, `negative control` or `positive control`
 
 ## [0.4.1]
 
