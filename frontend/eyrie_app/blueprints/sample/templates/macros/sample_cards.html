@@ -1,7 +1,7 @@
 {% macro general_info_card(sample=None) %}
 <!-- General Information Card -->
 <div class="card mb-4">
-    <div class="card-header bg-light text-dark">
+    <div class="card-header bg-info text-dark">
         <h6 class="mb-0">
             <i class="bi bi-info-circle me-2"></i>General Information
         </h6>
@@ -31,7 +31,7 @@
 {% macro qc_card(sample=None) %}
 <!-- QC Card -->
 <div class="card qc-card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-warning text-dark">
         <h6 class="mb-0">
             <i class="bi bi-check-circle me-2"></i>Quality Control
         </h6>
@@ -65,7 +65,7 @@
 {% macro qc_comments_card(sample=None) %}
 <!-- QC Comments Card -->
 <div class="card qc-comment-card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-warning text-dark">
         <h6 class="mb-0">
             <i class="bi bi-clipboard-check me-2"></i>QC Comments
         </h6>
@@ -111,7 +111,7 @@
 {% macro general_comments_card(sample=None) %}
 <!-- General Comments Card -->
 <div class="card comment-card">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-warning text-dark">
         <h6 class="mb-0">
             <i class="bi bi-chat-text me-2"></i>General Comments
         </h6>
@@ -133,7 +133,7 @@
 {% macro metadata_card(sample=None) %}
 <!-- Sample Metadata Card -->
 <div class="card metadata-card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-info text-dark">
         <h6 class="mb-0">
             <i class="bi bi-tags me-2"></i>Sample Metadata
         </h6>
@@ -203,7 +203,7 @@
 {% macro classification_summary_card(sample=None) %}
 <!-- Classification Summary Card -->
 <div class="card classification-summary-card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-success text-white">
         <h6 class="mb-0">
             <i class="bi bi-flag me-2"></i>Classification Summary
         </h6>
@@ -301,7 +301,7 @@
 {% macro summary_statistics_card(sample=None) %}
 <!-- Summary Statistics Card -->
 <div class="card stats-card mb-4">
-    <div class="card-header bg-primary text-white">
+    <div class="card-header bg-success text-white">
         <h6 class="mb-0">
             <i class="bi bi-bar-chart me-2"></i>Summary Statistics
         </h6>
