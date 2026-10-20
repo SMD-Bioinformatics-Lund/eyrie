@@ -6,22 +6,18 @@
             <i class="bi bi-info-circle me-2"></i>General Information
         </h6>
     </div>
-    <div class="card-body">
-        <table class="table table-sm table-borderless mb-0">
+    <div class="card-body p-0">
+        <table class="table table-sm table-hover compact-table key-value-table mb-0">
             <tbody>
-                <tr><td class="text-nowrap"><strong>Sample Name:</strong></td><td class="text-break">{{ sample.sample_name or '--' }}</td></tr>
-                <tr><td class="text-nowrap"><strong>Sample ID:</strong></td><td class="text-break">{{ sample.sample_id or '--' }}</td></tr>
-                <tr><td class="text-nowrap"><strong>Sequencing Run ID:</strong></td><td class="text-break">{{ sample.sequencing_run_id or '--' }}</td></tr>
-                <tr><td class="text-nowrap"><strong>LIMS ID:</strong></td><td class="text-break">{{ sample.lims_id or '--' }}</td></tr>
-                <tr><td class="text-nowrap"><strong>Classification:</strong></td><td class="text-break">
-                    {% if sample and sample.classification %}
-                        <span class="badge {{ 'bg-primary' if sample.classification == '16S' else 'bg-info' }}">{{ sample.classification }}</span>
-                    {% else %}
-                        --
-                    {% endif %}
+                <tr><th scope="row">Sample Name</th><td title="{{ sample.sample_name or '' }}">{{ sample.sample_name or '--' }}</td></tr>
+                <tr><th scope="row">Sample ID</th><td title="{{ sample.sample_id or '' }}">{{ sample.sample_id or '--' }}</td></tr>
+                <tr><th scope="row">Sequencing Run ID</th><td title="{{ sample.sequencing_run_id or '' }}">{{ sample.sequencing_run_id or '--' }}</td></tr>
+                <tr><th scope="row">LIMS ID</th><td title="{{ sample.lims_id or '' }}">{{ sample.lims_id or '--' }}</td></tr>
+                <tr><th scope="row">Classification</th><td>
+                    {{ sample.classification if sample and sample.classification else '--' }}
                 </td></tr>
-                <tr><td class="text-nowrap"><strong>Created Date:</strong></td><td class="text-break">{{ sample.created_date | format_date if sample else '--' }}</td></tr>
-                <tr><td class="text-nowrap"><strong>Updated Date:</strong></td><td class="text-break">{{ sample.updated_date | format_date if sample else '--' }}</td></tr>
+                <tr><th scope="row">Created Date</th><td>{{ (sample.created_date | string)[:16] | replace('T', ' ') if sample and sample.created_date else '--' }}</td></tr>
+                <tr><th scope="row">Updated Date</th><td>{{ (sample.updated_date | string)[:16] | replace('T', ' ') if sample and sample.updated_date else '--' }}</td></tr>
             </tbody>
         </table>
     </div>
@@ -138,38 +134,29 @@
             <i class="bi bi-tags me-2"></i>Sample Metadata
         </h6>
     </div>
-    <div class="card-body">
-        <table class="table table-sm table-borderless mb-0">
+    <div class="card-body p-0">
+        <table class="table table-sm table-hover compact-table key-value-table mb-0">
             <tbody>
-                <tr><td><strong>Category:</strong></td><td>{{ sample.metadata.category or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Sample Type:</strong></td><td>{{ sample.metadata.sample_type or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Material:</strong></td><td>{{ sample.metadata.material or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Dilution:</strong></td><td>{{ sample.metadata.dilution or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Spike Concentration:</strong></td><td>{{ sample.metadata.spike_concentration or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Library Concentration:</strong></td><td>
-                    {% if sample and sample.metadata and sample.metadata.library_concentration %}
-                        {% set conc_class = sample.metadata.library_concentration | library_concentration_class %}
-                        {% if conc_class %}
-                            <span class="badge {{ conc_class }}">{{ sample.metadata.library_concentration }}</span> ng/μL
-                        {% else %}
-                            {{ sample.metadata.library_concentration }} ng/μL
-                        {% endif %}
-                    {% else %}
-                        --
-                    {% endif %}
-                </td></tr>
-                <tr><td><strong>Multiple Finds:</strong></td><td>
+                <tr><th scope="row">Category</th><td>{{ sample.metadata.category or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Sample Type</th><td>{{ sample.metadata.sample_type or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Material</th><td>{{ sample.metadata.material or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Dilution</th><td>{{ sample.metadata.dilution or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Spike Concentration</th><td>{{ sample.metadata.spike_concentration or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Library Concentration</th>
+                {% set concentration = sample.metadata.library_concentration if sample and sample.metadata else none %}
+                <td class="{{ concentration | library_concentration_class }}">{{ concentration ~ ' ng/μL' if concentration else '--' }}</td></tr>
+                <tr><th scope="row">Multiple Finds</th><td>
   {% if sample and sample.metadata and sample.metadata.multiple_finds is not none %}
     {{ 'True' if sample.metadata.multiple_finds else 'False' }}
   {% else %}
     --
   {% endif %}
 </td></tr>
-                <tr><td><strong>Sanger Expected Species:</strong></td><td>{{ sample.metadata.sanger_expected_species or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Extraction Kit:</strong></td><td>{{ sample.metadata.extraction_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Extraction Kit Lot Number:</strong></td><td>{{ sample.metadata.extraction_kit_lot_number or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Library Prep Kit:</strong></td><td>{{ sample.metadata.library_prep_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
-                <tr><td><strong>Library Prep Kit Lot Number:</strong></td><td>{{ sample.metadata.library_prep_kit_lot_number or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Sanger Expected Species</th><td>{{ sample.metadata.sanger_expected_species or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Extraction Kit</th><td>{{ sample.metadata.extraction_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Extraction Kit Lot Number</th><td>{{ sample.metadata.extraction_kit_lot_number or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Library Prep Kit</th><td>{{ sample.metadata.library_prep_kit or '--' if sample and sample.metadata else '--' }}</td></tr>
+                <tr><th scope="row">Library Prep Kit Lot Number</th><td>{{ sample.metadata.library_prep_kit_lot_number or '--' if sample and sample.metadata else '--' }}</td></tr>
             </tbody>
         </table>
     </div>

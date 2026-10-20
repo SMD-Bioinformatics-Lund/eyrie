@@ -97,13 +97,13 @@ def dominant_species_filter(species_hits):
         return '--'
 
 def library_concentration_class_filter(concentration):
-    """Get CSS class for library concentration badge based on value thresholds."""
+    """Get the table cell colour class for a library concentration."""
     if not concentration:
         return ''
     try:
         value = float(concentration)
         if value < 1:
-            return 'bg-danger'  # Red
+            return 'table-danger'
         return ''  # Normal - no special styling
     except (ValueError, TypeError):
         return ''
