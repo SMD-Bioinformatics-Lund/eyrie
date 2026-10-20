@@ -6,7 +6,7 @@ from ...auth import jwt_required, get_jwt_from_cookie
 import urllib.parse
 from collections import defaultdict
 from ...config import settings
-from ...utils.sample_filters import filter_options, filter_samples
+from ...utils.sample_filters import filter_options, filter_samples, filter_seqruns, seqrun_filter_options
 from ...eyrie import (
     get_samples_from_backend, serve_analysis_file, get_seqrun_from_backend, get_analysis_path,
     get_contamination_analysis_from_backend, get_qc_overview_from_backend,
@@ -333,15 +333,16 @@ def seqruns_page():
     try:
         # Fetch seqruns directly from backend API (includes exp_start_time)
         seqruns = get_seqruns_from_backend()
-        return render_template('seqruns.html', seqruns=seqruns)
+        return render_template('seqruns.html', seqruns=filter_seqruns(seqruns, request.args),
+                               filter_options=seqrun_filter_options(seqruns))
     except HTTPException:
         raise  # Let Flask handle HTTP errors (401, 403, etc.)
     except ValueError as e:
         # Authentication error
-        return render_template('seqruns.html', seqruns=[], error='Backend authentication required')
+        return render_template('seqruns.html', seqruns=[], filter_options=seqrun_filter_options([]), error='Backend authentication required')
     except Exception as e:
         # Other errors
-        return render_template('seqruns.html', seqruns=[], error=str(e))
+        return render_template('seqruns.html', seqruns=[], filter_options=seqrun_filter_options([]), error=str(e))
 
 @bp.route('/seqruns/<seqrun_id>/samples')
 @jwt_required
