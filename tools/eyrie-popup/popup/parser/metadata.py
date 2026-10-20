@@ -12,6 +12,7 @@ class MetadataParser:
 
     COLUMN_MAPPINGS = {
         'sample_id': ['sample_id', 'sample', 'id', 'sample_name'],
+        'lims_id': ['lims_id', 'lims', 'lims_identifier'],
         'category': ['category', 'sample_category'],
         'sample_type': ['sample_type', 'type'],
         'material': ['material', 'sample_material', 'material_type'],
@@ -135,6 +136,7 @@ class MetadataParser:
             return value if value else None
 
         return SampleMetadata(
+            lims_id=get_value('lims_id'),
             category=get_value('category'),
             sample_type=get_value('sample_type'),
             material=get_value('material'),

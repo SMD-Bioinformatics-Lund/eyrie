@@ -8,6 +8,7 @@ from .config import SampleInfo
 
 class SampleMetadata(BaseModel):
     """Sample metadata information."""
+    lims_id: Optional[str] = None
     category: Optional[str] = Field(None, regex="^(production|validation|test)$")
     sample_type: Optional[str] = Field(None, regex="^(clinical|negative control|positive control)$")
     material: Optional[str] = None

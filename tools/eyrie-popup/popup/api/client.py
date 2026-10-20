@@ -104,6 +104,7 @@ class EyrieAPIClient:
             existing_sample = self._get_sample(sample_id)
 
             sample_metadata_dict = {k: v for k, v in sample_metadata.dict().items() if v is not None}
+            lims_id = sample_metadata_dict.pop('lims_id', None)
 
             if existing_sample:
                 api_fields = [
@@ -115,6 +116,8 @@ class EyrieAPIClient:
 
                 updated_sample = {k: v for k, v in existing_sample.items() if k in api_fields}
                 updated_sample['metadata'] = sample_metadata_dict
+                if lims_id:
+                    updated_sample['lims_id'] = lims_id
 
                 response = self.session.put(
                     f"{self.api_url}/sample/{sample_id}",
@@ -131,6 +134,7 @@ class EyrieAPIClient:
                 # Create new sample with minimal required fields + sample metadata
                 new_sample = {
                     'sample_id': sample_id,
+                    'lims_id': lims_id,
                     'qc': 'unprocessed',
                     'comments': '',
                     'metadata': sample_metadata_dict
