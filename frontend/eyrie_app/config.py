@@ -102,8 +102,7 @@ class Settings:
                     {'value': 'unprocessed', 'label': 'Unprocessed'}
                 ],
                 'sample_types': [
-                    {'value': 'validation', 'label': 'Validation'},
-                    {'value': 'patient', 'label': 'Patient'},
+                    {'value': 'clinical', 'label': 'Clinical'},
                     {'value': 'negative control', 'label': 'Negative Control'},
                     {'value': 'positive control', 'label': 'Positive Control'}
                 ]

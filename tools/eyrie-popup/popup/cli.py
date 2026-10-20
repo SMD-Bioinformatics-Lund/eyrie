@@ -250,6 +250,8 @@ def _upload_sample_metadata(sample_metadata_file: Path, api: str, username: Opti
         for sample_id, sample_metadata in sample_metadata_dict.items():
             click.echo(f"  ✓ {sample_id}")
             if verbose:
+                if sample_metadata.category:
+                    click.echo(f"    • Category: {sample_metadata.category}")
                 if sample_metadata.sample_type:
                     click.echo(f"    • Type: {sample_metadata.sample_type}")
                 if sample_metadata.material:

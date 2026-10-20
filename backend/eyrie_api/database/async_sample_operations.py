@@ -325,7 +325,7 @@ async def get_qc_overview_analysis(sequencing_run_id: str) -> Dict[str, Any]:
 
         # Analyze Sanger expected species matching
         sanger_analysis = {'species_matches': 0, 'genus_matches': 0, 'total_analyzed': 0}
-        sample_type_counts = {'validation': 0, 'patient': 0, 'negative control': 0, 'positive control': 0}
+        sample_type_counts = {'clinical': 0, 'negative control': 0, 'positive control': 0}
         material_type_counts = {}
         qc_status_counts = {'passed': 0, 'failed': 0, 'unprocessed': 0}
         classification_counts = {}
