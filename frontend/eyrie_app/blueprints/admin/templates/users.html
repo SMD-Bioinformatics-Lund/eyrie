@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros/data_table.html' import table_header, select_all_header, row_checkbox with context %}
 
 {% block title %}User Management - Eyrie{% endblock %}
 
@@ -22,38 +23,22 @@
 
         {% set active = users | selectattr('is_active') | list | length %}
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-primary">
-                <div class="d-flex gap-1 mb-2">
-                    <span class="summary-block">Total <strong>{{ users | length }}</strong></span>
-                    <span class="summary-block bg-success-subtle">Active <strong>{{ active }}</strong></span>
-                    <span class="summary-block bg-secondary-subtle">Inactive <strong>{{ users | length - active }}</strong></span>
-                    <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
-                </div>
-                <div class="d-flex align-items-center gap-2 table-actions">
-                    <i class="bi bi-people text-white fs-5"></i>
-                    <span class="text-white fw-semibold">Users</span>
-                    <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="Tick users, or the box in the header row to select all. Then choose an action under Manage Users. Your own account is never changed. Click a username to edit it."></i>
-                    <div class="dropdown">
-                        <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-gear me-1"></i>Manage Users
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}"><i class="bi bi-person-plus me-2"></i>Add User</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateUsersModal"><i class="bi bi-pencil-square me-2"></i>Update</button></li>
-                            <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.activate_users') }}"><i class="bi bi-person-check me-2"></i>Activate</button></li>
-                            <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.deactivate_users') }}"><i class="bi bi-person-dash me-2"></i>Deactivate</button></li>
-                            <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"><i class="bi bi-trash me-2"></i>Delete</button></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+            {% call table_header('Users', 'bi-people', 'Tick users, or the box in the header row to select all. Then choose an action under Manage Users. Your own account is never changed. Click a username to edit it.',
+                                 counts=[('Total', users | length, ''), ('Active', active, 'bg-success-subtle'), ('Inactive', users | length - active, 'bg-secondary-subtle')],
+                                 selectable=True, menu_label='Manage Users') %}
+                <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}"><i class="bi bi-person-plus me-2"></i>Add User</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateUsersModal"><i class="bi bi-pencil-square me-2"></i>Update</button></li>
+                <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.activate_users') }}"><i class="bi bi-person-check me-2"></i>Activate</button></li>
+                <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.deactivate_users') }}"><i class="bi bi-person-dash me-2"></i>Deactivate</button></li>
+                <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"><i class="bi bi-trash me-2"></i>Delete</button></li>
+            {% endcall %}
             <div class="card-body p-0">
                 <div class="table-responsive compact-table-wrapper">
                     <table class="table table-sm table-hover mb-0 compact-table text-nowrap">
                         <thead class="table-dark">
                             <tr>
-                                <th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
+                                {{ select_all_header() }}
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
@@ -64,9 +49,7 @@
                         <tbody>
                             {% for user in users %}
                             <tr>
-                                <td class="text-center">
-                                    <input type="checkbox" class="form-check-input row-select" name="user_ids" value="{{ user._id }}" form="usersForm" aria-label="Select {{ user.username }}">
-                                </td>
+                                {{ row_checkbox('user_ids', user._id, 'usersForm', user.username) }}
                                 <td><a href="{{ url_for('admin.edit_user', user_id=user._id) }}" class="fw-semibold">{{ user.username }}</a></td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.role }}</td>
