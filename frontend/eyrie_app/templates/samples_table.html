@@ -1,5 +1,4 @@
 {% macro samples_card(samples, filter_options, error=None, show_seqrun_filter=True) %}
-{% set select_all = request.args.get('select') == 'all' %}
 {% set passed = samples | selectattr('qc', 'equalto', 'passed') | list | length %}
 {% set failed = samples | selectattr('qc', 'equalto', 'failed') | list | length %}
 {{ filter_bar(filter_options, show_seqrun_filter) }}
@@ -10,12 +9,12 @@
             <span class="summary-block">Unreviewed <strong>{{ samples | length - passed - failed }}</strong></span>
             <span class="summary-block bg-success-subtle">Passed <strong>{{ passed }}</strong></span>
             <span class="summary-block bg-danger-subtle">Failed <strong>{{ failed }}</strong></span>
-            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>{{ samples | length if select_all else 0 }}</strong></span>
+            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
         </div>
         <div class="d-flex align-items-center gap-2 table-actions">
             <i class="bi bi-table text-white fs-5"></i>
-            <a href="{{ url_with_args(select='all', message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-check2-all me-1"></i>Select All</a>
-            <a href="{{ url_with_args(select=None, message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg me-1"></i>Clear Selection</a>
+            <span class="text-white fw-semibold">Samples</span>
+            <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="Tick samples, or the box in the header row to select all. Then choose an action under Manage Samples. Filters above narrow the table."></i>
             <div class="dropdown">
                 <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-gear me-1"></i>Manage Samples
@@ -41,7 +40,7 @@
             <table class="table table-sm table-hover mb-0 compact-table text-nowrap samples-table" id="samplesTable">
                 <thead class="table-dark">
                     <tr>
-                        <th class="text-center" title="Select"><i class="bi bi-check2-square"></i></th>
+                        <th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
                         <th>Sample Name</th>
                         <th>LIMS ID</th>
                         <th>Run Date</th>
@@ -64,7 +63,7 @@
                     </tr>
                 </thead>
                 <tbody id="samplesTableBody">
-                    {{ samples_table_rows(samples, select_all, error) | compact_html }}
+                    {{ samples_table_rows(samples, error) | compact_html }}
                 </tbody>
             </table>
         </div>
@@ -72,7 +71,7 @@
 </div>
 
 <form id="samplesForm" method="post" action="{{ url_for('samples.export_samples') }}">
-    <input type="hidden" name="next" value="{{ url_with_args(message=None, select=None) }}">
+    <input type="hidden" name="next" value="{{ url_with_args(message=None) }}">
 </form>
 
 {% call action_modal('exportModal', 'Export to LIMS', url_for('samples.export_samples'), 'Export TSV') %}
@@ -171,7 +170,7 @@
 </div>
 {% endmacro %}
 
-{% macro samples_table_rows(samples, select_all=False, error=None) %}
+{% macro samples_table_rows(samples, error=None) %}
     {% if samples %}
         {% for sample in samples %}
             {% set overview_url = url_for('sample.sample_overview', sample_id=sample.sample_id) %}
@@ -180,7 +179,7 @@
             {% set general_comment = sample.comments.other if sample.comments and sample.comments.other else '' %}
             <tr>
                 <td class="text-center">
-                    <input type="checkbox" class="form-check-input row-select" name="sample_ids" value="{{ sample.sample_id }}" form="samplesForm" aria-label="Select {{ sample.sample_name }}" {% if select_all %}checked{% endif %}>
+                    <input type="checkbox" class="form-check-input row-select" name="sample_ids" value="{{ sample.sample_id }}" form="samplesForm" aria-label="Select {{ sample.sample_name }}">
                 </td>
                 <td title="{{ sample.sample_name }}"><a href="{{ overview_url }}" class="fw-semibold">{{ sample.sample_name }}</a></td>
                 <td title="{{ sample.lims_id or '' }}">{{ sample.lims_id or '-' }}</td>

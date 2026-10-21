@@ -127,19 +127,18 @@
 {% set hits = sample.taxonomic_data.hits | sort(attribute='abundance', reverse=true) if sample and sample.taxonomic_data and sample.taxonomic_data.hits else [] %}
 {% set top_hits = sample.flagged_top_hits or [] if sample else [] %}
 {% set contaminants = sample.flagged_contaminants or [] if sample else [] %}
-{% set select_all = request.args.get('select') == 'all' %}
 <div class="card border-0 shadow-sm h-100">
     <div class="card-header bg-primary">
         <div class="d-flex gap-1 mb-2">
             <span class="summary-block">Species <strong>{{ hits | length }}</strong></span>
             <span class="summary-block bg-success-subtle">Top hits <strong>{{ top_hits | length }}</strong></span>
             <span class="summary-block bg-danger-subtle">Contaminants <strong>{{ contaminants | length }}</strong></span>
-            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>{{ hits | length if select_all else 0 }}</strong></span>
+            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
         </div>
         <div class="d-flex align-items-center gap-2 table-actions">
             <i class="bi bi-list-ol text-white fs-5"></i>
-            <a href="{{ url_with_args(select='all', message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-check2-all me-1"></i>Select All</a>
-            <a href="{{ url_with_args(select=None, message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg me-1"></i>Clear Selection</a>
+            <span class="text-white fw-semibold">Species Abundance</span>
+            <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="Tick species, or the box in the header row to select all. Then mark them as top hits or contaminants under Manage Classification."></i>
             <div class="dropdown">
                 <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-gear me-1"></i>Manage Classification
@@ -165,7 +164,7 @@
             <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
                 <thead class="table-dark sticky-top">
                     <tr>
-                        <th class="text-center" title="Select"><i class="bi bi-check2-square"></i></th>
+                        <th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
                         <th>Species</th>
                         <th>Abundance</th>
                         <th>Estimated Counts</th>
@@ -176,7 +175,7 @@
                     {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if sample.spike == organism.species else '' %}
                     <tr class="{{ row_class }}" data-species="{{ organism.species }}">
                         <td class="text-center">
-                            <input type="checkbox" class="form-check-input row-select" name="species" value="{{ organism.species }}" form="speciesForm" aria-label="Select {{ organism.species }}" {% if select_all %}checked{% endif %}>
+                            <input type="checkbox" class="form-check-input row-select" name="species" value="{{ organism.species }}" form="speciesForm" aria-label="Select {{ organism.species }}">
                         </td>
                         <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
