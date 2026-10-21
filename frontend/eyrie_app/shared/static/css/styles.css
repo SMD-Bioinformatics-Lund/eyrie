@@ -88,14 +88,6 @@ body {
     padding: 0.3rem 0.5rem;
 }
 
-/* Spike Species Highlighting */
-.spike-row {
-    background-color: rgba(13, 202, 240, 0.25) !important;
-}
-
-.spike-row td {
-    background-color: rgba(13, 202, 240, 0.25) !important;
-}
 
 /* QC Comments Styling */
 .qc-comment-item {
@@ -260,4 +252,13 @@ th .sort-indicator sub {
     color: var(--bs-body-color);
     background-color: var(--bs-info-bg-subtle);
     border-color: var(--bs-border-color);
+}
+
+.legend-swatch {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-right: 0.3rem;
+    vertical-align: -0.1rem;
+    border: 1px solid var(--bs-border-color);
 }

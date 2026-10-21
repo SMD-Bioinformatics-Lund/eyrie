@@ -9,7 +9,7 @@
                         <i class="bi bi-pie-chart me-2"></i>Taxonomic Classification (Krona Plot)
                     </h5>
                     <div class="d-flex align-items-center gap-2">
-                        <button type="button" class="btn btn-outline-light btn-sm"
+                        <button type="button" class="btn btn-light btn-sm"
                                 onclick="refreshKronaPlot()">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
@@ -40,34 +40,7 @@
 
         <!-- Species Abundance Table - Right Side -->
         <div class="col-lg-5">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">
-                        <i class="bi bi-list-ol me-2"></i>Species Abundance
-                    </h5>
-                    <button type="button" class="btn btn-light btn-sm" id="exportCsvBtn">
-                        <i class="bi bi-file-earmark-spreadsheet"></i>
-                    </button>
-                </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive" style="max-height: 600px;">
-                        <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
-                            <thead class="table-dark sticky-top">
-                                <tr>
-                                    <th>Species</th>
-                                    <th class="text-center">Abundance</th>
-                                    <th class="text-center">Estimated Counts</th>
-                                    <th class="text-center">Top Hit</th>
-                                    <th class="text-center">Contaminant</th>
-                                </tr>
-                            </thead>
-                            <tbody id="contaminationTableBody">
-                                {{ abundance_table_rows(sample) }}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+            {{ species_abundance_card(sample_id, sample) }}
         </div>
     </div>
     
@@ -150,67 +123,84 @@
 </div>
 {% endmacro %}
 
-{% macro abundance_table_rows(sample) %}
-    {% if sample and sample.taxonomic_data and sample.taxonomic_data.hits %}
-        {% set flagged_contaminants = sample.flagged_contaminants or [] %}
-        {% set flagged_top_hits = sample.flagged_top_hits or [] %}
-        {% set sorted_hits = sample.taxonomic_data.hits | sort(attribute='abundance', reverse=true) %}
-        {% for organism in sorted_hits %}
-            <tr class="contamination-row{% if sample.spike and sample.spike == organism.species %} spike-row{% endif %}"
-                data-species="{{ organism.species }}"
-                {% if sample.spike and sample.spike == organism.species %}title="Spike Species: {{ organism.species }} ({{ '%.2f'|format(organism.abundance) }}%)"{% endif %}>
-                <td>
-                    <div class="d-flex align-items-center">
-                        <small class="text-muted me-2">{{ loop.index }}.</small>
-                        <div>
+{% macro species_abundance_card(sample_id, sample) %}
+{% set hits = sample.taxonomic_data.hits | sort(attribute='abundance', reverse=true) if sample and sample.taxonomic_data and sample.taxonomic_data.hits else [] %}
+{% set top_hits = sample.flagged_top_hits or [] if sample else [] %}
+{% set contaminants = sample.flagged_contaminants or [] if sample else [] %}
+{% set select_all = request.args.get('select') == 'all' %}
+<div class="card border-0 shadow-sm h-100">
+    <div class="card-header bg-primary">
+        <div class="d-flex gap-1 mb-2">
+            <span class="summary-block">Species <strong>{{ hits | length }}</strong></span>
+            <span class="summary-block bg-success-subtle">Top hits <strong>{{ top_hits | length }}</strong></span>
+            <span class="summary-block bg-danger-subtle">Contaminants <strong>{{ contaminants | length }}</strong></span>
+            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>{{ hits | length if select_all else 0 }}</strong></span>
+        </div>
+        <div class="d-flex align-items-center gap-2 table-actions">
+            <i class="bi bi-list-ol text-white fs-5"></i>
+            <a href="{{ url_with_args(select='all', message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-check2-all me-1"></i>Select All</a>
+            <a href="{{ url_with_args(select=None, message=None) }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg me-1"></i>Clear Selection</a>
+            <div class="dropdown">
+                <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-gear me-1"></i>Manage Classification
+                </button>
+                <ul class="dropdown-menu">
+                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="top_hit"><i class="bi bi-star me-2"></i>Mark as Top Hit</button></li>
+                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="contaminant"><i class="bi bi-flag me-2"></i>Mark as Contaminant</button></li>
+                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="clear"><i class="bi bi-eraser me-2"></i>Clear Flags</button></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><button type="button" class="dropdown-item" id="exportCsvBtn"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV</button></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% if request.args.get('message') %}
+    <div class="alert alert-info alert-dismissible small py-1 px-2 m-2" role="alert">
+        {{ request.args.get('message') }}
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+    <div class="card-body p-0">
+        <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
+            <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th class="text-center" title="Select"><i class="bi bi-check2-square"></i></th>
+                        <th>Species</th>
+                        <th>Abundance</th>
+                        <th>Estimated Counts</th>
+                    </tr>
+                </thead>
+                <tbody id="contaminationTableBody">
+                    {% for organism in hits %}
+                    {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if sample.spike == organism.species else '' %}
+                    <tr class="{{ row_class }}" data-species="{{ organism.species }}">
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input row-select" name="species" value="{{ organism.species }}" form="speciesForm" aria-label="Select {{ organism.species }}" {% if select_all %}checked{% endif %}>
+                        </td>
+                        <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
-                        </div>
-                    </div>
-                </td>
-                <td class="text-center {{ abundance_cell_class(organism.abundance) }}">
-                    <div class="d-flex align-items-center justify-content-center">
-                        <span class="me-2">{{ '%.2f'|format(organism.abundance) }}%</span>
-                        <div class="progress flex-grow-1" style="height: 8px;">
-                            <div class="progress-bar" style="width: {{ [organism.abundance, 100]|min }}%"></div>
-                        </div>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <span class="fw-semibold text-muted">
-                        {% if organism.estimated_counts %}
-                            {{ '{:,.0f}'.format(organism.estimated_counts) }}
-                        {% else %}
-                            --
-                        {% endif %}
-                    </span>
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-sm {% if organism.species in flagged_top_hits %}btn-success{% else %}btn-outline-success{% endif %} top-hit-btn"
-                            data-species="{{ organism.species }}"
-                            data-flag-type="top-hit">
-                        <i class="bi {% if organism.species in flagged_top_hits %}bi-star-fill{% else %}bi-star{% endif %}"></i>
-                    </button>
-                </td>
-                <td class="text-center">
-                    <button class="btn btn-sm {% if organism.species in flagged_contaminants %}btn-danger{% else %}btn-outline-danger{% endif %} contaminant-btn"
-                            data-species="{{ organism.species }}"
-                            data-flag-type="contaminant">
-                        <i class="bi {% if organism.species in flagged_contaminants %}bi-flag-fill{% else %}bi-flag{% endif %}"></i>
-                    </button>
-                </td>
-            </tr>
-        {% endfor %}
-    {% else %}
-        <tr>
-            <td colspan="5" class="text-center py-4">
-                <div class="text-muted">
-                    <i class="bi bi-exclamation-circle text-warning" style="font-size: 2rem;"></i>
-                    <p class="mt-2">No taxonomic data available</p>
-                </div>
-            </td>
-        </tr>
-    {% endif %}
+                        </td>
+                        <td>{{ '%.2f'|format(organism.abundance) }}%</td>
+                        <td>{{ '{:,.0f}'.format(organism.estimated_counts) if organism.estimated_counts else '--' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center text-muted py-4">No taxonomic data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card-footer bg-white small text-muted d-flex gap-3">
+        <span><span class="legend-swatch bg-success-subtle"></span>Top hit</span>
+        <span><span class="legend-swatch bg-danger-subtle"></span>Contaminant</span>
+        <span><span class="legend-swatch bg-info-subtle"></span>Spike species</span>
+    </div>
+</div>
+<form id="speciesForm" method="post" action="{{ url_for('sample.flag_species', sample_id=sample_id) }}"></form>
 {% endmacro %}
 
 {% macro abundance_cell_class(abundance) %}
