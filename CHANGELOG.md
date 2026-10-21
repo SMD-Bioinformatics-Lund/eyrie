@@ -15,6 +15,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added a filter bar to the samples tables: search, sequencing run, sample type, material, QC status, categories, and minimum reads, quality and percentage filtered
  - Added a category filter to trends
  - Added a filter bar to the sequencing runs table: search, pipeline status, spikes detected, minimum samples and run date range
+ - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens

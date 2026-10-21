@@ -7,7 +7,7 @@
     {{ sample_navbar(sample_id, 'classification', current_user, sample, app_version, return_to) }}
 
     <!-- Main Content -->
-    {% from 'macros/classification.html' import classification_content %}
+    {% from 'macros/classification.html' import classification_content with context %}
     {{ classification_content(sample_id, sample, negative_controls, analysis_base_path) }}
 
     <!-- Scripts -->

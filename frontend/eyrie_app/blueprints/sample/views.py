@@ -1,4 +1,6 @@
-from flask import Blueprint, render_template, jsonify, request
+from urllib.parse import urlencode
+
+from flask import Blueprint, abort, redirect, render_template, jsonify, request, url_for
 from werkzeug.exceptions import HTTPException
 from ...auth import jwt_required, get_current_user
 from ...eyrie import (
@@ -7,6 +9,8 @@ from ...eyrie import (
 )
 
 bp = Blueprint('sample', __name__, url_prefix='', template_folder='templates')
+
+FLAG_ACTIONS = {'top_hit': 'Marked {} as top hits', 'contaminant': 'Marked {} as contaminants', 'clear': 'Cleared flags on {}'}
 
 @bp.route("/sample/<sample_id>")
 @jwt_required
@@ -56,6 +60,30 @@ def sample_classification(sample_id):
         print(f"Error loading sample data for classification view: {e}")
         return_to = request.args.get('return_to')
         return render_template('sample_classification.html', sample_id=sample_id, sample=None, negative_controls=[], current_user=get_current_user(), return_to=return_to)
+
+@bp.route("/sample/<sample_id>/species-flags", methods=['POST'])
+@jwt_required
+def flag_species(sample_id):
+    """Mark the selected species as top hits or contaminants, or clear their flags"""
+    action = request.form.get('action')
+    if action not in FLAG_ACTIONS:
+        abort(400)
+    species = set(request.form.getlist('species'))
+    if species:
+        sample = get_sample_from_backend(sample_id)
+        top_hits = [s for s in sample.get('flagged_top_hits') or [] if s not in species]
+        contaminants = [s for s in sample.get('flagged_contaminants') or [] if s not in species]
+        if action == 'top_hit':
+            top_hits += sorted(species)
+        elif action == 'contaminant':
+            contaminants += sorted(species)
+        update_sample_species_flags(sample_id, {'flagged_top_hits': top_hits, 'flagged_contaminants': contaminants})
+        message = FLAG_ACTIONS[action].format(f"{len(species)} species")
+    else:
+        message = 'No species selected'
+    back = url_for('sample.sample_classification', sample_id=sample_id)
+    return redirect(f"{back}?{urlencode({'message': message})}")
+
 
 @bp.route("/sample/<sample_id>/nanoplot")
 @jwt_required
