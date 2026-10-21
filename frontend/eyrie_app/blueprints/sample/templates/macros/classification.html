@@ -1,3 +1,4 @@
+{% from 'macros/data_table.html' import table_header, action_message, select_all_header, row_checkbox with context %}
 {% macro classification_content(sample_id, sample=None, negative_controls=None, analysis_base_path='') %}
 <div class="container-fluid mt-4">
     <div class="row">
@@ -128,43 +129,22 @@
 {% set top_hits = sample.flagged_top_hits or [] if sample else [] %}
 {% set contaminants = sample.flagged_contaminants or [] if sample else [] %}
 <div class="card border-0 shadow-sm h-100">
-    <div class="card-header bg-primary">
-        <div class="d-flex gap-1 mb-2">
-            <span class="summary-block">Species <strong>{{ hits | length }}</strong></span>
-            <span class="summary-block bg-success-subtle">Top hits <strong>{{ top_hits | length }}</strong></span>
-            <span class="summary-block bg-danger-subtle">Contaminants <strong>{{ contaminants | length }}</strong></span>
-            <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
-        </div>
-        <div class="d-flex align-items-center gap-2 table-actions">
-            <i class="bi bi-list-ol text-white fs-5"></i>
-            <span class="text-white fw-semibold">Species Abundance</span>
-            <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="Tick species, or the box in the header row to select all. Then mark them as top hits or contaminants under Manage Classification."></i>
-            <div class="dropdown">
-                <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="bi bi-gear me-1"></i>Manage Classification
-                </button>
-                <ul class="dropdown-menu">
-                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="top_hit"><i class="bi bi-star me-2"></i>Mark as Top Hit</button></li>
-                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="contaminant"><i class="bi bi-flag me-2"></i>Mark as Contaminant</button></li>
-                    <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="clear"><i class="bi bi-eraser me-2"></i>Clear Flags</button></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><button type="button" class="dropdown-item" id="exportCsvBtn"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV</button></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    {% if request.args.get('message') %}
-    <div class="alert alert-info alert-dismissible small py-1 px-2 m-2" role="alert">
-        {{ request.args.get('message') }}
-        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    {% endif %}
+    {% call table_header('Species Abundance', 'bi-list-ol', 'Tick species, or the box in the header row to select all. Then mark them as top hits or contaminants under Manage Classification.',
+                         counts=[('Species', hits | length, ''), ('Top hits', top_hits | length, 'bg-success-subtle'), ('Contaminants', contaminants | length, 'bg-danger-subtle')],
+                         selectable=True, menu_label='Manage Classification') %}
+        <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="top_hit"><i class="bi bi-star me-2"></i>Mark as Top Hit</button></li>
+        <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="contaminant"><i class="bi bi-flag me-2"></i>Mark as Contaminant</button></li>
+        <li><button type="submit" class="dropdown-item" form="speciesForm" name="action" value="clear"><i class="bi bi-eraser me-2"></i>Clear Flags</button></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button type="button" class="dropdown-item" id="exportCsvBtn"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV</button></li>
+    {% endcall %}
+    {{ action_message() }}
     <div class="card-body p-0">
         <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
             <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
                 <thead class="table-dark sticky-top">
                     <tr>
-                        <th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
+                        {{ select_all_header() }}
                         <th>Species</th>
                         <th>Abundance</th>
                         <th>Estimated Counts</th>
@@ -174,9 +154,7 @@
                     {% for organism in hits %}
                     {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if sample.spike == organism.species else '' %}
                     <tr class="{{ row_class }}" data-species="{{ organism.species }}">
-                        <td class="text-center">
-                            <input type="checkbox" class="form-check-input row-select" name="species" value="{{ organism.species }}" form="speciesForm" aria-label="Select {{ organism.species }}">
-                        </td>
+                        {{ row_checkbox('species', organism.species, 'speciesForm', organism.species) }}
                         <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>

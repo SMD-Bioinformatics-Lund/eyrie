@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from 'macros/data_table.html' import filter_bar with context %}
 
 {% block title %}Trends Analysis - Eyrie{% endblock %}
 
@@ -10,19 +11,15 @@
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-12">
-                <div class="card border-0 shadow-sm mb-2">
-                    <div class="card-body d-flex flex-wrap align-items-center gap-2 p-2 filter-bar">
+                {% call filter_bar(apply_js='updateTrends()', reset_js='resetFilters()') %}
                         {{ prefixed_select('groupBySelect', 'Group by', config.group_by_options) }}
                         {{ prefixed_select('metricSelect', 'Metric', config.metrics) }}
                         {{ prefixed_select('readQualityFilteringSelect', 'Read quality', config.read_quality_filtering) }}
-                        {{ filter_select('classificationFilter', 'Classification', config.predefined_filters.classifications) }}
-                        {{ filter_select('qcFilter', 'QC status', config.predefined_filters.qc) }}
-                        {{ filter_select('categoryFilter', 'Category', config.predefined_filters.categories) }}
-                        {{ filter_select('sampleTypeFilter', 'Sample type', config.predefined_filters.sample_types) }}
-                        <button type="button" class="btn btn-sm btn-apply" onclick="updateTrends()">Apply</button>
-                        <button type="button" class="btn btn-sm btn-secondary" onclick="resetFilters()">Reset</button>
-                    </div>
-                </div>
+                        {{ trend_filter_select('classificationFilter', 'Classification', config.predefined_filters.classifications) }}
+                        {{ trend_filter_select('qcFilter', 'QC status', config.predefined_filters.qc) }}
+                        {{ trend_filter_select('categoryFilter', 'Category', config.predefined_filters.categories) }}
+                        {{ trend_filter_select('sampleTypeFilter', 'Sample type', config.predefined_filters.sample_types) }}
+                {% endcall %}
 
                 <!-- Chart Container -->
                 <div class="card border-0 shadow-sm">
@@ -73,7 +70,7 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 </select>
 {% endmacro %}
 
-{% macro filter_select(id, label, options) %}
+{% macro trend_filter_select(id, label, options) %}
 <select class="form-select form-select-sm filter-select" id="{{ id }}" aria-label="{{ label }}">
     <option value="all" selected>{{ label }}</option>
     {% for option in options %}

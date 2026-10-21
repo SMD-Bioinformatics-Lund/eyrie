@@ -1,0 +1,88 @@
+{# Import with context: the macros read request. #}
+
+{# counts are (label, value, colour class); with menu_label, the call block supplies the menu items. #}
+{% macro table_header(name, icon, info, counts=[], selectable=False, menu_label=None) -%}
+<div class="card-header bg-primary">
+    {% if counts or selectable %}
+    <div class="d-flex gap-1 mb-2">
+        {% for label, value, colour in counts %}
+        <span class="summary-block{{ ' ' ~ colour if colour }}">{{ label }} <strong>{{ value }}</strong></span>
+        {% endfor %}
+        {% if selectable %}
+        <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
+        {% endif %}
+    </div>
+    {% endif %}
+    <div class="d-flex align-items-center gap-2 table-actions">
+        <i class="bi {{ icon }} text-white fs-5"></i>
+        <span class="text-white fw-semibold">{{ name }}</span>
+        <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ info }}"></i>
+        {% if menu_label %}
+        <div class="dropdown">
+            <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-gear me-1"></i>{{ menu_label }}
+            </button>
+            <ul class="dropdown-menu">
+                {{ caller() }}
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{%- endmacro %}
+
+{% macro action_message() -%}
+{% if request.args.get('message') %}
+<div class="alert alert-info alert-dismissible small py-1 px-2 m-2" role="alert">
+    {{ request.args.get('message') }}
+    <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}
+{%- endmacro %}
+
+{% macro select_all_header() -%}
+<th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
+{%- endmacro %}
+
+{% macro row_checkbox(name, value, form, label) -%}
+<td class="text-center">
+    <input type="checkbox" class="form-check-input row-select" name="{{ name }}" value="{{ value }}" form="{{ form }}" aria-label="Select {{ label }}">
+</td>
+{%- endmacro %}
+
+{# Fields come from the call block. Without apply_js the filters are a GET form to the current page. #}
+{% macro filter_bar(apply_js=None, reset_js=None) -%}
+<div class="card border-0 shadow-sm mb-2">
+    {% if apply_js %}
+    <div class="card-body d-flex flex-wrap align-items-center gap-2 p-2 filter-bar">
+        {{ caller() }}
+        <button type="button" class="btn btn-sm btn-apply" onclick="{{ apply_js }}">Apply</button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="{{ reset_js }}">Reset</button>
+    </div>
+    {% else %}
+    <form method="get" action="{{ request.path }}" class="card-body d-flex flex-wrap align-items-center gap-2 p-2 filter-bar">
+        {{ caller() }}
+        <button type="submit" class="btn btn-sm btn-apply">Apply</button>
+        <a href="{{ request.path }}" class="btn btn-sm btn-secondary">Reset</a>
+    </form>
+    {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro filter_search(placeholder) -%}
+<input type="text" name="q" value="{{ request.args.get('q', '') }}" class="form-control form-control-sm filter-search" placeholder="{{ placeholder }}" aria-label="{{ placeholder | replace('...', '') }}">
+{%- endmacro %}
+
+{% macro filter_select(name, label, options) -%}
+<select name="{{ name }}" class="form-select form-select-sm filter-select" aria-label="{{ label }}">
+    <option value="">{{ label }}</option>
+    {% for option in options %}
+    {% set value, text = option if option is not string else (option, option) %}
+    <option value="{{ value }}" {% if request.args.get(name) == value %}selected{% endif %}>{{ text }}</option>
+    {% endfor %}
+</select>
+{%- endmacro %}
+
+{% macro filter_number(name, placeholder, label, step=1, max=None) -%}
+<input type="number" name="{{ name }}" value="{{ request.args.get(name, '') }}" min="0"{% if max %} max="{{ max }}"{% endif %} step="{{ step }}" class="form-control form-control-sm filter-number" placeholder="{{ placeholder }}" aria-label="{{ label }}">
+{%- endmacro %}
