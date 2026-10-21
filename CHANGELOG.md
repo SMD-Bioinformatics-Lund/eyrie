@@ -21,6 +21,7 @@ All notable changes to the Eyrie sample management system will be documented in 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
  - Fixed table action menus opening behind the table header row
+ - Fixed the web interface hanging for up to 30 seconds, e.g. when clearing species flags: the frontend ran a single synchronous gunicorn worker that idle browser connections could block; it now uses threaded workers
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
 
 ### Changed

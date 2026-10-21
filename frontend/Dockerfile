@@ -30,8 +30,5 @@ USER worker
 
 EXPOSE 5000
 
-# Debug: Show Gunicorn workers and force sync worker
-RUN echo "Available Gunicorn workers:" && python -c "import gunicorn.workers; print([w for w in dir(gunicorn.workers) if 'worker' in w.lower()])" || echo "Could not list workers"
-
-# Force sync worker explicitly with verbose logging
-CMD ["gunicorn", "--workers", "1", "--worker-class", "gunicorn.workers.sync.SyncWorker", "--bind", "0.0.0.0:5000", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "eyrie_app.wsgi:app"]
+# Threaded workers, so idle browser connections cannot block other requests
+CMD ["gunicorn", "--workers", "2", "--worker-class", "gthread", "--threads", "8", "--bind", "0.0.0.0:5000", "--log-level", "debug", "--access-logfile", "-", "--error-logfile", "-", "eyrie_app.wsgi:app"]
