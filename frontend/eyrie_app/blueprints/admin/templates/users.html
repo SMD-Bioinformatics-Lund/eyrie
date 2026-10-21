@@ -20,7 +20,6 @@
             {% endif %}
         {% endwith %}
 
-        {% set select_all = request.args.get('select') == 'all' %}
         {% set active = users | selectattr('is_active') | list | length %}
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-primary">
@@ -28,12 +27,12 @@
                     <span class="summary-block">Total <strong>{{ users | length }}</strong></span>
                     <span class="summary-block bg-success-subtle">Active <strong>{{ active }}</strong></span>
                     <span class="summary-block bg-secondary-subtle">Inactive <strong>{{ users | length - active }}</strong></span>
-                    <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>{{ users | length if select_all else 0 }}</strong></span>
+                    <span class="summary-block bg-primary-subtle">Selected <strong data-selected-count>0</strong></span>
                 </div>
                 <div class="d-flex align-items-center gap-2 table-actions">
                     <i class="bi bi-people text-white fs-5"></i>
-                    <a href="{{ url_with_args(select='all') }}" class="btn btn-light btn-sm"><i class="bi bi-check2-all me-1"></i>Select All</a>
-                    <a href="{{ url_with_args(select=None) }}" class="btn btn-light btn-sm"><i class="bi bi-x-lg me-1"></i>Clear Selection</a>
+                    <span class="text-white fw-semibold">Users</span>
+                    <i class="bi bi-info-circle text-white info-blob" tabindex="0" data-bs-toggle="tooltip" data-bs-placement="right" title="Tick users, or the box in the header row to select all. Then choose an action under Manage Users. Your own account is never changed. Click a username to edit it."></i>
                     <div class="dropdown">
                         <button type="button" class="btn btn-light btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-gear me-1"></i>Manage Users
@@ -54,7 +53,7 @@
                     <table class="table table-sm table-hover mb-0 compact-table text-nowrap">
                         <thead class="table-dark">
                             <tr>
-                                <th class="text-center" title="Select"><i class="bi bi-check2-square"></i></th>
+                                <th class="text-center"><input type="checkbox" class="form-check-input select-all" aria-label="Select all"></th>
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Role</th>
@@ -66,7 +65,7 @@
                             {% for user in users %}
                             <tr>
                                 <td class="text-center">
-                                    <input type="checkbox" class="form-check-input row-select" name="user_ids" value="{{ user._id }}" form="usersForm" aria-label="Select {{ user.username }}" {% if select_all %}checked{% endif %}>
+                                    <input type="checkbox" class="form-check-input row-select" name="user_ids" value="{{ user._id }}" form="usersForm" aria-label="Select {{ user.username }}">
                                 </td>
                                 <td><a href="{{ url_for('admin.edit_user', user_id=user._id) }}" class="fw-semibold">{{ user.username }}</a></td>
                                 <td>{{ user.email }}</td>

@@ -16,9 +16,11 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added a category filter to trends
  - Added a filter bar to the sequencing runs table: search, pipeline status, spikes detected, minimum samples and run date range
  - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
+ - Changed the samples, users and species abundance tables to select rows with a checkbox in the header row instead of Select All and Clear Selection buttons, and named every table in its header with an info tooltip
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
+ - Fixed table action menus opening behind the table header row
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
 
 ### Changed
