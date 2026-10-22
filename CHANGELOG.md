@@ -32,14 +32,15 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed top hits, contaminants and comments in the samples table to counts, listing them on hover, with comment counts linking to the sample
  - Changed the sample name to open the sample and the first column to a selection checkbox, with Select All and Clear Selection buttons
  - Changed the samples table header to show total, unreviewed, passed, failed and selected counts
- - Changed status badges in tables (users, pipeline tasks, positive controls, abundance) to coloured cells, and table header rows to black
+ - Changed status badges in tables (users, pipeline tasks, positive controls, abundance) to coloured cells, and table header rows to dark grey-green
  - Changed buttons, badges, form fields and dialogs back to Bootstrap's standard styling (normal case, standard padding and borders), keeping square corners
- - Changed all data tables to the compact bordered style with black, title-case, non-bold header rows without light borders
+ - Changed all data tables to the compact bordered style with dark grey-green, title-case, non-bold header rows without light borders
  - Removed the white outlines from the navbar buttons
  - Removed the sample count badge from the sequencing run tabs
  - Changed user management to the samples table layout: select users with checkboxes and update their role or status, activate, deactivate or delete them from a Manage Users menu (your own account is always skipped), with the username opening the edit page
  - Changed the trends filters to a one-line bar like the samples filter, with Export Chart in the chart header
- - Changed card headers to one blue, except on the sample pages where they are grouped by content: information light blue, QC and comments yellow, summaries green, data and plots blue
+ - Changed card headers to a sage green from the logo, except on the sample pages where they are grouped by content: information light blue, QC and comments yellow, summaries, data and plots green
+ - Changed Bootstrap's blue (buttons, links, checkboxes, focus outlines, selected menu items and progress bars) to the logo greens
  - Changed the sample overview and NanoPlot statistics tables to the compact table style, with low values shown as red cells
  - Changed the NanoPlot page to the sample page colours: neutral view icons, the selected view in pale blue, and NanoStats Comparison as a compact Unprocessed/Processed table
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike

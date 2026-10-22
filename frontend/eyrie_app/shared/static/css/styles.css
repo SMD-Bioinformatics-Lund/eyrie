@@ -3,7 +3,73 @@
     --eyrie-green-dark: #004d36;
     --eyrie-green-pale: #e6f2ec;
     --eyrie-green-pale-border: #c9e1d6;
+    --eyrie-green-hover: #337d60;
+    --eyrie-table-header: #2f3e38;
 
+    /* Bootstrap's primary colour follows the logo greens */
+    --bs-primary: var(--eyrie-green);
+    --bs-primary-rgb: 61, 148, 114;
+    --bs-primary-text-emphasis: var(--eyrie-green-dark);
+    --bs-primary-bg-subtle: var(--eyrie-green-pale);
+    --bs-primary-border-subtle: var(--eyrie-green-pale-border);
+    --bs-link-color: var(--eyrie-green-dark);
+    --bs-link-color-rgb: 0, 77, 54;
+    --bs-link-hover-color: var(--eyrie-green);
+    --bs-link-hover-color-rgb: 61, 148, 114;
+}
+
+.bg-eyrie-green {
+    background-color: var(--eyrie-green) !important;
+}
+
+.btn-primary {
+    --bs-btn-bg: var(--eyrie-green);
+    --bs-btn-border-color: var(--eyrie-green);
+    --bs-btn-hover-bg: var(--eyrie-green-hover);
+    --bs-btn-hover-border-color: var(--eyrie-green-hover);
+    --bs-btn-active-bg: var(--eyrie-green-hover);
+    --bs-btn-active-border-color: var(--eyrie-green-hover);
+    --bs-btn-disabled-bg: var(--eyrie-green);
+    --bs-btn-disabled-border-color: var(--eyrie-green);
+    --bs-btn-focus-shadow-rgb: 61, 148, 114;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--eyrie-green-dark);
+    --bs-btn-border-color: var(--eyrie-green);
+    --bs-btn-hover-bg: var(--eyrie-green);
+    --bs-btn-hover-border-color: var(--eyrie-green);
+    --bs-btn-active-bg: var(--eyrie-green-hover);
+    --bs-btn-active-border-color: var(--eyrie-green-hover);
+    --bs-btn-disabled-color: var(--eyrie-green);
+    --bs-btn-disabled-border-color: var(--eyrie-green);
+    --bs-btn-focus-shadow-rgb: 61, 148, 114;
+}
+
+.form-check-input:checked,
+.form-check-input:indeterminate {
+    background-color: var(--eyrie-green);
+    border-color: var(--eyrie-green);
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--eyrie-green);
+    box-shadow: 0 0 0 0.25rem rgba(61, 148, 114, 0.25);
+}
+
+.dropdown-menu {
+    --bs-dropdown-link-active-bg: var(--eyrie-green);
+}
+
+.list-group {
+    --bs-list-group-active-bg: var(--eyrie-green);
+    --bs-list-group-active-border-color: var(--eyrie-green);
+}
+
+.progress {
+    --bs-progress-bar-bg: var(--eyrie-green);
 }
 
 /* Sharp edges design */
@@ -75,6 +141,10 @@ body {
 
 .table thead th {
     font-weight: normal;
+}
+
+.table thead.table-dark {
+    --bs-table-bg: var(--eyrie-table-header);
 }
 
 .table thead.table-dark th {
