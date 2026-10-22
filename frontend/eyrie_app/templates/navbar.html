@@ -3,8 +3,8 @@
     <div class="container-fluid">
         <div class="d-flex align-items-center justify-content-between w-100">
             <div class="d-flex align-items-center">
-                <span class="navbar-brand mb-0 h1 me-4">
-                    <i class="bi bi-dna me-2"></i>Eyrie
+                <span class="navbar-brand d-flex align-items-center mb-0 py-0 me-4">
+                    <img src="{{ url_for('login.serve_shared_static_endpoint', filename='eyrie_logo_navbar.png') }}" alt="Eyrie" width="36" height="36">
                     <small class="text-muted ms-2" style="font-size: 0.6rem;">v{{ app_version }}</small>
                 </span>
                 <a href="{{ url_for('samples.samples_page') }}" class="btn {% if request.endpoint == 'samples.samples_page' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
