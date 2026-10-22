@@ -1,29 +1,30 @@
 {% macro navbar(current_user, app_version) %}
-<nav class="navbar navbar-dark bg-dark border-0">
+<nav class="navbar navbar-light eyrie-navbar">
     <div class="container-fluid">
         <div class="d-flex align-items-center justify-content-between w-100">
             <div class="d-flex align-items-center">
                 <span class="navbar-brand d-flex align-items-center mb-0 py-0 me-4">
-                    <img src="{{ url_for('login.serve_shared_static_endpoint', filename='eyrie_logo_navbar.png') }}" alt="Eyrie" width="36" height="36">
+                    <img src="{{ url_for('login.serve_shared_static_endpoint', filename='eyrie_logo_navbar.png') }}" alt="" width="36" height="36">
+                    <span class="eyrie-brand-name ms-2">Eyrie</span>
                     <small class="text-muted ms-2" style="font-size: 0.6rem;">v{{ app_version }}</small>
                 </span>
-                <a href="{{ url_for('samples.samples_page') }}" class="btn {% if request.endpoint == 'samples.samples_page' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                <a href="{{ url_for('samples.samples_page') }}" class="btn btn-nav{% if request.endpoint == 'samples.samples_page' %} active{% endif %} me-3">
                     <i class="bi bi-table me-2"></i>Samples
                 </a>
-                <a href="{{ url_for('seqruns.seqruns_page') }}" class="btn {% if request.endpoint == 'seqruns.seqruns_page' or request.endpoint == 'seqruns.seqrun_overview' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                <a href="{{ url_for('seqruns.seqruns_page') }}" class="btn btn-nav{% if request.endpoint == 'seqruns.seqruns_page' or request.endpoint == 'seqruns.seqrun_overview' %} active{% endif %} me-3">
                     <i class="bi bi-cpu me-2"></i>Sequencing runs
                 </a>
-                <a href="{{ url_for('trends.index') }}" class="btn {% if request.endpoint == 'trends.index' %}btn-light{% else %}btn-outline-light{% endif %} me-3">
+                <a href="{{ url_for('trends.index') }}" class="btn btn-nav{% if request.endpoint == 'trends.index' %} active{% endif %} me-3">
                     <i class="bi bi-graph-up me-2"></i>Trends
                 </a>
                 {% if current_user and current_user.role == 'admin' %}
-                <a href="{{ url_for('admin.dashboard') }}" class="btn {% if request.endpoint == 'admin.dashboard' %}btn-light{% else %}btn-outline-light{% endif %} me-3" id="adminButton">
+                <a href="{{ url_for('admin.dashboard') }}" class="btn btn-nav{% if request.endpoint == 'admin.dashboard' %} active{% endif %} me-3" id="adminButton">
                     <i class="bi bi-gear me-2"></i>Admin
                 </a>
                 {% endif %}
             </div>
             <div class="dropdown">
-                <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                <button class="btn btn-nav dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
                     <i class="bi bi-person-circle me-2"></i><span id="currentUsername">{% if current_user %}{{ current_user.username }}{% else %}Loading...{% endif %}</span>
                 </button>
                 <ul class="dropdown-menu">
