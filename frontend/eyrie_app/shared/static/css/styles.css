@@ -1,3 +1,11 @@
+:root {
+    --eyrie-green: #3d9472;
+    --eyrie-green-dark: #004d36;
+    --eyrie-green-pale: #e6f2ec;
+    --eyrie-green-pale-border: #c9e1d6;
+
+}
+
 /* Sharp edges design */
 * {
     border-radius: 0 !important;
@@ -12,8 +20,43 @@ body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.navbar .btn-outline-light {
+.eyrie-navbar {
+    background-color: var(--eyrie-green-pale);
+    border-bottom: 1px solid var(--eyrie-green-pale-border);
+}
+
+.eyrie-navbar .navbar-brand,
+.eyrie-navbar .navbar-text,
+.eyrie-navbar .nav-link {
+    color: var(--eyrie-green-dark);
+}
+
+.eyrie-navbar .nav-link.active {
+    color: var(--eyrie-green);
+    font-weight: 600;
+}
+
+.eyrie-brand-name {
+    color: var(--eyrie-green-dark);
+    font-weight: 700;
+    font-size: 1.35rem;
+    letter-spacing: 0.3px;
+}
+
+.eyrie-navbar .btn-nav {
+    color: var(--eyrie-green-dark);
+    background-color: transparent;
     border-color: transparent;
+}
+
+.eyrie-navbar .btn-nav:hover,
+.eyrie-navbar .btn-nav:focus-visible {
+    background-color: var(--eyrie-green-pale-border);
+}
+
+.eyrie-navbar .btn-nav.active {
+    color: #fff;
+    background-color: var(--eyrie-green);
 }
 
 .card {
