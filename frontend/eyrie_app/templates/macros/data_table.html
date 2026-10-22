@@ -2,7 +2,7 @@
 
 {# counts are (label, value, colour class); with menu_label, the call block supplies the menu items. #}
 {% macro table_header(name, icon, info, counts=[], selectable=False, menu_label=None) -%}
-<div class="card-header bg-primary">
+<div class="card-header bg-eyrie-green">
     {% if counts or selectable %}
     <div class="d-flex gap-1 mb-2">
         {% for label, value, colour in counts %}
