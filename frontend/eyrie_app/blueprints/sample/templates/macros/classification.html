@@ -155,11 +155,12 @@
                     </tr>
                 </thead>
                 <tbody id="contaminationTableBody">
+                    {% set thresholds = sample.classification_thresholds %}
                     {% for organism in hits %}
                     {% set is_spike = organism.spike or sample.spike == organism.species %}
                     {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if is_spike else 'table-warning' if organism.highlight == 'not_in_control' else '' %}
                     <tr class="{{ row_class }}{{ ' low-abundance-row' if organism.low_abundance }}" data-species="{{ organism.species }}"
-                        {% if organism.absent_in_controls %}title="Not found in negative controls"{% elif organism.enriched %}title="More than 25 times more abundant than in negative controls, normalised to the spike"{% endif %}>
+                        {% if organism.absent_in_controls %}title="Not found in negative controls"{% elif organism.enriched %}title="More than {{ thresholds.enrichment_fold }} times more abundant than in negative controls, normalised to the spike"{% endif %}>
                         {{ row_checkbox('species', organism.species, 'speciesForm', organism.species) }}
                         <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
@@ -184,8 +185,10 @@
         <span><span class="legend-swatch bg-success-subtle"></span>Top hit</span>
         <span><span class="legend-swatch bg-danger-subtle"></span>Contaminant</span>
         <span><span class="legend-swatch bg-info-subtle"></span>Spike species</span>
-        <span><span class="legend-swatch bg-warning-subtle"></span>Not in negative controls or &gt;25&times; more abundant</span>
-        <span><span class="low-abundance-text">Grey</span>: below 0.5%</span>
+        {% if thresholds %}
+        <span><span class="legend-swatch bg-warning-subtle"></span>Not in negative controls or &gt;{{ thresholds.enrichment_fold }}&times; more abundant</span>
+        <span><span class="low-abundance-text">Grey</span>: below {{ '%g'|format(thresholds.low_abundance_cutoff * 100) }}%</span>
+        {% endif %}
     </div>
 </div>
 <form id="speciesForm" method="post" action="{{ url_for('sample.flag_species', sample_id=sample_id) }}"></form>

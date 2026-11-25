@@ -58,6 +58,7 @@ def sample_classification(sample_id):
             if sample.get('taxonomic_data'):
                 sample['taxonomic_data']['hits'] = classification['hits']
             sample['spike'] = classification['spike']
+            sample['classification_thresholds'] = classification['thresholds']
         except Exception as classification_error:
             print(f"Warning: Could not load classification: {classification_error}")
 
