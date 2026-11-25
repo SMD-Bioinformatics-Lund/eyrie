@@ -43,4 +43,5 @@ def parse_emu_metrics(abundances: List[TaxonomicAbundance], results_dir: Path, r
 def parse_classification_qc(multiqc_data: Optional[Path], sample_id: str) -> Optional[Dict[str, Any]]:
     if not multiqc_data:
         return None
-    return summary_stats(multiqc_data, sample_id)
+    stats = summary_stats(multiqc_data, sample_id)
+    return stats if any(value is not None for value in stats.values()) else None
