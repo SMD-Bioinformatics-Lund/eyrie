@@ -19,10 +19,10 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the navbars from black to a pale green that suits the logo, with the current page's button in the same sage green
  - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
  - Changed the samples, users and species abundance tables to select rows with a checkbox in the header row instead of Select All and Clear Selection buttons, and named every table in its header with an info tooltip
- - Added emuse to eyrie-popup for parsing Emu results
+ - Added emuse (kclinmicro/emuse) to eyrie-popup and the backend for read assignment, alignment and summary statistics and negative control comparison
  - Added read assignment probabilities, alignment identity/coverage and lineage to uploaded taxonomic hits
  - Added `classification_qc` summary stats (reads before and after filtering, read length/quality) to uploaded samples
- - Added `--rel-abundance-file`, `--read-assignment-file` and `--alignment-metrics-file` options to `popup generate-config`
+ - Added `--rel-abundance-file`, `--read-assignment-file` and `--alignment-file` (Emu alignments SAM, from Emu `--keep-files`) options to `popup generate-config`
  - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`
  - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
  - Added admin page for managing spike species and the normalising species

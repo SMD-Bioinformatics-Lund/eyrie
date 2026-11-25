@@ -6,7 +6,7 @@ from typing import Optional
 import os
 import yaml
 import click
-from emuse.files import find_emu_file
+from emuse.find_files import find_emu_file
 
 from .models import SampleConfig
 from .parser import SampleParser
@@ -515,12 +515,12 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
 @click.option('--pipeline-software', default='trana', help='Pipeline software used (trana, metaval, etc.)')
 @click.option('--rel-abundance-file', help='EMU rel-abundance TSV, relative to results/ (default: found from sample ID)')
 @click.option('--read-assignment-file', help='EMU read assignment distributions TSV, relative to results/ (default: found from sample ID)')
-@click.option('--alignment-metrics-file', help='emuse alignment metrics TSV, relative to results/ (default: {sample_id}_alignment-metrics.tsv if present)')
+@click.option('--alignment-file', help='EMU alignments SAM (Emu --keep-files), relative to results/ (default: found from sample ID)')
 def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
                    sequencing_run_id: Optional[str], classification: str, pipeline_software: str,
                    rel_abundance_file: Optional[str], read_assignment_file: Optional[str],
-                   alignment_metrics_file: Optional[str]):
+                   alignment_file: Optional[str]):
     """Generate a YAML configuration file for a single sample.
 
     Creates a YAML config file that can be used with 'popup upload -s' to upload sample analysis data.
@@ -546,15 +546,14 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
     results_dir = analysis_output_dirpath / "results"
 
     def found_emu_file(suffix):
-        path = find_emu_file(results_dir, sample_id, suffix)
-        return path.name if path else None
+        try:
+            return find_emu_file(results_dir, sample_id, suffix).name
+        except ValueError:
+            return None
 
-    def found_file(filename):
-        return filename if (results_dir / filename).is_file() else None
-
-    rel_abundance_file = rel_abundance_file or found_emu_file("_rel-abundance.tsv") or f"{sample_id}*.fastq_rel-abundance.tsv"
-    read_assignment_file = read_assignment_file or found_emu_file("_read-assignment-distributions.tsv")
-    alignment_metrics_file = alignment_metrics_file or found_file(f"{sample_id}_alignment-metrics.tsv")
+    rel_abundance_file = rel_abundance_file or found_emu_file("rel-abundance.tsv") or f"{sample_id}*.fastq_rel-abundance.tsv"
+    read_assignment_file = read_assignment_file or found_emu_file("read-assignment-distributions.tsv")
+    alignment_file = alignment_file or found_emu_file("emu_alignments.sam")
 
     # Create configuration
     config = {
@@ -617,7 +616,7 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
             "directory": "results",
             "rel_abundance_file": rel_abundance_file,
             "read_assignment_file": read_assignment_file,
-            "alignment_metrics_file": alignment_metrics_file
+            "alignment_file": alignment_file
         }
     }
 
