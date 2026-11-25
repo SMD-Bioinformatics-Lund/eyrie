@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% set admin_tabs = [
+    ('admin.users', 'bi-people', 'Users', ['admin.users', 'admin.create_user', 'admin.edit_user']),
+    ('admin.spike_species', 'bi-eyedropper', 'Spike Species', ['admin.spike_species']),
+] %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <ul class="nav nav-tabs mb-3">
+        {% for endpoint, icon, label, endpoints in admin_tabs %}
+        <li class="nav-item">
+            <a class="nav-link{% if request.endpoint in endpoints %} active{% endif %}" href="{{ url_for(endpoint) }}">
+                <i class="bi {{ icon }} me-2"></i>{{ label }}
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show small py-2" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endwith %}
+
+    {% block admin_content %}{% endblock %}
+</div>
+{% endblock %}

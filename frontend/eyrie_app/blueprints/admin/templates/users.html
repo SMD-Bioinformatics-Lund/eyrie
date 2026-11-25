@@ -1,121 +1,103 @@
-{% extends "base.html" %}
+{% extends "admin_base.html" %}
 {% from 'macros/data_table.html' import table_header, select_all_header, row_checkbox with context %}
 
 {% block title %}User Management - Eyrie{% endblock %}
 
-{% block content %}
-    <div class="container-fluid mt-4">
-        <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                <div class="row">
-                    <div class="col-12">
-                        {% for category, message in messages %}
-                            <div class="alert alert-{% if category == 'error' %}danger{% else %}{{ category }}{% endif %} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        {% set active = users | selectattr('is_active') | list | length %}
-        <div class="card border-0 shadow-sm">
-            {% call table_header('Users', 'bi-people', 'Tick users, or the box in the header row to select all. Then choose an action under Manage Users. Your own account is never changed. Click a username to edit it.',
-                                 counts=[('Total', users | length, ''), ('Active', active, 'bg-success-subtle'), ('Inactive', users | length - active, 'bg-secondary-subtle')],
-                                 selectable=True, menu_label='Manage Users') %}
-                <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}"><i class="bi bi-person-plus me-2"></i>Add User</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateUsersModal"><i class="bi bi-pencil-square me-2"></i>Update</button></li>
-                <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.activate_users') }}"><i class="bi bi-person-check me-2"></i>Activate</button></li>
-                <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.deactivate_users') }}"><i class="bi bi-person-dash me-2"></i>Deactivate</button></li>
-                <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"><i class="bi bi-trash me-2"></i>Delete</button></li>
-            {% endcall %}
-            <div class="card-body p-0">
-                <div class="table-responsive compact-table-wrapper">
-                    <table class="table table-sm table-hover mb-0 compact-table text-nowrap">
-                        <thead class="table-dark">
-                            <tr>
-                                {{ select_all_header() }}
-                                <th>Username</th>
-                                <th>Email</th>
-                                <th>Role</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for user in users %}
-                            <tr>
-                                {{ row_checkbox('user_ids', user._id, 'usersForm', user.username) }}
-                                <td><a href="{{ url_for('admin.edit_user', user_id=user._id) }}" class="fw-semibold">{{ user.username }}</a></td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.role }}</td>
-                                <td class="{{ 'table-success' if user.is_active else 'table-secondary' }}">{% if user.is_active %}Active{% else %}Inactive{% endif %}</td>
-                                <td>{{ user.created_date[:10] if user.created_date else '-' }}</td>
-                            </tr>
-                            {% else %}
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No users found</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+{% block admin_content %}
+{% set active = users | selectattr('is_active') | list | length %}
+<div class="card border-0 shadow-sm">
+    {% call table_header('Users', 'bi-people', 'Tick users, or the box in the header row to select all. Then choose an action under Manage Users. Your own account is never changed. Click a username to edit it.',
+                         counts=[('Total', users | length, ''), ('Active', active, 'bg-success-subtle'), ('Inactive', users | length - active, 'bg-secondary-subtle')],
+                         selectable=True, menu_label='Manage Users') %}
+        <li><a class="dropdown-item" href="{{ url_for('admin.create_user') }}"><i class="bi bi-person-plus me-2"></i>Add User</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#updateUsersModal"><i class="bi bi-pencil-square me-2"></i>Update</button></li>
+        <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.activate_users') }}"><i class="bi bi-person-check me-2"></i>Activate</button></li>
+        <li><button type="submit" class="dropdown-item" form="usersForm" formaction="{{ url_for('admin.deactivate_users') }}"><i class="bi bi-person-dash me-2"></i>Deactivate</button></li>
+        <li><button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteUsersModal"><i class="bi bi-trash me-2"></i>Delete</button></li>
+    {% endcall %}
+    <div class="card-body p-0">
+        <div class="table-responsive compact-table-wrapper">
+            <table class="table table-sm table-hover mb-0 compact-table text-nowrap">
+                <thead class="table-dark">
+                    <tr>
+                        {{ select_all_header() }}
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        {{ row_checkbox('user_ids', user._id, 'usersForm', user.username) }}
+                        <td><a href="{{ url_for('admin.edit_user', user_id=user._id) }}" class="fw-semibold">{{ user.username }}</a></td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.role }}</td>
+                        <td class="{{ 'table-success' if user.is_active else 'table-secondary' }}">{% if user.is_active %}Active{% else %}Inactive{% endif %}</td>
+                        <td>{{ user.created_date[:10] if user.created_date else '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">No users found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
+    </div>
+</div>
 
-        <form id="usersForm" method="post" action="{{ url_for('admin.activate_users') }}"></form>
+<form id="usersForm" method="post" action="{{ url_for('admin.activate_users') }}"></form>
 
-        <div class="modal fade" id="updateUsersModal" tabindex="-1" aria-labelledby="updateUsersModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-sm modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header py-2">
-                        <h6 class="modal-title" id="updateUsersModalLabel">Update Users</h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <label for="updateRole" class="form-label">Role</label>
-                        <select id="updateRole" name="role" class="form-select form-select-sm mb-2" form="usersForm">
-                            <option value="" selected>Keep current</option>
-                            <option value="user">user</option>
-                            <option value="uploader">uploader</option>
-                            <option value="admin">admin</option>
-                        </select>
-                        <label for="updateStatus" class="form-label">Status</label>
-                        <select id="updateStatus" name="status" class="form-select form-select-sm" form="usersForm">
-                            <option value="" selected>Keep current</option>
-                            <option value="active">Active</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                        <div class="form-text">Applies to the selected users, except your own account.</div>
-                    </div>
-                    <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary btn-sm" form="usersForm" formaction="{{ url_for('admin.update_users') }}">Update</button>
-                    </div>
-                </div>
+<div class="modal fade" id="updateUsersModal" tabindex="-1" aria-labelledby="updateUsersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title" id="updateUsersModalLabel">Update Users</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-        </div>
-
-        <div class="modal fade" id="deleteUsersModal" tabindex="-1" aria-labelledby="deleteUsersModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-sm modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header py-2">
-                        <h6 class="modal-title" id="deleteUsersModalLabel">Delete Users</h6>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        Permanently delete the selected users? Your own account is never deleted.
-                    </div>
-                    <div class="modal-footer py-2">
-                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-danger btn-sm" form="usersForm" formaction="{{ url_for('admin.delete_users') }}">Delete</button>
-                    </div>
-                </div>
+            <div class="modal-body">
+                <label for="updateRole" class="form-label">Role</label>
+                <select id="updateRole" name="role" class="form-select form-select-sm mb-2" form="usersForm">
+                    <option value="" selected>Keep current</option>
+                    <option value="user">user</option>
+                    <option value="uploader">uploader</option>
+                    <option value="admin">admin</option>
+                </select>
+                <label for="updateStatus" class="form-label">Status</label>
+                <select id="updateStatus" name="status" class="form-select form-select-sm" form="usersForm">
+                    <option value="" selected>Keep current</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <div class="form-text">Applies to the selected users, except your own account.</div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" form="usersForm" formaction="{{ url_for('admin.update_users') }}">Update</button>
             </div>
         </div>
     </div>
+</div>
+
+<div class="modal fade" id="deleteUsersModal" tabindex="-1" aria-labelledby="deleteUsersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2">
+                <h6 class="modal-title" id="deleteUsersModalLabel">Delete Users</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Permanently delete the selected users? Your own account is never deleted.
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-danger btn-sm" form="usersForm" formaction="{{ url_for('admin.delete_users') }}">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

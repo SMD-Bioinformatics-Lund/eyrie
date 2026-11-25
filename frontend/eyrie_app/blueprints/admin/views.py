@@ -13,8 +13,7 @@ ROLES = ['user', 'uploader', 'admin']
 @jwt_required
 @admin_required
 def dashboard():
-    """Admin dashboard with user management"""
-    return render_template('dashboard.html', current_user=get_current_user())
+    return redirect(url_for('admin.users'))
 
 @bp.route("/admin/users")
 @jwt_required
@@ -27,7 +26,7 @@ def users():
 
         if not backend_token:
             flash('Backend authentication required.', 'error')
-            return redirect(url_for('admin.dashboard'))
+            return render_template('users.html', users=[], current_user=get_current_user())
 
         response = requests.get(
             f"{backend_url}/api/admin/users",
@@ -73,7 +72,7 @@ def create_user():
 
         if not backend_token:
             flash('Backend authentication required.', 'error')
-            return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('admin.users'))
 
         response = requests.post(
             f"{backend_url}/api/admin/users",
@@ -108,7 +107,7 @@ def edit_user(user_id):
 
         if not backend_token:
             flash('Backend authentication required.', 'error')
-            return redirect(url_for('admin.dashboard'))
+            return redirect(url_for('admin.users'))
 
         if request.method == 'GET':
             response = requests.get(
@@ -233,36 +232,36 @@ def delete_users():
 SPIKE_SETTINGS_PATH = "/api/admin/settings/spike-species"
 
 
-def spike_settings_request(method, json=None):
+def spike_settings_request(method, path='', json=None):
     backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
-    return requests.request(
-        method,
-        f"{backend_url}{SPIKE_SETTINGS_PATH}",
-        headers={'Authorization': f'Bearer {get_jwt_from_cookie()}'},
-        json=json,
-        timeout=10
-    )
+    try:
+        return requests.request(
+            method,
+            f"{backend_url}{SPIKE_SETTINGS_PATH}{path}",
+            headers={'Authorization': f'Bearer {get_jwt_from_cookie()}'},
+            json=json,
+            timeout=10
+        )
+    except requests.RequestException:
+        return None
 
 
-def save_spike_settings(species, normaliser, message):
-    response = spike_settings_request('PUT', {'species': species, 'normaliser': normaliser})
-    if response.status_code == 200:
-        flash(message, 'success')
-    else:
-        flash(f'Failed to save spike species (status: {response.status_code})', 'error')
+def spike_settings_failed(response, action):
+    if response is not None and response.status_code == 200:
+        return False
+    status = response.status_code if response is not None else 'no response'
+    flash(f'Failed to {action} (status: {status})', 'error')
+    return True
 
 
 @bp.route("/admin/settings/spike-species")
 @jwt_required
 @admin_required
 def spike_species():
-    """Spike species settings"""
     response = spike_settings_request('GET')
-    if response.status_code == 200:
+    settings = {'species': [], 'normaliser': None}
+    if not spike_settings_failed(response, 'load spike species'):
         settings = response.json()
-    else:
-        flash(f'Failed to load spike species (status: {response.status_code})', 'error')
-        settings = {'species': [], 'normaliser': None}
     return render_template('spike_species.html', settings=settings, current_user=get_current_user())
 
 
@@ -271,9 +270,15 @@ def spike_species():
 @admin_required
 def add_spike_species():
     species = request.form.get('species', '').strip()
-    settings = spike_settings_request('GET').json()
-    if species and species not in settings['species']:
-        save_spike_settings(settings['species'] + [species], settings['normaliser'], f'Added {species}.')
+    if not species:
+        flash('Enter a species name.', 'warning')
+        return redirect(url_for('admin.spike_species'))
+    response = spike_settings_request('POST', '/add', {'species': species})
+    if not spike_settings_failed(response, f'add {species}'):
+        if response.json().get('added'):
+            flash(f'Added {species}.', 'success')
+        else:
+            flash(f'{species} is already a spike species.', 'warning')
     return redirect(url_for('admin.spike_species'))
 
 
@@ -281,10 +286,20 @@ def add_spike_species():
 @jwt_required
 @admin_required
 def remove_spike_species():
-    species = request.form.get('species')
-    settings = spike_settings_request('GET').json()
-    normaliser = None if settings['normaliser'] == species else settings['normaliser']
-    save_spike_settings([s for s in settings['species'] if s != species], normaliser, f'Removed {species}.')
+    species = request.form.getlist('species')
+    if not species:
+        flash('No species selected.', 'warning')
+        return redirect(url_for('admin.spike_species'))
+    response = spike_settings_request('POST', '/remove', {'species': species})
+    if not spike_settings_failed(response, 'remove spike species'):
+        flash(f"Removed {', '.join(species)}.", 'success')
+    return redirect(url_for('admin.spike_species'))
+
+
+def save_spike_normaliser(normaliser, message):
+    response = spike_settings_request('PUT', '/normaliser', {'normaliser': normaliser})
+    if not spike_settings_failed(response, 'update the normalising species'):
+        flash(message, 'success')
     return redirect(url_for('admin.spike_species'))
 
 
@@ -292,10 +307,18 @@ def remove_spike_species():
 @jwt_required
 @admin_required
 def set_spike_normaliser():
-    normaliser = request.form.get('normaliser') or None
-    settings = spike_settings_request('GET').json()
-    save_spike_settings(settings['species'], normaliser, 'Updated normalising species.')
-    return redirect(url_for('admin.spike_species'))
+    species = request.form.getlist('species')
+    if len(species) != 1:
+        flash('Select exactly one species to use as the normaliser.', 'warning')
+        return redirect(url_for('admin.spike_species'))
+    return save_spike_normaliser(species[0], f'{species[0]} is now the normalising species.')
+
+
+@bp.route("/admin/settings/spike-species/normaliser/clear", methods=['POST'])
+@jwt_required
+@admin_required
+def clear_spike_normaliser():
+    return save_spike_normaliser(None, 'Cleared the normalising species.')
 
 
 @bp.route("/api/admin/users", methods=['GET'])
