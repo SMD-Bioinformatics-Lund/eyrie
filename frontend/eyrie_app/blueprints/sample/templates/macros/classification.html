@@ -164,11 +164,8 @@
                         <td>
                             <div class="fw-semibold">{{ organism.species }}</div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
-                            {% if organism.median_probability is number or organism.median_identity is number %}
-                            <small class="d-block text-muted">
-                                {% if organism.median_probability is number %}Prob {{ '%.2f'|format(organism.median_probability) }}{% endif %}
-                                {% if organism.median_identity is number %}&middot; Identity {{ '%.1f%%'|format(organism.median_identity * 100) }} &middot; Coverage {{ '%.1f%%'|format(organism.median_coverage * 100) }}{% endif %}
-                            </small>
+                            {% if organism.median_probability is number %}
+                            <small class="d-block text-muted">Prob {{ '%.2f'|format(organism.median_probability) }}</small>
                             {% endif %}
                         </td>
                         <td>{{ '%.2f'|format(organism.abundance) }}%</td>

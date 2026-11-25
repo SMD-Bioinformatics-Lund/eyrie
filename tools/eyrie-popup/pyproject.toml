@@ -27,7 +27,6 @@ dependencies = [
     "pandas",
     "emuse @ git+https://github.com/kclinmicro/emuse.git@c79245f63ae873ec07447df051b2177590cafaa5",
     "pydantic>=1.8.0,<2.0.0",
-    "pysam",
     "PyYAML>=6.0",
     "requests>=2.25.0",
 ]

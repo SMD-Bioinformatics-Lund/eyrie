@@ -51,9 +51,7 @@ class FormatHandler:
                     "superkingdom": taxa.superkingdom,
                     "estimated_counts": taxa.estimated_counts,
                     "median_probability": taxa.median_probability,
-                    "mean_probability": taxa.mean_probability,
-                    "median_identity": taxa.median_identity,
-                    "median_coverage": taxa.median_coverage
+                    "mean_probability": taxa.mean_probability
                 }
                 for taxa in sorted(
                     sample_data.taxonomic_abundances, 

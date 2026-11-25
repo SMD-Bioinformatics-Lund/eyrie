@@ -67,8 +67,6 @@ class TaxonomicAbundance(BaseModel):
     contamination: bool = False  # Will be added during parsing
     median_probability: Optional[float] = None
     mean_probability: Optional[float] = None
-    median_identity: Optional[float] = None
-    median_coverage: Optional[float] = None
 
 
 class SampleResults(BaseModel):

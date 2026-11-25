@@ -68,8 +68,7 @@ popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/
 # With explicit EMU files (relative to results/), e.g. from TRANA
 popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 \
   --rel-abundance-file barcode01_filtered.fastq_rel-abundance.tsv \
-  --read-assignment-file barcode01_filtered.fastq_read-assignment-distributions.tsv \
-  --alignment-file barcode01_filtered.fastq_emu_alignments.sam
+  --read-assignment-file barcode01_filtered.fastq_read-assignment-distributions.tsv
 ```
 
 When the EMU file options are omitted they are found from the sample ID in `results/`, for any TRANA preprocessing (`_downsampled`, `_filtered`, `.porechop_abi`, ...).
@@ -258,7 +257,6 @@ results:
   directory: "results"
   rel_abundance_file: "barcode01_filtered.fastq_rel-abundance.tsv"
   read_assignment_file: "barcode01_filtered.fastq_read-assignment-distributions.tsv"  # optional
-  alignment_file: "barcode01_filtered.fastq_emu_alignments.sam"  # optional, needs Emu --keep-files
 
 # MultiQC aggregated reports (optional)
 multiqc:
