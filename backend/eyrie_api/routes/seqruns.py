@@ -22,14 +22,13 @@ async def get_seqrun_samples(seqrun_id: str) -> List[Dict[str, Any]]:
     seqrun_samples = [sample for sample in all_samples if sample.get('sequencing_run_id') == seqrun_id]
     return seqrun_samples
 
-async def calculate_seqrun_stats(samples: List[Dict[str, Any]]) -> Dict[str, int]:
+def calculate_seqrun_stats(samples: List[Dict[str, Any]], spike_species: List[str]) -> Dict[str, int]:
     """Calculate statistics for a sequencing run"""
     total_samples = len(samples)
     approved_samples = sum(1 for sample in samples if sample.get('qc') == 'passed')
     failed_samples = sum(1 for sample in samples if sample.get('qc') == 'failed')
     unprocessed_samples = sum(1 for sample in samples if sample.get('qc') not in ('passed', 'failed'))
     true_hits = sum(1 for sample in samples if sample.get('flagged_top_hits'))
-    spike_species = (await get_spike_settings())['species']
     for sample in samples:
         sample['spike'] = detected_spike(sample, spike_species)
     spikes_detected = sum(1 for sample in samples if sample['spike'])
@@ -68,10 +67,11 @@ async def get_sequencing_runs(current_user: dict = Depends(get_current_user)):
         seqruns_dict = {doc.get('sequencing_run_id'): doc for doc in all_seqrun_docs}
 
         # Build sequencing run data
+        spike_species = (await get_spike_settings())['species']
         seqruns = []
         for seqrun_id in all_seqrun_ids:
             samples = sample_data.get(seqrun_id, [])
-            stats = await calculate_seqrun_stats(samples)
+            stats = calculate_seqrun_stats(samples, spike_species)
 
             first_sample = samples[0] if samples else None
             created_date = first_sample.get('created_date') if first_sample else None
@@ -129,7 +129,7 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
             raise HTTPException(status_code=404, detail=f"Sequencing run not found: {seqrun_id}")
 
         # Calculate stats from samples
-        stats = await calculate_seqrun_stats(samples)
+        stats = calculate_seqrun_stats(samples, (await get_spike_settings())['species'])
 
         if seqrun_doc and isinstance(seqrun_doc, dict):
             # Use seqrun data from MongoDB collection
