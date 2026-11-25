@@ -157,7 +157,7 @@ async def find_negative_controls_by_run_id(sequencing_run_id: str) -> List[Dict[
                 '_id': 0
             }
         )
-        return await cursor.to_list(length=12)
+        return await cursor.to_list(length=None)
 
 
 async def get_contamination_analysis(sequencing_run_id: str) -> Dict[str, Any]:
