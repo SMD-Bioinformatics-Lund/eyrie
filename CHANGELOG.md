@@ -23,9 +23,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added read assignment probabilities and lineage to uploaded taxonomic hits
  - Added `classification_qc` summary stats (reads before and after filtering, read length/quality) to uploaded samples
  - Added `--rel-abundance-file` and `--read-assignment-file` options to `popup generate-config`
- - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`
+ - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`, plus `POST .../add`, `POST .../remove` and `PUT .../normaliser`, which change one setting without overwriting other changes
  - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
- - Added admin page for managing spike species and the normalising species
+ - Added a Spike Species admin tab: add or remove spike species and set or clear the normalising species from a Manage Spike Species menu
  - Added spike, negative control and low abundance highlighting to the classification view
  - Added read assignment probability and a sequencing summary with reads before and after filtering to the classification view
 
@@ -38,6 +38,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
  - Fixed analysis files being served without login
  - Fixed eyrie-popup Docker image build by installing git
+ - Fixed negative controls after the 12th in a sequencing run being left out
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -60,7 +61,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - eyrie-popup requires Python 3.11 or later
  - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
  - Removed spike detection from eyrie-popup, spike species are configured in Eyrie
- - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings
+ - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings, ignoring case
+ - Changed the admin area to Users and Spike Species tabs; Admin opens Users, and adding or editing a user stays under the Users tab
 
 ## [0.4.1]
 
