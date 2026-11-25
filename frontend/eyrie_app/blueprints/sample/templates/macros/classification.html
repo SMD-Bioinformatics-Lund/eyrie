@@ -266,8 +266,8 @@
             <div class="card-body">
                 <div class="row text-center">
                     {% for label, value in [
-                        ('Reads', '{:,.0f}'.format(qc.number_of_reads) if qc.number_of_reads is number else '--'),
-                        ('Mapped Reads', '{:,.0f}'.format(qc.mapped_reads) if qc.mapped_reads is number else '--'),
+                        ('Reads Before Filtering', '{:,.0f}'.format(qc.reads_before_filtering) if qc.reads_before_filtering is number else '--'),
+                        ('Reads After Filtering*', '{:,.0f}'.format(qc.reads_after_filtering) if qc.reads_after_filtering is number else '--'),
                         ('Mean Read Length', '{:,.0f} bp'.format(qc.mean_read_length) if qc.mean_read_length is number else '--'),
                         ('Median Read Length', '{:,.0f} bp'.format(qc.median_read_length) if qc.median_read_length is number else '--'),
                         ('Read Length N50', '{:,.0f} bp'.format(qc.read_length_n50) if qc.read_length_n50 is number else '--'),
@@ -279,6 +279,7 @@
                     </div>
                     {% endfor %}
                 </div>
+                <div class="small text-muted text-center">* Includes downsampling when performed</div>
                 <div class="row text-center mt-2">
                     {% for label, quality in [('Mean Read Quality', qc.mean_read_quality), ('Median Read Quality', qc.median_read_quality)] %}
                     <div class="col-lg-2 col-md-4 col-6 mb-2">
