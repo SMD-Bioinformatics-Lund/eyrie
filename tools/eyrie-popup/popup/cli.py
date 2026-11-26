@@ -3,6 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import glob
 import os
 import yaml
 import click
@@ -499,6 +500,32 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
             traceback.print_exc()
 
 
+REL_ABUNDANCE_SUFFIX = "rel-abundance.tsv"
+READ_ASSIGNMENT_SUFFIX = "read-assignment-distributions.tsv"
+
+
+def _found_rel_abundance_file(results_dir: Path, sample_id: str) -> str:
+    try:
+        return find_emu_file(results_dir, sample_id, REL_ABUNDANCE_SUFFIX).name
+    except ValueError:
+        candidates = sorted(path.name for path in results_dir.glob(f"{glob.escape(sample_id)}[._-]*{REL_ABUNDANCE_SUFFIX}"))
+    if len(candidates) == 1:
+        return candidates[0]
+    if candidates:
+        raise click.ClickException(
+            f"Several {REL_ABUNDANCE_SUFFIX} files for {sample_id}: {', '.join(candidates)}. Choose one with --rel-abundance-file."
+        )
+    raise click.ClickException(f"No {REL_ABUNDANCE_SUFFIX} file for {sample_id} in {results_dir}. Choose one with --rel-abundance-file.")
+
+
+def _matching_read_assignment_file(results_dir: Path, rel_abundance_file: str) -> Optional[str]:
+    """The read assignment file from the same Emu run as the rel-abundance file, if there is one."""
+    if not rel_abundance_file.endswith(REL_ABUNDANCE_SUFFIX):
+        return None
+    read_assignment_file = rel_abundance_file[:-len(REL_ABUNDANCE_SUFFIX)] + READ_ASSIGNMENT_SUFFIX
+    return read_assignment_file if (results_dir / read_assignment_file).is_file() else None
+
+
 @cli.command()
 @click.option('--analysis-output-dirpath', required=True, type=click.Path(exists=True, path_type=Path), 
               help='Path to analysis output directory containing pipeline subdirectories (fastqc, krona, nanoplot_processed, etc.)')
@@ -512,7 +539,7 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
               help='Classification type')
 @click.option('--pipeline-software', default='trana', help='Pipeline software used (trana, metaval, etc.)')
 @click.option('--rel-abundance-file', help='EMU rel-abundance TSV, relative to results/ (default: found from sample ID)')
-@click.option('--read-assignment-file', help='EMU read assignment distributions TSV, relative to results/ (default: found from sample ID)')
+@click.option('--read-assignment-file', help='EMU read assignment distributions TSV, relative to results/ (default: the one from the same Emu run as the rel-abundance file)')
 def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
                    sequencing_run_id: Optional[str], classification: str, pipeline_software: str,
@@ -541,14 +568,13 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
 
     results_dir = analysis_output_dirpath / "results"
 
-    def found_emu_file(suffix):
-        try:
-            return find_emu_file(results_dir, sample_id, suffix).name
-        except ValueError:
-            return None
+    rel_abundance_file = rel_abundance_file or _found_rel_abundance_file(results_dir, sample_id)
+    if not (results_dir / rel_abundance_file).is_file():
+        raise click.ClickException(f"{results_dir / rel_abundance_file} not found")
 
-    rel_abundance_file = rel_abundance_file or found_emu_file("rel-abundance.tsv") or f"{sample_id}*.fastq_rel-abundance.tsv"
-    read_assignment_file = read_assignment_file or found_emu_file("read-assignment-distributions.tsv")
+    read_assignment_file = read_assignment_file or _matching_read_assignment_file(results_dir, rel_abundance_file)
+    if read_assignment_file and not (results_dir / read_assignment_file).is_file():
+        raise click.ClickException(f"{results_dir / read_assignment_file} not found")
 
     # Create configuration
     config = {

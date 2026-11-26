@@ -71,7 +71,9 @@ popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/
   --read-assignment-file barcode01_filtered.fastq_read-assignment-distributions.tsv
 ```
 
-When the EMU file options are omitted they are found from the sample ID in `results/`, for any TRANA preprocessing (`_downsampled`, `_filtered`, `.porechop_abi`, ...).
+When `--rel-abundance-file` is omitted the file is found from the sample ID in `results/`, for any TRANA preprocessing (`_downsampled`, `_filtered`, `.porechop_abi`, ...). If there is none, or more than one, `generate-config` stops and asks you to choose one with `--rel-abundance-file`. When `--read-assignment-file` is omitted, the read assignment file from the same Emu run as the rel-abundance file is used, if there is one.
+
+On upload, a missing, ambiguous or unreadable rel-abundance file fails the sample. A missing or unreadable read assignment or MultiQC file only skips those metrics, with a warning.
 
 ### 2. Upload Sample Data
 

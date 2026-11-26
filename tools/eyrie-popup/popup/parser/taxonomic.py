@@ -19,47 +19,44 @@ class TaxonomicParser:
         if not results_config:
             return []
 
-        # Handle glob patterns for file discovery
         pattern = str(self.seqrun_path / results_config.directory / results_config.rel_abundance_file)
-        matching_files = glob.glob(pattern)
-        
+        matching_files = sorted(glob.glob(pattern))
+
         if not matching_files:
-            return []
-        
-        # Use first match if multiple files found
+            raise FileNotFoundError(f"No rel-abundance file matches {pattern}")
+        if len(matching_files) > 1:
+            names = ', '.join(Path(name).name for name in matching_files)
+            raise ValueError(f"Several rel-abundance files match {pattern}: {names}. Set rel_abundance_file to one of them.")
+
         abundance_file = Path(matching_files[0])
 
         abundances = []
 
-        try:
-            with open(abundance_file, 'r') as f:
-                reader = csv.DictReader(f, delimiter='\t')
+        with open(abundance_file, 'r') as f:
+            reader = csv.DictReader(f, delimiter='\t')
 
-                for row in reader:
-                    species = row.get('species', '')
-                    if not species or species in ['unmapped', 'mapped_unclassified']:
-                        continue
+            for row in reader:
+                species = row.get('species', '')
+                if not species or species in ['unmapped', 'mapped_unclassified']:
+                    continue
 
-                    contamination = False
-                    if 'contamination' in row:
-                        contamination = row['contamination'].lower() in ['true', '1', 'yes', 'contamination']
+                contamination = False
+                if 'contamination' in row:
+                    contamination = row['contamination'].lower() in ['true', '1', 'yes', 'contamination']
 
-                    abundance_data = TaxonomicAbundance(
-                        tax_id=row.get('tax_id', ''),
-                        abundance=float(row.get('abundance', 0)),
-                        species=species,
-                        genus=row.get('genus', ''),
-                        family=row.get('family', ''),
-                        order=row.get('order', ''),
-                        **{'class': row.get('class', '')},  # Using dict unpacking for 'class'
-                        phylum=row.get('phylum', ''),
-                        superkingdom=row.get('superkingdom', ''),
-                        estimated_counts=float(row.get('estimated counts', 0)),
-                        contamination=contamination
-                    )
-                    abundances.append(abundance_data)
-
-        except Exception as e:
-            print(f"Error parsing abundance file {abundance_file}: {e}")
+                abundance_data = TaxonomicAbundance(
+                    tax_id=row.get('tax_id', ''),
+                    abundance=float(row.get('abundance', 0)),
+                    species=species,
+                    genus=row.get('genus', ''),
+                    family=row.get('family', ''),
+                    order=row.get('order', ''),
+                    **{'class': row.get('class', '')},  # Using dict unpacking for 'class'
+                    phylum=row.get('phylum', ''),
+                    superkingdom=row.get('superkingdom', ''),
+                    estimated_counts=float(row.get('estimated counts', 0)),
+                    contamination=contamination
+                )
+                abundances.append(abundance_data)
 
         return sorted(abundances, key=lambda taxa: taxa.abundance, reverse=True)
