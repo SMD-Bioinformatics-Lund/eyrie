@@ -59,8 +59,10 @@ def sample_classification(sample_id):
                 sample['taxonomic_data']['hits'] = classification['hits']
             sample['spike'] = classification['spike']
             sample['classification_thresholds'] = classification['thresholds']
+            sample['excluded_controls'] = classification.get('excluded_controls', [])
         except Exception as classification_error:
             print(f"Warning: Could not load classification: {classification_error}")
+            sample['classification_unavailable'] = True
 
         return render_template('sample_classification.html', sample_id=sample_id, sample=sample, negative_controls=negative_controls, current_user=get_current_user(), analysis_base_path=analysis_base_path, return_to=return_to)
     except HTTPException:
