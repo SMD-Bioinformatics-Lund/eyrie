@@ -10,6 +10,7 @@ TABLE_FIELDS = [
     'sample_id', 'sample_name', 'lims_id', 'sequencing_run_id', 'classification', 'qc', 'metadata',
     'comments', 'flagged_top_hits', 'flagged_contaminants', 'created_date', 'updated_date',
     'nanoplot.processed.nanostats', 'nanoplot.unprocessed.nanostats', 'taxonomic_data.hits.species',
+    'taxonomic_data.hits.abundance', 'taxonomic_data.hits.relative_abundance',
 ]
 
 
@@ -142,14 +143,14 @@ async def update_sample_species_flags(
         return result.matched_count > 0
 
 
-async def find_negative_controls_by_run_id(sequencing_run_id: str) -> List[Dict[str, Any]]:
-    """Find negative control samples by sequencing_run_id."""
+async def find_negative_controls_by_run_id(sequencing_run_id: str, classification: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Find negative control samples by sequencing_run_id, of the same classification type when given."""
+    query = {'sequencing_run_id': sequencing_run_id, 'metadata.sample_type': 'negative control'}
+    if classification:
+        query['classification'] = {'$in': [classification, None]}
     async with get_db_connection() as db:
         cursor = db.samples.find(
-            {
-                'sequencing_run_id': sequencing_run_id,
-                'metadata.sample_type': 'negative control'
-            },
+            query,
             {
                 'sample_id': 1,
                 'sample_name': 1,

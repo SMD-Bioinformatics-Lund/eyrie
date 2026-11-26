@@ -1,6 +1,7 @@
 """Negative control comparison for a sample's taxonomic hits, using emuse."""
 
-from typing import Any, Dict, List, Optional
+import math
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 from emuse.negative_control import compare_to_negative_controls
@@ -13,17 +14,40 @@ def species_key(species: Optional[str]) -> str:
     return (species or '').strip().casefold()
 
 
+def sample_hits(sample: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return (sample.get('taxonomic_data') or {}).get('hits') or []
+
+
+def has_analysis(sample: Dict[str, Any]) -> bool:
+    return 'hits' in (sample.get('taxonomic_data') or {})
+
+
+def relative_abundance(hit: Dict[str, Any]) -> float:
+    value = hit.get('relative_abundance')
+    if value is None:
+        value = (hit.get('abundance') or 0) / 100
+    return value
+
+
 def abundance_table(sample: Dict[str, Any], spellings: Dict[str, str]) -> pd.DataFrame:
     """Hits as an emuse abundance table, with spike species spelled as in the settings."""
-    hits = (sample.get('taxonomic_data') or {}).get('hits', [])
     rows = [
         {
             'species': spellings.get(species_key(hit.get('species')), hit.get('species')),
-            'abundance': hit.get('relative_abundance', hit.get('abundance', 0) / 100),
+            'abundance': relative_abundance(hit),
         }
-        for hit in hits
+        for hit in sample_hits(sample)
     ]
     return pd.DataFrame(rows, columns=['species', 'abundance'])
+
+
+def usable_normaliser(table: pd.DataFrame, normaliser: Optional[str]) -> Optional[str]:
+    """The normaliser, unless the sample lacks a positive abundance of it to divide by."""
+    abundances = table.loc[table['species'] == normaliser, 'abundance']
+    if abundances.empty:
+        return None
+    abundance = abundances.iloc[0]
+    return normaliser if math.isfinite(abundance) and abundance > 0 else None
 
 
 def highlight(flags: Dict[str, bool]) -> Optional[str]:
@@ -35,34 +59,47 @@ def highlight(flags: Dict[str, bool]) -> Optional[str]:
 
 
 def detected_spike(sample: Dict[str, Any], spike_species: List[str]) -> Optional[str]:
-    hits = (sample.get('taxonomic_data') or {}).get('hits', [])
     spikes = {species_key(species) for species in spike_species}
-    return next((hit.get('species') for hit in hits if species_key(hit.get('species')) in spikes), None)
+    found = [hit for hit in sample_hits(sample) if species_key(hit.get('species')) in spikes]
+    return max(found, key=relative_abundance).get('species') if found else None
+
+
+def comparison_controls(sample: Dict[str, Any], negative_controls: List[Dict[str, Any]]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """Controls to compare the sample with, and those left out because they have no analysis results."""
+    others = [control for control in negative_controls if control['sample_id'] != sample['sample_id']]
+    return [c for c in others if has_analysis(c)], [c for c in others if not has_analysis(c)]
+
+
+def control_name(control: Dict[str, Any]) -> str:
+    return control.get('sample_name') or control['sample_id']
 
 
 def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, Any]], spike_settings: Dict[str, Any]) -> Dict[str, Any]:
     spellings = {species_key(species): species for species in spike_settings['species']}
-    controls = [control for control in negative_controls if control['sample_id'] != sample['sample_id']]
-    hits = (sample.get('taxonomic_data') or {}).get('hits', [])
+    controls, excluded = comparison_controls(sample, negative_controls)
+    sample_table = abundance_table(sample, spellings)
+    normaliser = usable_normaliser(sample_table, spike_settings['normaliser'])
     flags = compare_to_negative_controls(
-        abundance_table(sample, spellings),
+        sample_table,
         [abundance_table(control, spellings) for control in controls],
         spike_settings['species'],
-        spike_settings['normaliser'],
+        normaliser,
         fold=ENRICHMENT_FOLD,
         low_abundance_cutoff=LOW_ABUNDANCE_CUTOFF,
     ).to_dict(orient='records')
 
     classified_hits = [
         {**hit, **{name: bool(value) for name, value in flag.items()}, 'highlight': highlight(flag)}
-        for hit, flag in zip(hits, flags)
+        for hit, flag in zip(sample_hits(sample), flags)
     ]
 
     return {
         'sample_id': sample['sample_id'],
         'hits': classified_hits,
         'spike': detected_spike(sample, spike_settings['species']),
-        'negative_controls': [control.get('sample_name') or control['sample_id'] for control in controls],
+        'negative_controls': [control_name(control) for control in controls],
+        'excluded_controls': [control_name(control) for control in excluded],
+        'normaliser': normaliser,
         'spike_settings': spike_settings,
         'thresholds': {'enrichment_fold': ENRICHMENT_FOLD, 'low_abundance_cutoff': LOW_ABUNDANCE_CUTOFF},
         'classification_qc': sample.get('classification_qc'),

@@ -9,10 +9,18 @@ from eyrie_api.database.async_sample_operations import (
 )
 from eyrie_api.database.async_settings_operations import get_spike_settings
 from eyrie_api.routes.auth import require_admin, require_admin_or_uploader, get_current_user
-from eyrie_api.utils.classification import classify_sample, detected_spike
+from eyrie_api.utils.classification import classify_sample, comparison_controls, detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
 
 router = APIRouter(prefix="/sample", tags=["sample"])
+
+
+async def run_negative_controls(sample):
+    sequencing_run_id = sample.get('sequencing_run_id')
+    if not sequencing_run_id:
+        return []
+    return await find_negative_controls_by_run_id(sequencing_run_id, sample.get('classification'))
+
 
 @router.get("/{sample_id}")
 async def get_sample(sample_id: str):
@@ -169,21 +177,15 @@ async def update_species_flags(
 
 @router.get("/{sample_id}/negative-controls")
 async def get_negative_controls(sample_id: str):
-    """Get negative control samples from the same sequencing run"""
+    """Get the negative controls from the same sequencing run that the sample is compared with"""
     try:
         # First, get the main sample to find its sequencing_run_id
         sample = await find_sample(sample_id)
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
 
-        sequencing_run_id = sample.get('sequencing_run_id')
-        if not sequencing_run_id:
-            return []  # Return empty list if no sequencing_run_id
-
-        # Find negative controls for this sequencing run
-        negative_controls = await find_negative_controls_by_run_id(sequencing_run_id)
-
-        return json.loads(JSONEncoder().encode(negative_controls))
+        controls, _ = comparison_controls(sample, await run_negative_controls(sample))
+        return json.loads(JSONEncoder().encode(controls))
     except HTTPException:
         raise
     except Exception as e:
@@ -197,9 +199,7 @@ async def get_classification(sample_id: str, current_user: dict = Depends(get_cu
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
 
-        sequencing_run_id = sample.get('sequencing_run_id')
-        negative_controls = await find_negative_controls_by_run_id(sequencing_run_id) if sequencing_run_id else []
-        classification = classify_sample(sample, negative_controls, await get_spike_settings())
+        classification = classify_sample(sample, await run_negative_controls(sample), await get_spike_settings())
 
         return json.loads(JSONEncoder().encode(classification))
     except HTTPException:
