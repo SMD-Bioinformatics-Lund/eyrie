@@ -31,6 +31,7 @@ dependencies = [
     "jinja2>=3.1.2",
     "Werkzeug>=2.3.7",
     "PyJWT>=2.8.0",
+    "pydantic>=2",
     "pandas",
     "emuse @ git+https://github.com/kclinmicro/emuse.git@c79245f63ae873ec07447df051b2177590cafaa5",
 ]
