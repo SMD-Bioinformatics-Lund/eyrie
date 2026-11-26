@@ -9,6 +9,14 @@ DEFAULT_SPIKE_SPECIES = ["Agrobacterium tumefaciens", "Agrobacterium fabrum", "S
 SPIKE_SETTINGS_ID = 'spike_species'
 
 
+def lowercase(names: List[str]) -> List[str]:
+    return [name.strip().lower() for name in names if name.strip()]
+
+
+def ignoring_case(name: str):
+    return re.compile(f'^{re.escape(name.strip())}$', re.IGNORECASE)
+
+
 async def get_spike_settings() -> Dict[str, Any]:
     """Get spike species settings, falling back to the defaults."""
     async with get_db_connection() as db:
@@ -40,32 +48,38 @@ async def add_spike_species(species: str) -> bool:
     async with get_db_connection() as db:
         await _ensure_spike_settings(db)
         result = await db.settings.update_one(
-            {'_id': SPIKE_SETTINGS_ID,
-             'species': {'$not': re.compile(f'^{re.escape(species)}$', re.IGNORECASE)}},
+            {'_id': SPIKE_SETTINGS_ID, 'species': {'$not': ignoring_case(species)}},
             {'$push': {'species': species}, '$set': {'updated_date': datetime.now()}}
         )
     return result.modified_count == 1
 
 
 async def remove_spike_species(species: List[str]) -> None:
-    """Remove spike species, clearing the normaliser if it is one of them."""
+    """Remove spike species, ignoring case, clearing the normaliser if it is one of them."""
+    removed = lowercase(species)
     async with get_db_connection() as db:
         await _ensure_spike_settings(db)
         await db.settings.update_one({'_id': SPIKE_SETTINGS_ID}, [{'$set': {
-            'species': {'$filter': {'input': '$species', 'cond': {'$not': [{'$in': ['$$this', species]}]}}},
-            'normaliser': {'$cond': [{'$in': ['$normaliser', species]}, None, '$normaliser']},
+            'species': {'$filter': {'input': '$species', 'cond': {'$not': [{'$in': [{'$toLower': '$$this'}, removed]}]}}},
+            'normaliser': {'$cond': [{'$in': [{'$toLower': '$normaliser'}, removed]}, None, '$normaliser']},
             'updated_date': datetime.now(),
         }}])
 
 
 async def set_spike_normaliser(normaliser: Optional[str]) -> bool:
-    """Set the normalising species, which must be a spike species. Returns whether it was set."""
+    """Set the normalising species, which must be a spike species, ignoring case. Returns whether it was set."""
     async with get_db_connection() as db:
         await _ensure_spike_settings(db)
-        query = {'_id': SPIKE_SETTINGS_ID}
-        if normaliser:
-            query['species'] = normaliser
+        if not normaliser:
+            result = await db.settings.update_one(
+                {'_id': SPIKE_SETTINGS_ID}, {'$set': {'normaliser': None, 'updated_date': datetime.now()}}
+            )
+            return result.matched_count == 1
+        spelling = {'$arrayElemAt': [{'$filter': {
+            'input': '$species', 'cond': {'$eq': [{'$toLower': '$$this'}, normaliser.strip().lower()]}
+        }}, 0]}
         result = await db.settings.update_one(
-            query, {'$set': {'normaliser': normaliser, 'updated_date': datetime.now()}}
+            {'_id': SPIKE_SETTINGS_ID, 'species': ignoring_case(normaliser)},
+            [{'$set': {'normaliser': spelling, 'updated_date': datetime.now()}}]
         )
     return result.matched_count == 1
