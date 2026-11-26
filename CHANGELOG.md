@@ -28,6 +28,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added a Spike Species admin tab: add or remove spike species and set or clear the normalising species from a Manage Spike Species menu
  - Added spike, negative control and low abundance highlighting to the classification view
  - Added read assignment probability and a sequencing summary with reads before and after filtering to the classification view
+ - Added a warning on the classification view when the negative control comparison could not be loaded, and a note naming negative controls left out because they have no taxonomic results
+ - Added `excluded_controls` and `normaliser` (the normaliser used for the sample, or none) to `GET /api/sample/{sample_id}/classification`
+ - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
@@ -39,6 +42,16 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed analysis files being served without login
  - Fixed eyrie-popup Docker image build by installing git
  - Fixed negative controls after the 12th in a sequencing run being left out
+ - Fixed negative controls without uploaded taxonomic results being compared as controls with no species, which flagged every species as not in negative controls
+ - Fixed a sample's normalising spike at 0% abundance flagging species as enriched
+ - Fixed samples being compared with negative controls of the other classification type (16S or ITS)
+ - Fixed a negative control being listed among its own negative controls on the classification view
+ - Fixed the detected spike species depending on hit order; the most abundant spike species is used
+ - Fixed `PUT /api/admin/settings/spike-species` accepting blank names or the same species twice in different case, and removing spike species or setting the normaliser depending on case
+ - Fixed `popup generate-config` taking the first of several matching rel-abundance files, or another sample's file with the same prefix; it now stops and asks for `--rel-abundance-file`
+ - Fixed `popup generate-config` taking the read assignment file from a different Emu run than the rel-abundance file
+ - Fixed eyrie-popup uploading a sample with no species when its rel-abundance file was missing, ambiguous or unreadable; the upload now fails
+ - Fixed an unreadable read assignment or MultiQC file stopping a sample upload; those metrics are skipped with a warning
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -63,6 +76,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Removed spike detection from eyrie-popup, spike species are configured in Eyrie
  - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings, ignoring case
  - Changed the admin area to Users and Spike Species tabs; Admin opens Users, and adding or editing a user stays under the Users tab
+ - The backend requires pydantic 2
+ - eyrie-popup sends no taxonomic data for samples uploaded without results, so they are not used as negative controls
 
 ## [0.4.1]
 
