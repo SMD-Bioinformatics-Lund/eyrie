@@ -79,12 +79,18 @@ class SampleParser:
             results_dir = self.seqrun_path / self.config.results.directory
             taxonomic_parser = TaxonomicParser(self.seqrun_path)
             sample_data.taxonomic_abundances = taxonomic_parser.parse_rel_abundance(self.config.results)
-            parse_emu_metrics(sample_data.taxonomic_abundances, results_dir, self.config.results)
+            try:
+                parse_emu_metrics(sample_data.taxonomic_abundances, results_dir, self.config.results)
+            except Exception as error:
+                print(f"⚠ Warning: Skipped read assignment probabilities: {error}")
 
             if self.config.multiqc and self.config.multiqc.enabled:
-                sample_data.classification_qc = parse_classification_qc(
-                    existing_file(self.seqrun_path / self.config.multiqc.directory, self.config.multiqc.data_file),
-                    self.config.sample.sample_id
-                )
+                try:
+                    sample_data.classification_qc = parse_classification_qc(
+                        existing_file(self.seqrun_path / self.config.multiqc.directory, self.config.multiqc.data_file),
+                        self.config.sample.sample_id
+                    )
+                except Exception as error:
+                    print(f"⚠ Warning: Skipped MultiQC summary statistics: {error}")
 
         return sample_data

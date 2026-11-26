@@ -79,7 +79,7 @@ class SampleResults(BaseModel):
     nanoplot_processed: Optional[Dict[str, str]] = None
     nano_stats_unprocessed: Optional[NanoStats] = None
     nano_stats_processed: Optional[NanoStats] = None
-    taxonomic_abundances: List[TaxonomicAbundance] = []
+    taxonomic_abundances: Optional[List[TaxonomicAbundance]] = None
     nanoplot: Optional[object] = None
     classification_qc: Optional[Dict[str, Any]] = None
     metadata: Optional[SampleMetadata] = None

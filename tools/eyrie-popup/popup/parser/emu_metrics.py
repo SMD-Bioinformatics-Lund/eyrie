@@ -35,9 +35,12 @@ def read_assignment_stats(path: Path) -> pd.DataFrame:
 
 
 def parse_emu_metrics(abundances: List[TaxonomicAbundance], results_dir: Path, results_config) -> None:
-    read_assignment = existing_file(results_dir, results_config.read_assignment_file)
-    if read_assignment:
-        add_taxon_metrics(abundances, read_assignment_stats(read_assignment), ['median_probability', 'mean_probability'])
+    if not results_config.read_assignment_file:
+        return
+    read_assignment = results_dir / results_config.read_assignment_file
+    if not read_assignment.is_file():
+        raise FileNotFoundError(f"{read_assignment} not found")
+    add_taxon_metrics(abundances, read_assignment_stats(read_assignment), ['median_probability', 'mean_probability'])
 
 
 def parse_classification_qc(multiqc_data: Optional[Path], sample_id: str) -> Optional[Dict[str, Any]]:
