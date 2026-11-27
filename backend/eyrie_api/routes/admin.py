@@ -1,6 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from ..models.auth import UserCreate, UserUpdate
+from ..models.settings import SpikeNormaliser, SpikeSettings, SpikeSpeciesAdd, SpikeSpeciesRemove
 from ..database.async_user_operations import get_all_users, create_user, update_user, delete_user, user_exists
+from ..database.async_settings_operations import (
+    add_spike_species, get_spike_settings, remove_spike_species, set_spike_normaliser, update_spike_settings
+)
 from .auth import require_admin
 from ..utils.json_encoder import JSONEncoder
 import json
@@ -80,3 +84,43 @@ async def delete_existing_user(user_id: str, current_user: dict = Depends(requir
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/settings/spike-species")
+async def get_spike_species(current_user: dict = Depends(require_admin)):
+    try:
+        return await get_spike_settings()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/settings/spike-species")
+async def update_spike_species(settings: SpikeSettings, current_user: dict = Depends(require_admin)):
+    try:
+        await update_spike_settings(settings.species, settings.normaliser)
+        return {'success': True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/settings/spike-species/add")
+async def add_spike(data: SpikeSpeciesAdd, current_user: dict = Depends(require_admin)):
+    try:
+        return {'added': await add_spike_species(data.species)}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/settings/spike-species/remove")
+async def remove_spikes(data: SpikeSpeciesRemove, current_user: dict = Depends(require_admin)):
+    try:
+        await remove_spike_species(data.species)
+        return {'success': True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/settings/spike-species/normaliser")
+async def update_spike_normaliser(data: SpikeNormaliser, current_user: dict = Depends(require_admin)):
+    try:
+        updated = await set_spike_normaliser(data.normaliser)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    if not updated:
+        raise HTTPException(status_code=400, detail="The normalising species must be a spike species")
+    return {'success': True}

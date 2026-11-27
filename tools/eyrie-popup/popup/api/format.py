@@ -23,10 +23,8 @@ class FormatHandler:
         comments = []
 
         # Check for contamination
-        contaminants = [
-            taxa for taxa in sample_data.taxonomic_abundances 
-            if taxa.contamination
-        ]
+        abundances = sample_data.taxonomic_abundances
+        contaminants = [taxa for taxa in abundances or [] if taxa.contamination]
 
         if contaminants:
             contaminant_names = [taxa.species for taxa in contaminants]
@@ -34,22 +32,26 @@ class FormatHandler:
 
 
         # Prepare taxonomic data for database storage
-        taxonomic_summary = {
-            "total_species": len(sample_data.taxonomic_abundances),
+        taxonomic_summary = None if abundances is None else {
+            "total_species": len(abundances),
             "contaminants_detected": len(contaminants),
             "hits": [
                 {
+                    "tax_id": taxa.tax_id,
                     "species": taxa.species,
                     "abundance": round(taxa.abundance * 100, 2),  # Convert to percentage
+                    "relative_abundance": taxa.abundance,
                     "genus": taxa.genus,
                     "family": taxa.family,
-                    "estimated_counts": taxa.estimated_counts
+                    "order": taxa.order,
+                    "class": taxa.class_name,
+                    "phylum": taxa.phylum,
+                    "superkingdom": taxa.superkingdom,
+                    "estimated_counts": taxa.estimated_counts,
+                    "median_probability": taxa.median_probability,
+                    "mean_probability": taxa.mean_probability
                 }
-                for taxa in sorted(
-                    sample_data.taxonomic_abundances, 
-                    key=lambda x: x.abundance, 
-                    reverse=True
-                )
+                for taxa in sorted(abundances, key=lambda x: x.abundance, reverse=True)
             ]
         }
 
@@ -126,7 +128,8 @@ class FormatHandler:
             "files": files_data,
             "taxonomic_data": taxonomic_summary,
             "nanoplot": nanoplot_data,
-            "spike": sample_data.spike if hasattr(sample_data, 'spike') else None
+            "classification_qc": sample_data.classification_qc,
+            "pipeline_software": sample_data.sample_info.pipeline_software
         }
 
         # Add sample metadata fields if present

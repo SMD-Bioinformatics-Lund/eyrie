@@ -19,12 +19,40 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the navbars from black to a pale green that suits the logo, with the current page's button in the same sage green
  - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
  - Changed the samples, users and species abundance tables to select rows with a checkbox in the header row instead of Select All and Clear Selection buttons, and named every table in its header with an info tooltip
+ - Added emuse v1.3.0 (kclinmicro/emuse, installed from its git tag) to eyrie-popup and the backend for read assignment and summary statistics and negative control comparison
+ - Added read assignment probabilities and lineage to uploaded taxonomic hits
+ - Added `classification_qc` summary stats (reads before and after filtering, read length/quality) to uploaded samples
+ - Added `--rel-abundance-file` and `--read-assignment-file` options to `popup generate-config`
+ - Added spike species settings with admin endpoints `GET`/`PUT /api/admin/settings/spike-species`, plus `POST .../add`, `POST .../remove` and `PUT .../normaliser`, which change one setting without overwriting other changes
+ - Added `GET /api/sample/{sample_id}/classification` that flags taxonomic hits against the run's negative controls and spike species using emuse
+ - Added a Spike Species admin tab: add or remove spike species and set or clear the normalising species from a Manage Spike Species menu
+ - Added spike, negative control and low abundance highlighting to the classification view
+ - Added read assignment probability and a sequencing summary with reads before and after filtering to the classification view
+ - Added a warning on the classification view when the negative control comparison could not be loaded, and a note naming negative controls left out because they have no taxonomic results
+ - Added `excluded_controls` and `normaliser` (the normaliser used for the sample, or none) to `GET /api/sample/{sample_id}/classification`
+ - Added a note and a per-species marker on the classification view when enrichment could not be checked because the sample or a negative control has no normalising spike, plus `controls_without_normaliser` and per-hit `enrichment_unchecked_against` in `GET /api/sample/{sample_id}/classification`
+ - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling, run by a Tests GitHub Actions workflow on pull requests and pushes to master
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
  - Fixed table action menus opening behind the table header row
  - Fixed the web interface hanging for up to 30 seconds, e.g. when clearing species flags: the frontend ran a single synchronous gunicorn worker that idle browser connections could block; it now uses threaded workers
  - Fixed trends showing no data for runs without an uploaded run report, by falling back to the date in the run ID; samples that still have no date are counted in the chart header
+ - Fixed `pipeline_software` not being sent when uploading samples
+ - Fixed `PUT /api/sample/{sample_id}/species-flags` not requiring login
+ - Fixed analysis files being served without login
+ - Fixed eyrie-popup Docker image build by installing git
+ - Fixed negative controls after the 12th in a sequencing run being left out
+ - Fixed negative controls without uploaded taxonomic results being compared as controls with no species, which flagged every species as not in negative controls
+ - Fixed a sample's normalising spike at 0% abundance flagging species as enriched
+ - Fixed samples being compared with negative controls of the other classification type (16S or ITS)
+ - Fixed a negative control being listed among its own negative controls on the classification view
+ - Fixed the detected spike species depending on hit order; the most abundant spike species is used
+ - Fixed `PUT /api/admin/settings/spike-species` accepting blank names or the same species twice in different case, and removing spike species or setting the normaliser depending on case
+ - Fixed `popup generate-config` taking the first of several matching rel-abundance files, or another sample's file with the same prefix; it now stops and asks for `--rel-abundance-file`
+ - Fixed `popup generate-config` taking the read assignment file from a different Emu run than the rel-abundance file
+ - Fixed eyrie-popup uploading a sample with no species when its rel-abundance file was missing, ambiguous or unreadable; the upload now fails
+ - Fixed an unreadable read assignment or MultiQC file stopping a sample upload; those metrics are skipped with a warning
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -44,6 +72,13 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the sample overview and NanoPlot statistics tables to the compact table style, with low values shown as red cells
  - Changed the NanoPlot page to the sample page colours: neutral view icons, the selected view in pale blue, and NanoStats Comparison as a compact Unprocessed/Processed table
  - Changed the sequencing runs table to the compact layout, with the run ID opening the run, a run date column and spikes detected shaded green/amber/red by the share of samples missing a spike
+ - eyrie-popup requires Python 3.11 or later
+ - `popup generate-config` finds Emu files for any TRANA preprocessing, not only a `{sample_id}*` glob
+ - Removed spike detection from eyrie-popup, spike species are configured in Eyrie
+ - Spike species on the sample, sample list and sequencing run pages are found from the admin spike species settings, ignoring case
+ - Changed the admin area to Users and Spike Species tabs; Admin opens Users, and adding or editing a user stays under the Users tab
+ - The backend requires pydantic 2
+ - eyrie-popup sends no taxonomic data for samples uploaded without results, so they are not used as negative controls
 
 ## [0.4.1]
 

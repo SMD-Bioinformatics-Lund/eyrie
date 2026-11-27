@@ -45,6 +45,10 @@
         </div>
     </div>
     
+    {% if sample and sample.classification_qc %}
+    {{ sequencing_summary(sample.classification_qc) }}
+    {% endif %}
+
     <!-- Negative Controls Section -->
     {% if negative_controls and negative_controls|length > 0 %}
     <div class="row mt-4">
@@ -139,6 +143,26 @@
         <li><button type="button" class="dropdown-item" id="exportCsvBtn"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Export CSV</button></li>
     {% endcall %}
     {{ action_message() }}
+    {% if sample and sample.classification_unavailable %}
+    <div class="alert alert-warning small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i>Negative control comparison unavailable. Species are shown without spike and negative control highlighting.
+    </div>
+    {% elif sample %}
+    {% if sample.excluded_controls %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Not compared with {{ sample.excluded_controls | join(', ') }}: no taxonomic results uploaded.
+    </div>
+    {% endif %}
+    {% if sample.normaliser_missing %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Enrichment not checked: <em>{{ sample.configured_normaliser }}</em> not detected in this sample. Species found in negative controls are not marked as enriched.
+    </div>
+    {% elif sample.controls_without_normaliser %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Enrichment not checked against {{ sample.controls_without_normaliser | join(', ') }}: <em>{{ sample.configured_normaliser }}</em> not detected. Species also found there are not marked as enriched (<i class="bi bi-question-circle"></i>).
+    </div>
+    {% endif %}
+    {% endif %}
     <div class="card-body p-0">
         <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
             <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
@@ -151,13 +175,21 @@
                     </tr>
                 </thead>
                 <tbody id="contaminationTableBody">
+                    {% set thresholds = sample.classification_thresholds %}
                     {% for organism in hits %}
-                    {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if sample.spike == organism.species else '' %}
-                    <tr class="{{ row_class }}" data-species="{{ organism.species }}">
+                    {% set is_spike = organism.spike or sample.spike == organism.species %}
+                    {% set row_class = 'table-success' if organism.species in top_hits else 'table-danger' if organism.species in contaminants else 'table-info' if is_spike else 'table-warning' if organism.highlight == 'not_in_control' else '' %}
+                    <tr class="{{ row_class }}{{ ' low-abundance-row' if organism.low_abundance }}" data-species="{{ organism.species }}"
+                        {% if organism.absent_in_controls %}title="Not found in negative controls"{% elif organism.enriched %}title="More than {{ thresholds.enrichment_fold }} times more abundant than in negative controls, normalised to the spike"{% endif %}>
                         {{ row_checkbox('species', organism.species, 'speciesForm', organism.species) }}
                         <td>
-                            <div class="fw-semibold">{{ organism.species }}</div>
+                            <div class="fw-semibold">{{ organism.species }}
+                                {% if organism.enrichment_unchecked_against and not is_spike %}<i class="bi bi-question-circle text-muted ms-1" title="Enrichment not checked against {{ organism.enrichment_unchecked_against | join(', ') }}: no {{ sample.configured_normaliser }} to normalise to"></i>{% endif %}
+                            </div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
+                            {% if organism.median_probability is number %}
+                            <small class="d-block text-muted">Prob {{ '%.2f'|format(organism.median_probability) }}</small>
+                            {% endif %}
                         </td>
                         <td>{{ '%.2f'|format(organism.abundance) }}%</td>
                         <td>{{ '{:,.0f}'.format(organism.estimated_counts) if organism.estimated_counts else '--' }}</td>
@@ -171,10 +203,14 @@
             </table>
         </div>
     </div>
-    <div class="card-footer bg-white small text-muted d-flex gap-3">
+    <div class="card-footer bg-white small text-muted d-flex flex-wrap column-gap-3">
         <span><span class="legend-swatch bg-success-subtle"></span>Top hit</span>
         <span><span class="legend-swatch bg-danger-subtle"></span>Contaminant</span>
         <span><span class="legend-swatch bg-info-subtle"></span>Spike species</span>
+        {% if thresholds %}
+        <span><span class="legend-swatch bg-warning-subtle"></span>Not in negative controls or &gt;{{ thresholds.enrichment_fold }}&times; more abundant</span>
+        <span><span class="low-abundance-text">Grey</span>: below {{ '%g'|format(thresholds.low_abundance_cutoff * 100) }}%</span>
+        {% endif %}
     </div>
 </div>
 <form id="speciesForm" method="post" action="{{ url_for('sample.flag_species', sample_id=sample_id) }}"></form>
@@ -231,6 +267,59 @@
                     {% endif %}
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro quality_badge_class(quality) %}
+    {% if quality < 15 %}quality-not-acceptable{% elif quality < 20 %}quality-good{% else %}quality-excellent{% endif %}
+{% endmacro %}
+
+{% macro sequencing_summary(qc) %}
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-eyrie-green text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-speedometer2 me-2"></i>Sequencing Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    {% for label, value in [
+                        ('Reads Before Filtering', '{:,.0f}'.format(qc.reads_before_filtering) if qc.reads_before_filtering is number else '--'),
+                        ('Reads After Filtering*', '{:,.0f}'.format(qc.reads_after_filtering) if qc.reads_after_filtering is number else '--'),
+                        ('Mean Read Length', '{:,.0f} bp'.format(qc.mean_read_length) if qc.mean_read_length is number else '--'),
+                        ('Median Read Length', '{:,.0f} bp'.format(qc.median_read_length) if qc.median_read_length is number else '--'),
+                        ('Read Length N50', '{:,.0f} bp'.format(qc.read_length_n50) if qc.read_length_n50 is number else '--'),
+                        ('Total Bases', '{:,.0f} bp'.format(qc.total_bases) if qc.total_bases is number else '--'),
+                    ] %}
+                    <div class="col-lg-2 col-md-4 col-6 mb-2">
+                        <div class="h5 mb-1">{{ value }}</div>
+                        <small class="text-muted">{{ label }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="small text-muted text-center">* Includes downsampling when performed</div>
+                <div class="row text-center mt-2">
+                    {% for label, quality in [('Mean Read Quality', qc.mean_read_quality), ('Median Read Quality', qc.median_read_quality)] %}
+                    <div class="col-lg-2 col-md-4 col-6 mb-2">
+                        {% if quality is number %}
+                            <span class="badge fs-6 {{ quality_badge_class(quality) }}">Q{{ '%.1f'|format(quality) }}</span>
+                        {% else %}
+                            <div class="h5 mb-1">--</div>
+                        {% endif %}
+                        <div><small class="text-muted">{{ label }}</small></div>
+                    </div>
+                    {% endfor %}
+                    <div class="col-lg-8 col-12 small text-muted text-lg-start align-self-center">
+                        <span class="badge quality-not-acceptable">&lt; Q15</span> not acceptable
+                        <span class="badge quality-good ms-2">Q15&ndash;Q20</span> good
+                        <span class="badge quality-excellent ms-2">&ge; Q20</span> excellent
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

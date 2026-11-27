@@ -23,7 +23,7 @@ pip install -e .
 
 ### Python Version Compatibility
 
-eyrie-popup supports Python 3.8 through 3.13. It is **not compatible with Python 3.14+** due to dependencies on Pydantic v1.
+eyrie-popup supports Python 3.11 through 3.13. It is **not compatible with Python 3.14+** due to dependencies on Pydantic v1. Emu results are parsed with [emuse](https://github.com/kclinmicro/emuse).
 
 ## Quick Start
 
@@ -64,7 +64,16 @@ popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/
 
 # With custom sample information
 popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 --sample-name "Sample_001" --sequencing-run-id "RUN_20250930"
+
+# With explicit EMU files (relative to results/), e.g. from TRANA
+popup generate-config --analysis-output-dirpath /path/to/analysis-files/results/trana --sample-id barcode01 \
+  --rel-abundance-file barcode01_filtered.fastq_rel-abundance.tsv \
+  --read-assignment-file barcode01_filtered.fastq_read-assignment-distributions.tsv
 ```
+
+When `--rel-abundance-file` is omitted the file is found from the sample ID in `results/`, for any TRANA preprocessing (`_downsampled`, `_filtered`, `.porechop_abi`, ...). If there is none, or more than one, `generate-config` stops and asks you to choose one with `--rel-abundance-file`. When `--read-assignment-file` is omitted, the read assignment file from the same Emu run as the rel-abundance file is used, if there is one.
+
+On upload, a missing, ambiguous or unreadable rel-abundance file fails the sample. A missing or unreadable read assignment or MultiQC file only skips those metrics, with a warning.
 
 ### 2. Upload Sample Data
 
@@ -249,12 +258,14 @@ results:
   enabled: true
   directory: "results"
   rel_abundance_file: "barcode01_filtered.fastq_rel-abundance.tsv"
+  read_assignment_file: "barcode01_filtered.fastq_read-assignment-distributions.tsv"  # optional
 
 # MultiQC aggregated reports (optional)
 multiqc:
   enabled: true
   directory: "multiqc"
   report_file: "multiqc_report.html"
+  data_file: "multiqc_data/multiqc_data.json"
 ```
 
 ### Analysis Directory Structure

@@ -3,9 +3,11 @@
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
+import glob
 import os
 import yaml
 import click
+from emuse.find_files import find_emu_file
 
 from .models import SampleConfig
 from .parser import SampleParser
@@ -98,20 +100,11 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
             if contaminants > 0:
                 click.echo(f"  ⚠️  Potential contaminants: {contaminants}")
 
-            # Display spike species detection
-            if hasattr(sample_data, 'spike') and sample_data.spike:
-                # Find abundance for the spike species
-                spike_abundance = None
-                for taxa in sample_data.taxonomic_abundances:
-                    if taxa.species == sample_data.spike:
-                        spike_abundance = taxa.abundance
-                        break
-                if spike_abundance is not None:
-                    click.echo(f"  🎯 Spike species detected: {sample_data.spike} ({spike_abundance:.2%})")
-                else:
-                    click.echo(f"  🎯 Spike species detected: {sample_data.spike}")
-            else:
-                click.echo(f"  ❌ No spike species detected")
+            if any(taxa.median_probability is not None for taxa in sample_data.taxonomic_abundances):
+                click.echo(f"  ✓ Read assignment probabilities")
+
+        if sample_data.classification_qc:
+            click.echo(f"  ✓ Classification QC")
 
         # Add debug info about nanoplot structure
         if sample_data.nanoplot:
@@ -121,13 +114,6 @@ def _upload_sample_data(sample_cnf: Path, api: str, username: Optional[str], pas
 
         if dry_run:
             click.echo("\n🏃 Dry run mode - skipping sample data upload")
-
-            # In dry run mode, show what would be uploaded
-            if verbose:
-                temp_client = EyrieAPIClient(api, username, password)
-                eyrie_sample = temp_client._convert_to_eyrie_format(sample_data, config)
-                click.echo(f"\n📋 Would upload spike field: {eyrie_sample.get('spike', 'NOT_FOUND')}")
-                click.echo(f"📋 Sample data spike attr: {getattr(sample_data, 'spike', 'NO_SPIKE_ATTR')}")
             return True
 
         click.echo("\n📤 Uploading sample data to Eyrie database...")
@@ -514,6 +500,32 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
             traceback.print_exc()
 
 
+REL_ABUNDANCE_SUFFIX = "rel-abundance.tsv"
+READ_ASSIGNMENT_SUFFIX = "read-assignment-distributions.tsv"
+
+
+def _found_rel_abundance_file(results_dir: Path, sample_id: str) -> str:
+    try:
+        return find_emu_file(results_dir, sample_id, REL_ABUNDANCE_SUFFIX).name
+    except ValueError:
+        candidates = sorted(path.name for path in results_dir.glob(f"{glob.escape(sample_id)}[._-]*{REL_ABUNDANCE_SUFFIX}"))
+    if len(candidates) == 1:
+        return candidates[0]
+    if candidates:
+        raise click.ClickException(
+            f"Several {REL_ABUNDANCE_SUFFIX} files for {sample_id}: {', '.join(candidates)}. Choose one with --rel-abundance-file."
+        )
+    raise click.ClickException(f"No {REL_ABUNDANCE_SUFFIX} file for {sample_id} in {results_dir}. Choose one with --rel-abundance-file.")
+
+
+def _matching_read_assignment_file(results_dir: Path, rel_abundance_file: str) -> Optional[str]:
+    """The read assignment file from the same Emu run as the rel-abundance file, if there is one."""
+    if not rel_abundance_file.endswith(REL_ABUNDANCE_SUFFIX):
+        return None
+    read_assignment_file = rel_abundance_file[:-len(REL_ABUNDANCE_SUFFIX)] + READ_ASSIGNMENT_SUFFIX
+    return read_assignment_file if (results_dir / read_assignment_file).is_file() else None
+
+
 @cli.command()
 @click.option('--analysis-output-dirpath', required=True, type=click.Path(exists=True, path_type=Path), 
               help='Path to analysis output directory containing pipeline subdirectories (fastqc, krona, nanoplot_processed, etc.)')
@@ -526,9 +538,12 @@ def upload(sample_cnf: Optional[Path], sample_metadata_file: Optional[Path], seq
 @click.option('--classification', type=click.Choice(['16S', 'ITS']), default='16S',
               help='Classification type')
 @click.option('--pipeline-software', default='trana', help='Pipeline software used (trana, metaval, etc.)')
+@click.option('--rel-abundance-file', help='EMU rel-abundance TSV, relative to results/ (default: found from sample ID)')
+@click.option('--read-assignment-file', help='EMU read assignment distributions TSV, relative to results/ (default: the one from the same Emu run as the rel-abundance file)')
 def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optional[Path], 
                    sample_name: Optional[str], lims_id: Optional[str], 
-                   sequencing_run_id: Optional[str], classification: str, pipeline_software: str):
+                   sequencing_run_id: Optional[str], classification: str, pipeline_software: str,
+                   rel_abundance_file: Optional[str], read_assignment_file: Optional[str]):
     """Generate a YAML configuration file for a single sample.
 
     Creates a YAML config file that can be used with 'popup upload -s' to upload sample analysis data.
@@ -550,6 +565,16 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
 
     if not sequencing_run_id:
         sequencing_run_id = f"RUN_{datetime.now().strftime('%Y_%m_%d')}"
+
+    results_dir = analysis_output_dirpath / "results"
+
+    rel_abundance_file = rel_abundance_file or _found_rel_abundance_file(results_dir, sample_id)
+    if not (results_dir / rel_abundance_file).is_file():
+        raise click.ClickException(f"{results_dir / rel_abundance_file} not found")
+
+    read_assignment_file = read_assignment_file or _matching_read_assignment_file(results_dir, rel_abundance_file)
+    if read_assignment_file and not (results_dir / read_assignment_file).is_file():
+        raise click.ClickException(f"{results_dir / read_assignment_file} not found")
 
     # Create configuration
     config = {
@@ -576,7 +601,8 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
         "multiqc": {
             "enabled": True,
             "directory": "multiqc",
-            "report_file": "multiqc_report.html"
+            "report_file": "multiqc_report.html",
+            "data_file": "multiqc_data/multiqc_data.json"
         },
         "nanoplot": {
             "unprocessed": {
@@ -609,7 +635,8 @@ def generate_config(analysis_output_dirpath: Path, sample_id: str, output: Optio
         "results": {
             "enabled": True,
             "directory": "results",
-            "rel_abundance_file": f"{sample_id}*.fastq_rel-abundance.tsv"
+            "rel_abundance_file": rel_abundance_file,
+            "read_assignment_file": read_assignment_file
         }
     }
 

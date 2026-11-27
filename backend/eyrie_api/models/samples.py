@@ -31,6 +31,7 @@ class SampleCreate(BaseModel):
     flagged_contaminants: List[str] = []
     flagged_top_hits: List[str] = []
     nanoplot: Optional[Dict[str, Any]] = None
+    classification_qc: Optional[Dict[str, Any]] = None
     spike: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None
 
@@ -46,5 +47,6 @@ class SampleUpdate(BaseModel):
     flagged_contaminants: Optional[List[str]] = None
     flagged_top_hits: Optional[List[str]] = None
     nanoplot: Optional[Dict[str, Any]] = None
+    classification_qc: Optional[Dict[str, Any]] = None
     spike: Optional[str] = None
     metadata: Optional[Dict[str, Any]] = None

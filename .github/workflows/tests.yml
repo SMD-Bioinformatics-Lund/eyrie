@@ -1,0 +1,32 @@
+name: Tests
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    - run: pip install . pytest pytest-asyncio
+    - run: python -m pytest tests
+
+  eyrie-popup:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/eyrie-popup
+    steps:
+    - uses: actions/checkout@v5
+    - uses: actions/setup-python@v6
+      with:
+        python-version: '3.11'
+    - run: pip install . pytest
+    - run: python -m pytest tests

@@ -169,6 +169,7 @@ function exportContaminationData() {
     const hits = currentSample.taxonomic_data.hits || [];
     const rows = [
         ['Species', 'Genus', 'Family', 'Abundance (%)', 'Estimated Counts',
+         'Median Probability', 'Highlight',
          'Top Hit', 'Contaminant'],
         ...hits.map(sp => [
             sp.species,
@@ -176,6 +177,8 @@ function exportContaminationData() {
             sp.family || 'N/A',
             sp.abundance,
             sp.estimated_counts ?? '',
+            sp.median_probability ?? '',
+            sp.highlight ?? '',
             flaggedTopHits.has(sp.species)      ? 'Yes' : 'No',
             flaggedContaminants.has(sp.species) ? 'Yes' : 'No',
         ]),
