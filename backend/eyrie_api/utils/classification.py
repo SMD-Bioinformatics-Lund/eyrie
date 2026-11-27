@@ -96,13 +96,17 @@ def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, An
     normaliser = usable_normaliser(sample_table, spike_settings['normaliser'])
     control_tables = [abundance_table(control, spellings) for control in controls]
     unchecked = unnormalisable_controls(controls, control_tables, spike_settings['normaliser'], normaliser)
+    thresholds = {
+        'enrichment_fold': spike_settings.get('enrichment_fold', ENRICHMENT_FOLD),
+        'low_abundance_cutoff': spike_settings.get('low_abundance_cutoff', LOW_ABUNDANCE_CUTOFF),
+    }
     flags = compare_to_negative_controls(
         sample_table,
         control_tables,
         spike_settings['species'],
         normaliser,
-        fold=ENRICHMENT_FOLD,
-        low_abundance_cutoff=LOW_ABUNDANCE_CUTOFF,
+        fold=thresholds['enrichment_fold'],
+        low_abundance_cutoff=thresholds['low_abundance_cutoff'],
     ).to_dict(orient='records')
 
     classified_hits = [
@@ -124,6 +128,6 @@ def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, An
         'controls_without_normaliser': [name for name, _ in unchecked] if normaliser else [],
         'normaliser': normaliser,
         'spike_settings': spike_settings,
-        'thresholds': {'enrichment_fold': ENRICHMENT_FOLD, 'low_abundance_cutoff': LOW_ABUNDANCE_CUTOFF},
+        'thresholds': thresholds,
         'classification_qc': sample.get('classification_qc'),
     }

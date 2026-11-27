@@ -7,9 +7,9 @@ from eyrie_api.database.async_sample_operations import (
     get_positive_control_validation
 )
 from eyrie_api.database.async_seqrun_operations import upsert_seqrun, find_seqrun, get_all_seqruns
-from eyrie_api.database.async_settings_operations import get_spike_settings
+from eyrie_api.database.async_settings_operations import apply_current_settings_to_run, get_run_settings, settings_for_run
 from eyrie_api.models.seqruns import SeqrunCreate
-from eyrie_api.routes.auth import get_current_user
+from eyrie_api.routes.auth import get_current_user, require_admin
 from eyrie_api.utils.classification import detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
 
@@ -67,11 +67,11 @@ async def get_sequencing_runs(current_user: dict = Depends(get_current_user)):
         seqruns_dict = {doc.get('sequencing_run_id'): doc for doc in all_seqrun_docs}
 
         # Build sequencing run data
-        spike_species = (await get_spike_settings())['species']
+        run_settings = await get_run_settings(all_seqrun_ids)
         seqruns = []
         for seqrun_id in all_seqrun_ids:
             samples = sample_data.get(seqrun_id, [])
-            stats = calculate_seqrun_stats(samples, spike_species)
+            stats = calculate_seqrun_stats(samples, run_settings[seqrun_id]['species'])
 
             first_sample = samples[0] if samples else None
             created_date = first_sample.get('created_date') if first_sample else None
@@ -129,7 +129,8 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
             raise HTTPException(status_code=404, detail=f"Sequencing run not found: {seqrun_id}")
 
         # Calculate stats from samples
-        stats = calculate_seqrun_stats(samples, (await get_spike_settings())['species'])
+        settings = await settings_for_run(seqrun_id)
+        stats = calculate_seqrun_stats(samples, settings['species'])
 
         if seqrun_doc and isinstance(seqrun_doc, dict):
             # Use seqrun data from MongoDB collection
@@ -165,6 +166,7 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
                 'samples': samples,
                 **stats
             }
+        seqrun['classification_settings'] = settings
 
         return json.loads(JSONEncoder().encode(seqrun))
 
@@ -172,6 +174,13 @@ async def get_sequencing_run(seqrun_id: str, current_user: dict = Depends(get_cu
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{seqrun_id}/classification-settings/apply")
+async def apply_classification_settings(seqrun_id: str, current_user: dict = Depends(require_admin)):
+    """Replace the run's frozen spike settings and thresholds with the current ones (admin only)"""
+    if not await apply_current_settings_to_run(seqrun_id, current_user['username']):
+        raise HTTPException(status_code=404, detail=f"Sequencing run not found: {seqrun_id}")
+    return {'success': True}
 
 @router.put("/{seqrun_id}")
 async def upsert_sequencing_run(seqrun_id: str, seqrun_data: SeqrunCreate, current_user: dict = Depends(get_current_user)):

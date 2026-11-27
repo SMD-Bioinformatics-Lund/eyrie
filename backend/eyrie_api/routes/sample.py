@@ -7,7 +7,7 @@ from eyrie_api.database.async_sample_operations import (
     update_sample, upsert_sample, update_sample_species_flags,
     find_negative_controls_by_run_id
 )
-from eyrie_api.database.async_settings_operations import get_spike_settings
+from eyrie_api.database.async_settings_operations import freeze_run_settings, settings_for_run
 from eyrie_api.routes.auth import require_admin, require_admin_or_uploader, get_current_user
 from eyrie_api.utils.classification import classify_sample, comparison_controls, detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
@@ -28,7 +28,7 @@ async def get_sample(sample_id: str):
         sample = await find_sample(sample_id)
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
-        sample['spike'] = detected_spike(sample, (await get_spike_settings())['species'])
+        sample['spike'] = detected_spike(sample, (await settings_for_run(sample.get('sequencing_run_id')))['species'])
         return json.loads(JSONEncoder().encode(sample))
     except HTTPException:
         raise
@@ -53,6 +53,7 @@ async def upsert_sample_endpoint(
 
         sample_dict = sample_data.model_dump()
         db_id, was_created = await upsert_sample(sample_dict, current_user['username'], reset_review)
+        await freeze_run_settings([sample_dict.get('sequencing_run_id')])
 
         action = "created" if was_created else "updated"
         return {
@@ -203,7 +204,7 @@ async def get_classification(sample_id: str, current_user: dict = Depends(get_cu
         if not sample:
             raise HTTPException(status_code=404, detail="Sample not found")
 
-        classification = classify_sample(sample, await run_negative_controls(sample), await get_spike_settings())
+        classification = classify_sample(sample, await run_negative_controls(sample), await settings_for_run(sample.get('sequencing_run_id')))
 
         return json.loads(JSONEncoder().encode(classification))
     except HTTPException:

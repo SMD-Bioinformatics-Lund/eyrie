@@ -4,7 +4,7 @@ from eyrie_api.models.samples import SampleCreate
 from eyrie_api.database.async_sample_operations import (
     get_all_samples, create_sample
 )
-from eyrie_api.database.async_settings_operations import get_spike_settings
+from eyrie_api.database.async_settings_operations import current_run_settings, freeze_run_settings, get_run_settings
 from eyrie_api.routes.auth import require_admin_or_uploader, get_current_user
 from eyrie_api.utils.classification import detected_spike
 from eyrie_api.utils.json_encoder import JSONEncoder
@@ -20,9 +20,10 @@ async def get_samples(
 ):
     try:
         samples = await get_all_samples(sequencing_run_id, table_fields=view == 'table')
-        spike_species = (await get_spike_settings())['species']
+        run_settings = await get_run_settings(sample.get('sequencing_run_id') for sample in samples)
+        default = await current_run_settings()
         for sample in samples:
-            sample['spike'] = detected_spike(sample, spike_species)
+            sample['spike'] = detected_spike(sample, run_settings.get(sample.get('sequencing_run_id'), default)['species'])
         return json.loads(JSONEncoder().encode(samples))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -36,6 +37,7 @@ async def create_new_sample(
     try:
         sample_dict = sample_data.dict(exclude_unset=False, exclude_none=False)
         sample_id = await create_sample(sample_dict)
+        await freeze_run_settings([sample_dict.get('sequencing_run_id')])
         return {
             "message": f"Sample '{sample_data.sample_id}' created successfully",
             "sample_id": sample_data.sample_id,

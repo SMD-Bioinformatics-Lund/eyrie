@@ -62,3 +62,15 @@ def test_spike_settings_are_validated_ignoring_case():
     for species, normaliser in (([SPIKE, SPIKE.upper()], None), ([SPIKE, ' '], None), ([SPIKE], 'Imtechella halotolerans')):
         with pytest.raises(ValidationError):
             SpikeSettings(species=species, normaliser=normaliser)
+
+
+def test_classification_uses_the_thresholds_frozen_for_the_run():
+    run_settings = {**SETTINGS, 'enrichment_fold': 1000, 'low_abundance_cutoff': 0.6}
+    result = classify_sample(
+        sample('s1', [('Escherichia coli', 0.5), (SPIKE, 0.1)]),
+        [sample('nc1', [('Escherichia coli', 0.001), (SPIKE, 0.1)])],
+        run_settings,
+    )
+    assert result['thresholds'] == {'enrichment_fold': 1000, 'low_abundance_cutoff': 0.6}
+    assert not flags(result, 'Escherichia coli')['enriched']
+    assert flags(result, 'Escherichia coli')['low_abundance']
