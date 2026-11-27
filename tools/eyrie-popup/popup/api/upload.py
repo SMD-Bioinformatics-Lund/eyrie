@@ -1,6 +1,6 @@
 """Upload handling for Eyrie API."""
 
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 
 from ..models import SampleResults, SampleConfig, SampleInfo
 
@@ -39,31 +39,12 @@ class UploadHandler:
             else:
                 print(f"ℹ️ Skipping sequencing run upload (no sequencing run id or pipeline suffix specified)")
 
-            # Check if sample already exists
-            existing_sample = self._get_sample(sample_data.sample_info.sample_id)
-
-            if existing_sample and not force:
-                comments = existing_sample.get('comments') or {}
-                has_other = bool(comments.get('other', '').strip()) if isinstance(comments.get('other'), str) else False
-                has_qc = bool(comments.get('qc', []))
-                if has_other or has_qc:
-                    print(f"✗ Sample {sample_data.sample_info.sample_id} has existing comments — upload cancelled. Use --force/-f to override.")
-                    return False
-
-            if existing_sample:
-                # Update existing sample
-                response = self.client.session.put(
-                    f"{self.client.api_url}/sample/{sample_data.sample_info.sample_id}",
-                    json=eyrie_sample
-                )
-                action = "Updated"
-            else:
-                # Create new sample
-                response = self.client.session.post(
-                    f"{self.client.api_url}/samples",
-                    json=eyrie_sample
-                )
-                action = "Created"
+            response = self.client.session.put(
+                f"{self.client.api_url}/sample/{sample_data.sample_info.sample_id}",
+                params={'reset_review': 'true'} if force else None,
+                json=eyrie_sample
+            )
+            action = "Created" if response.ok and response.json().get('created') else "Updated"
 
             if response.status_code in [200, 201]:
                 print(f"✓ {action} sample: {sample_data.sample_info.sample_id}")
@@ -121,16 +102,6 @@ class UploadHandler:
             return response.status_code == 200
         except:
             return False
-
-    def _get_sample(self, sample_id: str) -> Optional[Dict[str, Any]]:
-        """Get existing sample from Eyrie."""
-        try:
-            response = self.client.session.get(f"{self.client.api_url}/sample/{sample_id}")
-            if response.status_code == 200:
-                return response.json()
-            return None
-        except:
-            return None
 
     def upload_pipeline_files_only(self, sequencing_run_id: str, pipeline_software: str, pipeline_datetime_suffix: str, analysis_output_dirpath: str) -> bool:
         """Upload only pipeline files for a sequencing run."""

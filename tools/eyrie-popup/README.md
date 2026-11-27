@@ -87,7 +87,12 @@ popup upload --sample config.yaml --api http://localhost:8000/api --username adm
 
 # Upload with dry-run to test without actually uploading
 popup upload --sample config.yaml --dry-run --verbose
+
+# Re-upload and also reset the QC status, comments and top hit/contaminant flags
+popup upload --sample config.yaml --force
 ```
+
+Uploading a sample that already exists replaces its pipeline results and keeps its QC status, comments, top hit and contaminant flags, metadata and LIMS ID. The re-upload is noted in the sample's QC comments.
 
 ### 3. Upload Sample Metadata
 
