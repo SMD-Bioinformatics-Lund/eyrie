@@ -32,6 +32,11 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added `excluded_controls` and `normaliser` (the normaliser used for the sample, or none) to `GET /api/sample/{sample_id}/classification`
  - Added a note and a per-species marker on the classification view when enrichment could not be checked because the sample or a negative control has no normalising spike, plus `controls_without_normaliser` and per-hit `enrichment_unchecked_against` in `GET /api/sample/{sample_id}/classification`
  - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling, run by a Tests GitHub Actions workflow on pull requests and pushes to master
+ - Added spike settings per sequencing run: each run keeps the spike species, normaliser, thresholds and emuse version it had when its first sample was uploaded, and the Admin spike species are the defaults for new runs
+ - Added a Spike Settings card to the run Information tab, where admins can apply the current settings to the run; who applied them, when and the replaced settings are recorded
+ - Added `POST /api/seqruns/{seqrun_id}/classification-settings/apply` (admin only), and `classification_settings` to `GET /api/seqruns/{seqrun_id}`
+ - Added `reset_review` to `PUT /api/sample/{sample_id}`
+ - Added the run's spike settings to the classification view legend, and a note listing flagged species that are not in the current results
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
@@ -53,6 +58,9 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Fixed `popup generate-config` taking the read assignment file from a different Emu run than the rel-abundance file
  - Fixed eyrie-popup uploading a sample with no species when its rel-abundance file was missing, ambiguous or unreadable; the upload now fails
  - Fixed an unreadable read assignment or MultiQC file stopping a sample upload; those metrics are skipped with a warning
+ - Fixed re-uploading a sample resetting its QC status, comments, top hit and contaminant flags, metadata and LIMS ID; a re-upload now replaces only the pipeline results and is noted in the sample's QC comments
+ - Fixed `popup upload --sample-metadata --create-missing` sending an empty string as the new sample's comments
+ - Fixed `PUT /api/sample/{sample_id}` returning 500 instead of 400 when the sample IDs differ
 
 ### Changed
  - Changed `sample_type` to `clinical`, `negative control` or `positive control`
@@ -79,6 +87,8 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the admin area to Users and Spike Species tabs; Admin opens Users, and adding or editing a user stays under the Users tab
  - The backend requires pydantic 2
  - eyrie-popup sends no taxonomic data for samples uploaded without results, so they are not used as negative controls
+ - `popup upload --force` resets the QC status, comments and flags of a re-uploaded sample, instead of allowing an upload over existing comments
+ - eyrie-popup updates sample metadata with `PATCH /api/sample/{sample_id}` instead of re-sending the whole sample
 
 ## [0.4.1]
 

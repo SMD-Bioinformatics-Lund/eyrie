@@ -107,22 +107,11 @@ class EyrieAPIClient:
             lims_id = sample_metadata_dict.pop('lims_id', None)
 
             if existing_sample:
-                api_fields = [
-                    'sample_name', 'sample_id', 'sequencing_run_id', 'lims_id',
-                    'classification', 'qc', 'comments', 'files',
-                    'taxonomic_data', 'flagged_contaminants', 'flagged_top_hits',
-                    'nanoplot', 'classification_qc', 'pipeline_software'
-                ]
-
-                updated_sample = {k: v for k, v in existing_sample.items() if k in api_fields}
-                updated_sample['metadata'] = sample_metadata_dict
+                update = {'metadata': sample_metadata_dict}
                 if lims_id:
-                    updated_sample['lims_id'] = lims_id
+                    update['lims_id'] = lims_id
 
-                response = self.session.put(
-                    f"{self.api_url}/sample/{sample_id}",
-                    json=updated_sample
-                )
+                response = self.session.patch(f"{self.api_url}/sample/{sample_id}", json=update)
 
                 if response.status_code in [200, 201]:
                     return True, 'updated'
@@ -135,8 +124,6 @@ class EyrieAPIClient:
                 new_sample = {
                     'sample_id': sample_id,
                     'lims_id': lims_id,
-                    'qc': 'unprocessed',
-                    'comments': '',
                     'metadata': sample_metadata_dict
                 }
 

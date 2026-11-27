@@ -60,25 +60,40 @@ async def update_sample(sample_id: str, update_data: Dict[str, Any]) -> bool:
         return result.matched_count > 0
 
 
-async def upsert_sample(sample_data: Dict[str, Any]) -> Tuple[str, bool]:
-    """Create sample if it doesn't exist, update if it does. Returns (id, was_created)."""
+REVIEW_FIELDS = {'qc', 'comments', 'flagged_top_hits', 'flagged_contaminants'}
+KEPT_ON_REUPLOAD = REVIEW_FIELDS | {'metadata', 'lims_id'}
+
+
+def sample_upsert(sample_data: Dict[str, Any], reset_review: bool = False) -> Dict[str, Any]:
+    """Replace the pipeline results, keeping review work, metadata and the LIMS ID unless the review is reset."""
+    kept = KEPT_ON_REUPLOAD - REVIEW_FIELDS if reset_review else KEPT_ON_REUPLOAD
+    now = datetime.now()
+    return {
+        '$set': {**{k: v for k, v in sample_data.items() if k not in kept and k != 'sample_id'}, 'updated_date': now},
+        '$setOnInsert': {**{k: v for k, v in sample_data.items() if k in kept}, 'created_date': now},
+    }
+
+
+async def upsert_sample(sample_data: Dict[str, Any], username: str, reset_review: bool = False) -> Tuple[str, bool]:
+    """Create the sample, or replace its pipeline results and note the re-upload in its QC history. Returns (id, was_created)."""
+    sample_id = sample_data['sample_id']
     async with get_db_connection() as db:
-        existing = await db.samples.find_one({'sample_id': sample_data['sample_id']})
+        result = await db.samples.update_one({'sample_id': sample_id}, sample_upsert(sample_data, reset_review), upsert=True)
+        if result.upserted_id is not None:
+            return str(result.upserted_id), True
 
-        if existing:
-            update_data = {k: v for k, v in sample_data.items() if k != 'sample_id'}
-            update_data['updated_date'] = datetime.now()
-
-            await db.samples.update_one(
-                {'sample_id': sample_data['sample_id']},
-                {'$set': update_data}
-            )
-            return str(existing['_id']), False
-        else:
-            sample_data['created_date'] = datetime.now()
-            sample_data['updated_date'] = datetime.now()
-            result = await db.samples.insert_one(sample_data)
-            return str(result.inserted_id), True
+        entry = {
+            'user': username,
+            'timestamp': datetime.now().isoformat(),
+            'comment': 'Results re-uploaded' + (', review reset' if reset_review else ''),
+        }
+        pushed = await db.samples.update_one(
+            {'sample_id': sample_id, 'comments': {'$type': 'object'}}, {'$push': {'comments.qc': entry}}
+        )
+        if not pushed.matched_count:
+            await db.samples.update_one({'sample_id': sample_id}, {'$set': {'comments': {'qc': [entry], 'other': ''}}})
+        existing = await db.samples.find_one({'sample_id': sample_id}, {'_id': 1})
+        return str(existing['_id']), False
 
 
 async def update_sample_qc(sample_id: str, qc_status: str, comment_text: Optional[str], username: str) -> bool:

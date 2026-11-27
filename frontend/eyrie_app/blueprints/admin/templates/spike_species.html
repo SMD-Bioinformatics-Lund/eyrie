@@ -5,7 +5,7 @@
 
 {% block admin_content %}
 <div class="card border-0 shadow-sm">
-    {% call table_header('Spike Species', 'bi-eyedropper', 'Spike species are shown in blue in the classification view and counted in Spikes Detected. Names match regardless of case. The normalising species is used to compare abundances with the negative controls of the same sequencing run. Tick species, then choose an action under Manage Spike Species.',
+    {% call table_header('Spike Species', 'bi-eyedropper', 'These are the defaults for new sequencing runs: each run keeps the settings it had when its first sample was uploaded, and an admin can apply the current ones from the Information tab of the run. Spike species are shown in blue in the classification view and counted in Spikes Detected. Names match regardless of case. The normalising species is used to compare abundances with the negative controls of the same sequencing run. Tick species, then choose an action under Manage Spike Species.',
                          counts=[('Species', settings.species | length, ''), ('Normaliser', settings.normaliser or 'None', 'bg-info-subtle')],
                          selectable=True, menu_label='Manage Spike Species') %}
         <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#addSpikeModal"><i class="bi bi-plus-lg me-2"></i>Add Species</button></li>

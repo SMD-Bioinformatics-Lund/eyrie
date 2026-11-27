@@ -163,6 +163,16 @@
     </div>
     {% endif %}
     {% endif %}
+    {% set hit_species = hits | map(attribute='species') | list %}
+    {% set missing_top_hits = top_hits | reject('in', hit_species) | list %}
+    {% set missing_contaminants = contaminants | reject('in', hit_species) | list %}
+    {% if missing_top_hits or missing_contaminants %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Flagged but not in the current results:
+        {% for species in missing_top_hits %}<span class="fst-italic">{{ species }}</span> (top hit){{ ', ' if not loop.last or missing_contaminants }}{% endfor %}
+        {% for species in missing_contaminants %}<span class="fst-italic">{{ species }}</span> (contaminant){{ ', ' if not loop.last }}{% endfor %}
+    </div>
+    {% endif %}
     <div class="card-body p-0">
         <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
             <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
@@ -210,6 +220,11 @@
         {% if thresholds %}
         <span><span class="legend-swatch bg-warning-subtle"></span>Not in negative controls or &gt;{{ thresholds.enrichment_fold }}&times; more abundant</span>
         <span><span class="low-abundance-text">Grey</span>: below {{ '%g'|format(thresholds.low_abundance_cutoff * 100) }}%</span>
+        {% endif %}
+        {% set run_settings = sample.classification_settings if sample else None %}
+        {% if run_settings and sample.sequencing_run_id %}
+        <span class="w-100">Run spike settings: normaliser <span class="fst-italic">{{ run_settings.normaliser or 'none' }}</span>, kept since {{ (run_settings.applied_date or run_settings.frozen_date or '')[:10] }}
+            (<a href="{{ url_for('seqruns.seqrun_information', seqrun_id=sample.sequencing_run_id, _anchor='spike-settings') }}">details</a>)</span>
         {% endif %}
     </div>
 </div>

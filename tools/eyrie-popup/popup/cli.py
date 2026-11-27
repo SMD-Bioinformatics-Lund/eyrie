@@ -402,7 +402,7 @@ def _upload_pipeline_files_only(sequencing_run_id: str, pipeline_datetime_suffix
 @click.option('--password', envvar='EYRIE_PASSWORD', help='Password for authentication (or set EYRIE_PASSWORD env var)')
 @click.option('--dry-run', is_flag=True, help='Parse data but do not upload to database')
 @click.option('--verbose', '-v', is_flag=True, help='Enable verbose output')
-@click.option('--force', '-f', is_flag=True, help='Force upload even if sample has existing comments')
+@click.option('--force', '-f', is_flag=True, help="Also reset the sample's QC status, comments and top hit/contaminant flags (kept by default)")
 @click.option('--create-missing', is_flag=True, help='Create sample entries for samples that do not exist (sample metadata only)')
 @click.option('--sequencing-run-id', help='Sequencing run identifier (required for pipeline-only uploads)')
 @click.option('--pipeline-datetime-suffix', help='Datetime suffix (YYYY-MM-DD_HH-MM-SS) to match specific pipeline files by timestamp')
