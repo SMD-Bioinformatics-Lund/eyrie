@@ -30,6 +30,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added read assignment probability and a sequencing summary with reads before and after filtering to the classification view
  - Added a warning on the classification view when the negative control comparison could not be loaded, and a note naming negative controls left out because they have no taxonomic results
  - Added `excluded_controls` and `normaliser` (the normaliser used for the sample, or none) to `GET /api/sample/{sample_id}/classification`
+ - Added a note and a per-species marker on the classification view when enrichment could not be checked because the sample or a negative control has no normalising spike, plus `controls_without_normaliser` and per-hit `enrichment_unchecked_against` in `GET /api/sample/{sample_id}/classification`
  - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling, run by a Tests GitHub Actions workflow on pull requests and pushes to master
 
 ### Fixed

@@ -74,14 +74,31 @@ def control_name(control: Dict[str, Any]) -> str:
     return control.get('sample_name') or control['sample_id']
 
 
+def unnormalisable_controls(controls: List[Dict[str, Any]], tables: List[pd.DataFrame], configured: Optional[str], normaliser: Optional[str]) -> List[Tuple[str, set]]:
+    """Controls that enrichment cannot be checked against, as names with the species they contain.
+
+    Without a usable normaliser in the sample, that is every control. emuse treats such a control
+    as not showing enrichment, so it keeps any species it contains from being flagged as enriched.
+    """
+    if not configured:
+        return []
+    return [
+        (control_name(control), set(table['species']))
+        for control, table in zip(controls, tables)
+        if not (normaliser and usable_normaliser(table, normaliser))
+    ]
+
+
 def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, Any]], spike_settings: Dict[str, Any]) -> Dict[str, Any]:
     spellings = {species_key(species): species for species in spike_settings['species']}
     controls, excluded = comparison_controls(sample, negative_controls)
     sample_table = abundance_table(sample, spellings)
     normaliser = usable_normaliser(sample_table, spike_settings['normaliser'])
+    control_tables = [abundance_table(control, spellings) for control in controls]
+    unchecked = unnormalisable_controls(controls, control_tables, spike_settings['normaliser'], normaliser)
     flags = compare_to_negative_controls(
         sample_table,
-        [abundance_table(control, spellings) for control in controls],
+        control_tables,
         spike_settings['species'],
         normaliser,
         fold=ENRICHMENT_FOLD,
@@ -89,8 +106,13 @@ def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, An
     ).to_dict(orient='records')
 
     classified_hits = [
-        {**hit, **{name: bool(value) for name, value in flag.items()}, 'highlight': highlight(flag)}
-        for hit, flag in zip(sample_hits(sample), flags)
+        {
+            **hit,
+            **{name: bool(value) for name, value in flag.items()},
+            'highlight': highlight(flag),
+            'enrichment_unchecked_against': [name for name, species in unchecked if table_species in species],
+        }
+        for hit, table_species, flag in zip(sample_hits(sample), sample_table['species'], flags)
     ]
 
     return {
@@ -99,6 +121,7 @@ def classify_sample(sample: Dict[str, Any], negative_controls: List[Dict[str, An
         'spike': detected_spike(sample, spike_settings['species']),
         'negative_controls': [control_name(control) for control in controls],
         'excluded_controls': [control_name(control) for control in excluded],
+        'controls_without_normaliser': [name for name, _ in unchecked] if normaliser else [],
         'normaliser': normaliser,
         'spike_settings': spike_settings,
         'thresholds': {'enrichment_fold': ENRICHMENT_FOLD, 'low_abundance_cutoff': LOW_ABUNDANCE_CUTOFF},

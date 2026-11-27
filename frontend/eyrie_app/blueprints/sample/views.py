@@ -60,6 +60,9 @@ def sample_classification(sample_id):
             sample['spike'] = classification['spike']
             sample['classification_thresholds'] = classification['thresholds']
             sample['excluded_controls'] = classification.get('excluded_controls', [])
+            sample['configured_normaliser'] = classification['spike_settings']['normaliser']
+            sample['normaliser_missing'] = bool(sample['configured_normaliser']) and not classification['normaliser']
+            sample['controls_without_normaliser'] = classification.get('controls_without_normaliser', [])
         except Exception as classification_error:
             print(f"Warning: Could not load classification: {classification_error}")
             sample['classification_unavailable'] = True

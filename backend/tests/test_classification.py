@@ -39,6 +39,17 @@ def test_enrichment_needs_a_positive_spike_in_the_sample(spike_abundance, enrich
         sample('s1', [('Escherichia coli', 0.5), (SPIKE, spike_abundance)]), [historical_control], SETTINGS
     )
     assert flags(result, 'Escherichia coli')['enriched'] is enriched
+    assert flags(result, 'Escherichia coli')['enrichment_unchecked_against'] == ([] if enriched else ['nc1'])
+
+
+def test_a_control_without_the_spike_is_reported_as_unchecked():
+    with_spike = sample('nc1', [('Escherichia coli', 0.001), (SPIKE, 0.1)])
+    without_spike = sample('nc2', [('Escherichia coli', 0.001)])
+    result = classify_sample(sample('s1', [('Escherichia coli', 0.5), (SPIKE, 0.1)]), [with_spike, without_spike], SETTINGS)
+
+    assert not flags(result, 'Escherichia coli')['enriched']
+    assert flags(result, 'Escherichia coli')['enrichment_unchecked_against'] == ['NC2']
+    assert result['controls_without_normaliser'] == ['NC2']
 
 
 def test_detected_spike_is_the_most_abundant_ignoring_case_and_order():

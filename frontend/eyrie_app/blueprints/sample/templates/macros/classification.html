@@ -147,10 +147,21 @@
     <div class="alert alert-warning small py-2 m-2 mb-0" role="alert">
         <i class="bi bi-exclamation-triangle me-2"></i>Negative control comparison unavailable. Species are shown without spike and negative control highlighting.
     </div>
-    {% elif sample and sample.excluded_controls %}
+    {% elif sample %}
+    {% if sample.excluded_controls %}
     <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
         <i class="bi bi-info-circle me-2"></i>Not compared with {{ sample.excluded_controls | join(', ') }}: no taxonomic results uploaded.
     </div>
+    {% endif %}
+    {% if sample.normaliser_missing %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Enrichment not checked: <em>{{ sample.configured_normaliser }}</em> not detected in this sample. Species found in negative controls are not marked as enriched.
+    </div>
+    {% elif sample.controls_without_normaliser %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Enrichment not checked against {{ sample.controls_without_normaliser | join(', ') }}: <em>{{ sample.configured_normaliser }}</em> not detected. Species also found there are not marked as enriched (<i class="bi bi-question-circle"></i>).
+    </div>
+    {% endif %}
     {% endif %}
     <div class="card-body p-0">
         <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
@@ -172,7 +183,9 @@
                         {% if organism.absent_in_controls %}title="Not found in negative controls"{% elif organism.enriched %}title="More than {{ thresholds.enrichment_fold }} times more abundant than in negative controls, normalised to the spike"{% endif %}>
                         {{ row_checkbox('species', organism.species, 'speciesForm', organism.species) }}
                         <td>
-                            <div class="fw-semibold">{{ organism.species }}</div>
+                            <div class="fw-semibold">{{ organism.species }}
+                                {% if organism.enrichment_unchecked_against and not is_spike %}<i class="bi bi-question-circle text-muted ms-1" title="Enrichment not checked against {{ organism.enrichment_unchecked_against | join(', ') }}: no {{ sample.configured_normaliser }} to normalise to"></i>{% endif %}
+                            </div>
                             <small class="text-muted">{{ organism.genus or 'N/A' }} - {{ organism.family or 'N/A' }}</small>
                             {% if organism.median_probability is number %}
                             <small class="d-block text-muted">Prob {{ '%.2f'|format(organism.median_probability) }}</small>
