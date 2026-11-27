@@ -304,6 +304,61 @@
                 </div>
             </div>
         </div>
+
+        {% set run_settings = seqrun.classification_settings %}
+        {% if run_settings %}
+        <div class="row mb-4" id="spike-settings">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-eyrie-green text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-eyedropper me-2"></i>Spike Settings</h5>
+                        {% if current_user and current_user.role == 'admin' %}
+                        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#applySpikeSettingsModal">
+                            <i class="bi bi-arrow-repeat me-1"></i>Apply Current Settings
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="card-body small">
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} py-2" role="alert">{{ message }}</div>
+                        {% endfor %}
+                        {% endwith %}
+                        <p class="text-muted mb-2">This run is classified with these settings, kept from when its first sample was uploaded. Changing the spike species under Admin only affects new runs.</p>
+                        <div class="d-flex justify-content-between"><span>Spike species:</span><span class="fst-italic">{{ run_settings.species | join(', ') or 'None' }}</span></div>
+                        <div class="d-flex justify-content-between"><span>Normaliser:</span><span class="fst-italic">{{ run_settings.normaliser or 'None' }}</span></div>
+                        <div class="d-flex justify-content-between"><span>Enriched above:</span><span>{{ run_settings.enrichment_fold }}× the negative controls</span></div>
+                        <div class="d-flex justify-content-between"><span>Low abundance below:</span><span>{{ '%g' | format(run_settings.low_abundance_cutoff * 100) }}%</span></div>
+                        <div class="d-flex justify-content-between"><span>emuse:</span><span>{{ run_settings.emuse_version or 'unknown' }}</span></div>
+                        <div class="d-flex justify-content-between"><span>Kept since:</span><span>{{ (run_settings.frozen_date or '')[:10] }}</span></div>
+                        {% if run_settings.applied_by %}
+                        <div class="d-flex justify-content-between"><span>Current settings applied:</span><span>{{ run_settings.applied_date[:10] }} by {{ run_settings.applied_by }}</span></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if current_user and current_user.role == 'admin' %}
+        <div class="modal fade" id="applySpikeSettingsModal" tabindex="-1" aria-labelledby="applySpikeSettingsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered">
+                <form class="modal-content" method="post" action="{{ url_for('seqruns.apply_spike_settings', seqrun_id=seqrun.sequencing_run_id) }}">
+                    <div class="modal-header py-2">
+                        <h6 class="modal-title" id="applySpikeSettingsModalLabel">Apply Current Settings</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        Classify this run with the current spike species, normaliser and thresholds from Admin? The highlighting and spikes detected of its samples may change. The change is recorded with your username.
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+        {% endif %}
         {% endif %}
     </div>
 

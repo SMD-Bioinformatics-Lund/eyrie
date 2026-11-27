@@ -1,8 +1,9 @@
 import json
+import os
 import requests
 from flask import Blueprint, render_template, url_for, redirect, request, flash
 from werkzeug.exceptions import HTTPException
-from ...auth import jwt_required, get_jwt_from_cookie
+from ...auth import jwt_required, admin_required, get_jwt_from_cookie
 import urllib.parse
 from collections import defaultdict
 from ...config import settings
@@ -456,6 +457,28 @@ def seqrun_information(seqrun_id):
         import traceback
         print(f"Traceback: {traceback.format_exc()}")
         return render_template('seqrun_information.html', seqrun=None)
+
+
+@bp.route('/seqruns/<seqrun_id>/spike-settings/apply', methods=['POST'])
+@jwt_required
+@admin_required
+def apply_spike_settings(seqrun_id):
+    """Classify the run with the current spike settings instead of the ones it kept"""
+    backend_url = os.getenv('INTERNAL_BACKEND_URL', 'http://eyrie-backend:5000')
+    try:
+        response = requests.post(
+            f"{backend_url}/api/seqruns/{urllib.parse.quote(seqrun_id, safe='')}/classification-settings/apply",
+            headers={'Authorization': f'Bearer {get_jwt_from_cookie()}'},
+            timeout=30
+        )
+        status = response.status_code
+    except requests.RequestException:
+        status = 'no response'
+    if status == 200:
+        flash('Applied the current spike settings to this run.', 'success')
+    else:
+        flash(f'Failed to apply the current spike settings (status: {status})', 'error')
+    return redirect(url_for('seqruns.seqrun_information', seqrun_id=seqrun_id, _anchor='spike-settings'))
 
 
 @bp.route('/seqruns/<seqrun_id>/files/<file_type>')
