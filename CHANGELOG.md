@@ -19,7 +19,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Changed the navbars from black to a pale green that suits the logo, with the current page's button in the same sage green
  - Changed the species abundance table to the samples table layout: select species with checkboxes and mark them as top hits or contaminants, or clear their flags, from a Manage Classification menu; top hit rows are green, contaminants red and the spike species blue, with a key under the table
  - Changed the samples, users and species abundance tables to select rows with a checkbox in the header row instead of Select All and Clear Selection buttons, and named every table in its header with an info tooltip
- - Added emuse (kclinmicro/emuse) to eyrie-popup and the backend for read assignment and summary statistics and negative control comparison
+ - Added emuse v1.3.0 (kclinmicro/emuse, installed from its git tag) to eyrie-popup and the backend for read assignment and summary statistics and negative control comparison
  - Added read assignment probabilities and lineage to uploaded taxonomic hits
  - Added `classification_qc` summary stats (reads before and after filtering, read length/quality) to uploaded samples
  - Added `--rel-abundance-file` and `--read-assignment-file` options to `popup generate-config`
@@ -30,7 +30,7 @@ All notable changes to the Eyrie sample management system will be documented in 
  - Added read assignment probability and a sequencing summary with reads before and after filtering to the classification view
  - Added a warning on the classification view when the negative control comparison could not be loaded, and a note naming negative controls left out because they have no taxonomic results
  - Added `excluded_controls` and `normaliser` (the normaliser used for the sample, or none) to `GET /api/sample/{sample_id}/classification`
- - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling
+ - Added backend and eyrie-popup tests for negative control comparison, spike settings and Emu file handling, run by a Tests GitHub Actions workflow on pull requests and pushes to master
 
 ### Fixed
  - Fixed the 4th and 5th columns of every table being hidden on small screens
