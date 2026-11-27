@@ -163,6 +163,16 @@
     </div>
     {% endif %}
     {% endif %}
+    {% set hit_species = hits | map(attribute='species') | list %}
+    {% set missing_top_hits = top_hits | reject('in', hit_species) | list %}
+    {% set missing_contaminants = contaminants | reject('in', hit_species) | list %}
+    {% if missing_top_hits or missing_contaminants %}
+    <div class="alert alert-secondary small py-2 m-2 mb-0" role="alert">
+        <i class="bi bi-info-circle me-2"></i>Flagged but not in the current results:
+        {% for species in missing_top_hits %}<span class="fst-italic">{{ species }}</span> (top hit){{ ', ' if not loop.last or missing_contaminants }}{% endfor %}
+        {% for species in missing_contaminants %}<span class="fst-italic">{{ species }}</span> (contaminant){{ ', ' if not loop.last }}{% endfor %}
+    </div>
+    {% endif %}
     <div class="card-body p-0">
         <div class="table-responsive compact-table-wrapper" style="max-height: 600px;">
             <table class="table table-sm table-hover compact-table mb-0" id="contaminationTable">
