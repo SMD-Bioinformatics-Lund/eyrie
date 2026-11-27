@@ -25,7 +25,7 @@ requires-python = ">=3.11,<3.14"
 dependencies = [
     "click>=8.0.0",
     "pandas",
-    "emuse @ git+https://github.com/kclinmicro/emuse.git@c79245f63ae873ec07447df051b2177590cafaa5",
+    "emuse @ git+https://github.com/kclinmicro/emuse.git@v1.3.0",
     "pydantic>=1.8.0,<2.0.0",
     "PyYAML>=6.0",
     "requests>=2.25.0",
